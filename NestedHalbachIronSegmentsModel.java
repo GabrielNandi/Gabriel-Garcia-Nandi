@@ -11,13 +11,6 @@ public class NestedHalbachIronSegmentsModel {
   public static Model run() {
     Model model = ModelUtil.create("Model");
 
-    model
-         .modelPath("C:\\Users\\fabiofortkamp\\Google Drive\\PoloMag\\AMR and Magnet Design\\COMSOL\\nested-halbach-fabio");
-
-    model.label("nested-halbach-2d-segments-iron-java.mph");
-
-    model.comments("Untitled\n\n");
-
     ModelParam params = model.param();
 
     params.set("R_i", "15[mm]");
