@@ -18,27 +18,27 @@ public class NestedHalbachIronSegmentsModel {
 
     model.comments("Untitled\n\n");
 
-    model.param().set("R_i", "15[mm]");
-    model.param().set("R_o", "50[mm]");
-    model.param().set("h_gap", "20[mm]");
-    model.param().set("R_s", "140[mm]");
-    model.param().set("h_fc", "20[mm]");
-    model.param().set("R_e", "2[m]");
-    model.param().set("n_II", "3", "Number of segments in magnet II");
-    model.param().set("n_IV", "3", "Number of segments in magnet IV");
-    model.param().set("R_g", "R_o+h_gap");
-    model.param().set("phi_S_II", "45[deg]");
-    model.param().set("phi_S_IV", "45[deg]");
-    model.param().set("delta_phi_B_II", "phi_S_II/n_II");
-    model.param().set("delta_phi_B_IV", "phi_S_IV/n_IV");
-    model.param().set("delta_phi_S_II", "(90[deg]-phi_S_II)/n_II");
-    model.param().set("delta_phi_S_IV", "(90[deg]-phi_S_IV)/n_IV");
-    model.param().set("B_rem", "1.47[T]");
-    model.param().set("R_c", "R_s+h_fc");
+    ModelParam params = model.param();
+
+    params.set("R_i", "15[mm]");
+    params.set("R_o", "50[mm]");
+    params.set("h_gap", "20[mm]");
+    params.set("R_s", "140[mm]");
+    params.set("h_fc", "20[mm]");
+    params.set("R_e", "2[m]");
+    params.set("n_II", "3", "Number of segments in magnet II");
+    params.set("n_IV", "3", "Number of segments in magnet IV");
+    params.set("R_g", "R_o+h_gap");
+    params.set("phi_S_II", "45[deg]");
+    params.set("phi_S_IV", "45[deg]");
+    params.set("delta_phi_S_II", "(90[deg]-phi_S_II)/n_II");
+    params.set("delta_phi_S_IV", "(90[deg]-phi_S_IV)/n_IV");
+    params.set("B_rem", "1.47[T]");
+    params.set("R_c", "R_s+h_fc");
 
     model.modelNode().create("comp1");
 
-    model.geom().create("geom1", 2);
+    GeomSequence geometry = model.geom().create("geom1", 2);
 
     model.func().create("an1", "Analytic");
     model.func("an1").label("Degrees to radians");
@@ -82,20 +82,20 @@ public class NestedHalbachIronSegmentsModel {
     model.geom("part2").feature("dif1").selection("input2").set(new String[]{"c2"});
     model.geom("part2").feature("dif1").selection("input").set(new String[]{"c1"});
     model.geom("part2").run();
-    model.geom("geom1").create("pi1", "PartInstance");
-    model.geom("geom1").feature("pi1").label("Cylinder Block 1 - Magnet II - 1Q");
-    model.geom("geom1").feature("pi1").set("inputexpr", new String[]{"R_i", "R_o", "0", "1*delta_phi_B_II"});
-    model.geom("geom1").feature("pi1").set("selkeepnoncontr", false);
-    model.geom("geom1").create("pi2", "PartInstance");
-    model.geom("geom1").feature("pi2").label("Cylinder Block 2 - Magnet II - 1Q");
-    model.geom("geom1").feature("pi2")
-         .set("inputexpr", new String[]{"R_i", "R_o", "1*delta_phi_B_II", "2*delta_phi_B_II"});
-    model.geom("geom1").feature("pi2").set("selkeepnoncontr", false);
-    model.geom("geom1").create("pi3", "PartInstance");
-    model.geom("geom1").feature("pi3").label("Cylinder Block 3 - Magnet II - 1Q");
-    model.geom("geom1").feature("pi3")
-         .set("inputexpr", new String[]{"R_i", "R_o", "2*delta_phi_B_II", "3*delta_phi_B_II"});
-    model.geom("geom1").feature("pi3").set("selkeepnoncontr", false);
+
+    int nII = Integer.parseInt(params.get("n_II"));
+    int nIV = Integer.parseInt(params.get("n_IV"));
+
+    for (int i = 0; i < nII; i++) {
+	String tag = geometry.feature().uniqueTag("pi");
+	GeomFeature blockFeature = geometry.feature().create(tag, "PartInstance");
+	blockFeature.label("Cylinder Block " + i + " - Magnet II - 1Q");
+	String innerAngleExpr = String.format("%d * delta_phi_B_II",i);
+	String outerAngleExpr = String.format("%d * delta_phi_B_II",i+1)
+	blockFeature.set("inputexpr", new String[]{"R_i", "R_o", innerAngleExpr, outerAngleExpr});
+	blockFeature.set("selkeepnoncontr", false);
+    }
+	
     model.geom("geom1").create("pi7", "PartInstance");
     model.geom("geom1").feature("pi7").label("Cylinder Block 1 - Iron II - 1Q");
     model.geom("geom1").feature("pi7")
