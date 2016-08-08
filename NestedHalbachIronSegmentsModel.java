@@ -14,7 +14,7 @@ public class NestedHalbachIronSegmentsModel {
     model
          .modelPath("C:\\Users\\fabiofortkamp\\Google Drive\\PoloMag\\AMR and Magnet Design\\COMSOL\\nested-halbach-fabio");
 
-    model.label("nested-halbach-2d-segments-iron.mph");
+    model.label("nested-halbach-2d-segments-iron-java.mph");
 
     model.comments("Untitled\n\n");
 
@@ -33,6 +33,8 @@ public class NestedHalbachIronSegmentsModel {
     params.set("phi_S_IV", "45[deg]");
     params.set("delta_phi_S_II", "(90[deg]-phi_S_II)/n_II");
     params.set("delta_phi_S_IV", "(90[deg]-phi_S_IV)/n_IV");
+    params.set("delta_phi_B_II", "(phi_S_II)/n_II");
+    params.set("delta_phi_B_IV", "(phi_S_IV)/n_IV");
     params.set("B_rem", "1.47[T]");
     params.set("R_c", "R_s+h_fc");
 
@@ -87,11 +89,11 @@ public class NestedHalbachIronSegmentsModel {
     int nIV = Integer.parseInt(params.get("n_IV"));
 
     for (int i = 0; i < nII; i++) {
-	String tag = geometry.feature().uniqueTag("pi");
+	String tag = geometry.feature().uniquetag("pi");
 	GeomFeature blockFeature = geometry.feature().create(tag, "PartInstance");
 	blockFeature.label("Cylinder Block " + i + " - Magnet II - 1Q");
 	String innerAngleExpr = String.format("%d * delta_phi_B_II",i);
-	String outerAngleExpr = String.format("%d * delta_phi_B_II",i+1)
+	String outerAngleExpr = String.format("%d * delta_phi_B_II",i+1);
 	blockFeature.set("inputexpr", new String[]{"R_i", "R_o", innerAngleExpr, outerAngleExpr});
 	blockFeature.set("selkeepnoncontr", false);
     }
