@@ -11,11 +11,71 @@ public class NestedHalbachIronSegmentsModel {
     public static final String COMPONENT_NAME = "nhalbach_system";
 
     public static final String GEOMETRY_TAG = "nhalbach_geometry";
+    public static final String CYLINDER_BLOCK_PART_NAME = "cylinder_block";
+    public static final String CYLINDER_SHELL_PART_NAME = "cylinder_shell";
+
+    private static Model model;
+    private static ModelNodeList modelNodes;
+    private static ModelParam params;
+    private static ModelNode component;
+    private static GeomList geometryList;
+    private static GeomSequence geometry;
+
+
+    private static GeomSequence configureCylinderBlock(){
+
+	GeomSequence part = geometryList.create(CYLINDER_BLOCK_PART_NAME, "Part", 2);
+	
+	part.label("Cylinder Block");
+	part.inputParam().set("r1", "R_i");
+	part.inputParam().set("r2", "R_o");
+	part.inputParam().set("phi1", "15[deg]");
+	part.inputParam().set("phi2", "45[deg]");
+	part.create("c1", "Circle");
+	part.feature("c1").set("r", "r2");
+	part.feature("c1").set("rot", "phi1");
+	part.feature("c1").set("angle", "phi2");
+	part.create("c2", "Circle");
+	part.feature("c2").set("r", "r1");
+	part.feature("c2").set("rot", "phi1");
+	part.feature("c2").set("angle", "phi2");
+	part.create("dif1", "Difference");
+	part.feature("dif1").selection("input2").set(new String[]{"c2"});
+	part.feature("dif1").selection("input").set(new String[]{"c1"});
+	part.run();
+
+	return part;
+
+	
+    }
+
+    private static GeomSequence configureCylinderShell() {
+
+	GeomSequence part = geometryList.create(CYLINDER_SHELL_PART_NAME, "Part", 2);
+	
+	part.label("Cylinder Shell");
+	part.inputParam().set("r1", "R_i");
+	part.inputParam().set("r2", "R_o");
+	part.inputParam().set("delta_phi", "180[deg]");
+	part.create("c1", "Circle");
+	part.feature("c1").set("r", "r2");
+	part.feature("c1").set("angle", "delta_phi");
+	part.create("c2", "Circle");
+	part.feature("c2").set("r", "r1");
+	part.feature("c2").set("angle", "delta_phi");
+	part.create("dif1", "Difference");
+	part.feature("dif1").selection("input2").set(new String[]{"c2"});
+	part.feature("dif1").selection("input").set(new String[]{"c1"});
+	part.run();
+
+	return part;
+    }
+    
 
     public static Model run() {
-	Model model = ModelUtil.create("Model");
+        model = ModelUtil.create("Model");
 
-	ModelParam params = model.param();
+	params = model.param();
 
 	params.set("R_i", "15[mm]");
 	params.set("R_o", "50[mm]");
@@ -35,49 +95,17 @@ public class NestedHalbachIronSegmentsModel {
 	params.set("B_rem", "1.47[T]");
 	params.set("R_c", "R_s+h_fc");
 
-	ModelNodeList modelNodes = model.modelNode();
+	modelNodes = model.modelNode();
 
-	ModelNode component = modelNodes.create(COMPONENT_NAME);
+	component = modelNodes.create(COMPONENT_NAME);
 
-	GeomSequence geometry = model.geom().create(GEOMETRY_TAG, 2);
+	geometryList = model.geom();
+	geometry = geometryList.create(GEOMETRY_TAG, 2);
 
 	model.mesh().create("mesh1", GEOMETRY_TAG);
 
-	model.geom().create("part1", "Part", 2);
-	model.geom().create("part2", "Part", 2);
-	model.geom("part1").label("Cylinder Block");
-	model.geom("part1").inputParam().set("r1", "R_i");
-	model.geom("part1").inputParam().set("r2", "R_o");
-	model.geom("part1").inputParam().set("phi1", "15[deg]");
-	model.geom("part1").inputParam().set("phi2", "45[deg]");
-	model.geom("part1").create("c1", "Circle");
-	model.geom("part1").feature("c1").set("r", "r2");
-	model.geom("part1").feature("c1").set("rot", "phi1");
-	model.geom("part1").feature("c1").set("angle", "phi2");
-	model.geom("part1").create("c2", "Circle");
-	model.geom("part1").feature("c2").set("r", "r1");
-	model.geom("part1").feature("c2").set("rot", "phi1");
-	model.geom("part1").feature("c2").set("angle", "phi2");
-	model.geom("part1").create("dif1", "Difference");
-	model.geom("part1").feature("dif1").selection("input2").set(new String[]{"c2"});
-	model.geom("part1").feature("dif1").selection("input").set(new String[]{"c1"});
-	model.geom("part1").run();
-
-    
-	model.geom("part2").label("Cylinder Shell");
-	model.geom("part2").inputParam().set("r1", "R_i");
-	model.geom("part2").inputParam().set("r2", "R_o");
-	model.geom("part2").inputParam().set("delta_phi", "180[deg]");
-	model.geom("part2").create("c1", "Circle");
-	model.geom("part2").feature("c1").set("r", "r2");
-	model.geom("part2").feature("c1").set("angle", "delta_phi");
-	model.geom("part2").create("c2", "Circle");
-	model.geom("part2").feature("c2").set("r", "r1");
-	model.geom("part2").feature("c2").set("angle", "delta_phi");
-	model.geom("part2").create("dif1", "Difference");
-	model.geom("part2").feature("dif1").selection("input2").set(new String[]{"c2"});
-	model.geom("part2").feature("dif1").selection("input").set(new String[]{"c1"});
-	model.geom("part2").run();
+	GeomSequence cylinderBlockPart = configureCylinderBlock();
+	GeomSequence cylinderShellPart = configureCylinderShell();
 
 	int nII = Integer.parseInt(params.get("n_II"));
 	int nIV = Integer.parseInt(params.get("n_IV"));
@@ -610,7 +638,7 @@ public class NestedHalbachIronSegmentsModel {
     }
 
     public static void main(String[] args) {
-	Model model = run();
+	model = run();
 	run2(model);
     }
 
