@@ -24,6 +24,7 @@ public class NestedHalbachIronSegmentsModel {
 
     private static final String SHAFT_TAG = "shaft";
     private static final String AIR_GAP_TAG = "air_gap";
+    private static final String FLUX_CONCENTRATOR_TAG = "flux_concentrator";
     private static final String ENVIRONMENT_TAG = "environment";
     
     private static Model model;
@@ -43,6 +44,7 @@ public class NestedHalbachIronSegmentsModel {
     private static String ironIVBlockTag;
     private static String shaftTag;
     private static String airGapTag;
+    private static String fluxConcentratorTag;
     private static String environmentTag;
 
     private static GeomFeature[] magnetII1QBlockFeatures;
@@ -53,6 +55,7 @@ public class NestedHalbachIronSegmentsModel {
     private static GeomFeature ironIVBlockFeature;
     private static GeomFeature shaftFeature;
     private static GeomFeature airGapFeature;
+    private static GeomFeature fluxConcentratorFeature;
     private static GeomFeature environmentFeature;
 
     private static GeomSequence configureCylinderBlock(){
@@ -256,13 +259,26 @@ public class NestedHalbachIronSegmentsModel {
 
     }
 
-    private static GeomFeature buildEnvironmentShell() {
+    private static GeomFeature buildFluxConcentratorShell() {
 
+	GeomFeature shell;
+	
+	fluxConcentratorTag = geomFeatures.uniquetag(FLUX_CONCENTRATOR_TAG);
+	String label = "Flux Concentrator Shell";
+	String[] expression = new String[]{"R_s","R_c","180[deg]"};
+
+	shell = buildCylinderShell(fluxConcentratorTag,label,expression);
+	return shell;
+
+    }
+
+    private static GeomFeature buildEnvironmentShell() {
+	    
 	GeomFeature shell;
 	
 	environmentTag = geomFeatures.uniquetag(ENVIRONMENT_TAG);
 	String label = "Environment Cylinder Shell";
-	String[] expression = new String[]{"R_s","R_e","180[deg]"};
+	String[] expression = new String[]{"R_c","R_e","180[deg]"};
 
 	shell = buildCylinderShell(environmentTag,label,expression);
 	return shell;
@@ -316,6 +332,9 @@ public class NestedHalbachIronSegmentsModel {
 	
 	// build the air gap region
 	airGapFeature = buildAirGapShell();
+
+	// build the flux concentrator region
+	fluxConcentratorFeature = buildFluxConcentratorShell();
 
 	// build the external environment
 	environmentFeature = buildEnvironmentShell();
