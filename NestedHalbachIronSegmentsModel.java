@@ -14,13 +14,46 @@ public class NestedHalbachIronSegmentsModel {
     public static final String CYLINDER_BLOCK_PART_NAME = "cylinder_block";
     public static final String CYLINDER_SHELL_PART_NAME = "cylinder_shell";
 
+    private static final String MAGNET_II_1Q_BLOCK_TAG = "magnet_ii_1q";
+    private static final String MAGNET_II_2Q_BLOCK_TAG = "magnet_ii_2q";
+    private static final String MAGNET_IV_1Q_BLOCK_TAG = "magnet_iv_1q";
+    private static final String MAGNET_IV_2Q_BLOCK_TAG = "magnet_iv_2q";
+
+    private static final String IRON_II_BLOCK_TAG = "iron_ii";
+    private static final String IRON_IV_BLOCK_TAG = "iron_iv";
+
+    private static final String SHAFT_TAG = "shaft";
+    private static final String AIR_GAP_TAG = "air_gap";
+    private static final String ENVIRONMENT_TAG = "environment";
+    
     private static Model model;
     private static ModelNodeList modelNodes;
     private static ModelParam params;
     private static ModelNode component;
+    
     private static GeomList geometryList;
     private static GeomSequence geometry;
+    private static GeomFeatureList geomFeatures;
 
+    private static String[] magnetII1QBlockTags;
+    private static String[] magnetII2QBlockTags;
+    private static String[] magnetIV1QBlockTags;
+    private static String[] magnetIV2QBlockTags;
+    private static String ironIIBlockTag;
+    private static String ironIVBlockTag;
+    private static String shaftTag;
+    private static String airGapTag;
+    private static String environmentTag;
+
+    private static GeomFeature[] magnetII1QBlockFeatures;
+    private static GeomFeature[] magnetII2QBlockFeatures;
+    private static GeomFeature[] magnetIV1QBlockFeatures;
+    private static GeomFeature[] magnetIV2QBlockFeatures;
+    private static GeomFeature ironIIBlockFeature;
+    private static GeomFeature ironIVBlockFeature;
+    private static GeomFeature shaftFeature;
+    private static GeomFeature airGapFeature;
+    private static GeomFeature environmentFeature;
 
     private static GeomSequence configureCylinderBlock(){
 
@@ -34,11 +67,11 @@ public class NestedHalbachIronSegmentsModel {
 	part.create("c1", "Circle");
 	part.feature("c1").set("r", "r2");
 	part.feature("c1").set("rot", "phi1");
-	part.feature("c1").set("angle", "phi2");
+	part.feature("c1").set("angle", "phi2-phi1");
 	part.create("c2", "Circle");
 	part.feature("c2").set("r", "r1");
 	part.feature("c2").set("rot", "phi1");
-	part.feature("c2").set("angle", "phi2");
+	part.feature("c2").set("angle", "phi2-phi1");
 	part.create("dif1", "Difference");
 	part.feature("dif1").selection("input2").set(new String[]{"c2"});
 	part.feature("dif1").selection("input").set(new String[]{"c1"});
@@ -88,10 +121,8 @@ public class NestedHalbachIronSegmentsModel {
 	params.set("R_g", "R_o+h_gap");
 	params.set("phi_S_II", "45[deg]");
 	params.set("phi_S_IV", "45[deg]");
-	params.set("delta_phi_S_II", "(90[deg]-phi_S_II)/n_II");
-	params.set("delta_phi_S_IV", "(90[deg]-phi_S_IV)/n_IV");
-	params.set("delta_phi_B_II", "(phi_S_II)/n_II");
-	params.set("delta_phi_B_IV", "(phi_S_IV)/n_IV");
+	params.set("delta_phi_S_II", "(phi_S_II)/n_II");
+	params.set("delta_phi_S_IV", "(phi_S_IV)/n_IV");
 	params.set("B_rem", "1.47[T]");
 	params.set("R_c", "R_s+h_fc");
 
@@ -108,109 +139,110 @@ public class NestedHalbachIronSegmentsModel {
 	GeomSequence cylinderShellPart = configureCylinderShell();
 
 	int nII = Integer.parseInt(params.get("n_II"));
-	int nIV = Integer.parseInt(params.get("n_IV"));
+	
 
+	geomFeatures = geometry.feature();
+
+	magnetII1QBlockTags = new String[nII];
+	magnetII1QBlockFeatures = new GeomFeature[nII];
+
+	GeomFeature blockFeature;
+	String innerAngleExpr = null;
+	String outerAngleExpr = null;
+
+	String tag1Q;
+	String tag2Q;
+
+	// loop to build the magnet II blocks
 	for (int i = 0; i < nII; i++) {
-	    String tag = geometry.feature().uniquetag("pi");
-	    GeomFeature blockFeature = geometry.feature().create(tag, "PartInstance");
+	    tag1Q = geomFeatures.uniquetag(MAGNET_II_1Q_BLOCK_TAG);
+	    magnetII1QBlockTags[i] = tag1Q;
+	    
+	    blockFeature = geomFeatures.create(tag1Q, "PartInstance");
 	    blockFeature.label("Cylinder Block " + i + " - Magnet II - 1Q");
-	    String innerAngleExpr = String.format("%d * delta_phi_B_II",i);
-	    String outerAngleExpr = String.format("%d * delta_phi_B_II",i+1);
+
+	    // the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
+	    innerAngleExpr = String.format("%d * delta_phi_S_II",i);
+	    outerAngleExpr = String.format("%d * delta_phi_S_II",i+1);
 	    blockFeature.set("inputexpr", new String[]{"R_i", "R_o", innerAngleExpr, outerAngleExpr});
 	    blockFeature.set("selkeepnoncontr", false);
+	    magnetII1QBlockFeatures[i] = blockFeature;
+
+	    // repeat the above procedure, but "mirroring" the angles for the second quadrant
+	    tag2Q = geomFeatures.uniquetag(MAGNET_II_2Q_BLOCK_TAG);
+	    magnetII1QBlockTags[i] = tag2Q;
+	    blockFeature = geomFeatures.create(tag2Q, "PartInstance");
+	    blockFeature.label("Cylinder Block " + i + " - Magnet II - 2Q");
+	    blockFeature.set("inputexpr", new String[]{"R_i", "R_o", "180[deg] - " + innerAngleExpr, "180[deg] - " + outerAngleExpr});
+	    blockFeature.set("selkeepnoncontr", false);
+	    magnetII2QBlockFeatures[i] = blockFeature;
+
+	    
 	}
+
+	// build the iron block in region II
+	ironIIBlockTag  = geomFeatures.uniquetag(IRON_II_BLOCK_TAG);
+	ironIIBlockFeature = geomFeatures.create(ironIIBlockTag, "PartInstance");
+	ironIIBlockFeature.label("Cylinder Block 1 - Iron II - 1Q");
+	ironIIBlockFeature.set("inputexpr", new String[]{"R_i", "R_o", outerAngleExpr, "180[deg] - " + outerAngleExpr});
+	ironIIBlockFeature.set("selkeepnoncontr", false);
+
+	// loop to build magnet blocks for region IV
+	// see previous loop for explanations
+	int nIV = Integer.parseInt(params.get("n_IV"));
+	for (int i = 0; i < nIV; i++) {
+	    tag1Q = geomFeatures.uniquetag(MAGNET_IV_1Q_BLOCK_TAG);
+	    magnetIV1QBlockTags[i] = tag1Q;
+	    
+	    blockFeature = geomFeatures.create(tag1Q, "PartInstance");
+	    blockFeature.label("Cylinder Block " + i + " - Magnet IV - 1Q");
+	    innerAngleExpr = String.format("%d * delta_phi_S_IV",i);
+	    outerAngleExpr = String.format("%d * delta_phi_S_IV",i+1);
+	    blockFeature.set("inputexpr", new String[]{"R_g", "R_s", innerAngleExpr, outerAngleExpr});
+	    blockFeature.set("selkeepnoncontr", false);
+	    magnetIV1QBlockFeatures[i] = blockFeature;
+
+	    tag2Q = geomFeatures.uniquetag(MAGNET_IV_2Q_BLOCK_TAG);
+	    magnetIV2QBlockTags[i] = tag2Q;
+	    blockFeature = geomFeatures.create(tag2Q, "PartInstance");
+	    blockFeature.label("Cylinder Block " + i + " - Magnet IV - 2Q");
+	    blockFeature.set("inputexpr", new String[]{"R_g", "R_s", "180[deg] - " + innerAngleExpr, "180[deg] - " + outerAngleExpr});
+	    blockFeature.set("selkeepnoncontr", false);
+	    magnetIV2QBlockFeatures[i] = blockFeature;
+	}
+
+	// build the iron block in region IV
+	ironIVBlockTag  = geomFeatures.uniquetag(IRON_IV_BLOCK_TAG);
+	ironIVBlockFeature = geomFeatures.create(ironIVBlockTag, "PartInstance");
+	ironIVBlockFeature.label("Cylinder Block 1 - Iron IV - 1Q");
+	ironIVBlockFeature
+	    .set("inputexpr", new String[]{"R_g", "R_s", outerAngleExpr, "180[deg] - " + outerAngleExpr});
+	ironIVBlockFeature.set("selkeepnoncontr", false);
+
+	// build the shaft region
+	shaftTag = geomFeatures.uniquetag(SHAFT_TAG);
+	shaftFeature = geomFeatures.create(shaftTag, "Circle");
+	shaftFeature.label("Shaft Circle");
+	shaftFeature.set("r", "R_i");
+	shaftFeature.set("angle", "180");
+
+	// build the air gap region
+	airGapTag = geomFeatures.uniquetag(AIR_GAP_TAG);
+	airGapFeature = geomFeatures.create(airGapTag,"PartInstance");
+	airGapFeature.label("Air Gap Cylinder Shell");
+	airGapFeature.set("inputexpr", new String[]{"R_o","R_g","180[deg]"});
+	airGapFeature.set("selkeepnoncontr", false);
+
+	// build the external environment
+	environmentTag = geomFeatures.uniquetag(ENVIRONMENT_TAG);
+	environmentFeature = geomFeatures.create(environmentTag,"PartInstance");
+	environmentFeature.label("Environment Cylinder Shell");
+	environmentFeature.set("inputexpr", new String[]{"R_s","R_e","180[deg]"});
+	environmentFeature.set("selkeepnoncontr",false);
+
 	
-	model.geom(GEOMETRY_TAG).create("pi7", "PartInstance");
-	model.geom(GEOMETRY_TAG).feature("pi7").label("Cylinder Block 1 - Iron II - 1Q");
-	model.geom(GEOMETRY_TAG).feature("pi7")
-	    .set("inputexpr", new String[]{"R_i", "R_o", "3*delta_phi_B_II", "3*delta_phi_B_II+1*delta_phi_S_II"});
-	model.geom(GEOMETRY_TAG).feature("pi7").set("selkeepnoncontr", false);
-	model.geom(GEOMETRY_TAG).create("pi8", "PartInstance");
-	model.geom(GEOMETRY_TAG).feature("pi8").label("Cylinder Block 2 - Iron II - 1Q");
-	model.geom(GEOMETRY_TAG).feature("pi8")
-	    .set("inputexpr", new String[]{"R_i", "R_o", "3*delta_phi_B_II+1*delta_phi_S_II", "3*delta_phi_B_II+2*delta_phi_S_II"});
-	model.geom(GEOMETRY_TAG).feature("pi8").set("selkeepnoncontr", false);
-	model.geom(GEOMETRY_TAG).create("pi9", "PartInstance");
-	model.geom(GEOMETRY_TAG).feature("pi9").label("Cylinder Block 3 - Iron II - 1Q");
-	model.geom(GEOMETRY_TAG).feature("pi9")
-	    .set("inputexpr", new String[]{"R_i", "R_o", "3*delta_phi_B_II+2*delta_phi_S_II", "3*delta_phi_B_II+3*delta_phi_S_II"});
-	model.geom(GEOMETRY_TAG).feature("pi9").set("selkeepnoncontr", false);
-	model.geom(GEOMETRY_TAG).create("pi4", "PartInstance");
-	model.geom(GEOMETRY_TAG).feature("pi4").label("Cylinder Block 1 - Magnet IV - 1Q");
-	model.geom(GEOMETRY_TAG).feature("pi4").set("inputexpr", new String[]{"R_g", "R_s", "0[deg]", "1*delta_phi_B_IV"});
-	model.geom(GEOMETRY_TAG).feature("pi4").set("selkeepnoncontr", false);
-	model.geom(GEOMETRY_TAG).create("pi5", "PartInstance");
-	model.geom(GEOMETRY_TAG).feature("pi5").label("Cylinder Block 2 - Magnet IV - 1Q");
-	model.geom(GEOMETRY_TAG).feature("pi5")
-	    .set("inputexpr", new String[]{"R_g", "R_s", "1*delta_phi_B_IV", "2*delta_phi_B_IV"});
-	model.geom(GEOMETRY_TAG).feature("pi5").set("selkeepnoncontr", false);
-	model.geom(GEOMETRY_TAG).create("pi6", "PartInstance");
-	model.geom(GEOMETRY_TAG).feature("pi6").label("Cylinder Block 3 - Magnet IV - 1Q");
-	model.geom(GEOMETRY_TAG).feature("pi6")
-	    .set("inputexpr", new String[]{"R_g", "R_s", "2*delta_phi_B_IV", "3*delta_phi_B_IV"});
-	model.geom(GEOMETRY_TAG).feature("pi6").set("selkeepnoncontr", false);
-	model.geom(GEOMETRY_TAG).create("pi10", "PartInstance");
-	model.geom(GEOMETRY_TAG).feature("pi10").label("Cylinder Block 1 - Iron IV - 1Q");
-	model.geom(GEOMETRY_TAG).feature("pi10")
-	    .set("inputexpr", new String[]{"R_g", "R_s", "3*delta_phi_B_IV", "3*delta_phi_B_IV+1*delta_phi_S_IV"});
-	model.geom(GEOMETRY_TAG).feature("pi10").set("selkeepnoncontr", false);
-	model.geom(GEOMETRY_TAG).create("pi11", "PartInstance");
-	model.geom(GEOMETRY_TAG).feature("pi11").label("Cylinder Block 2 - Iron IV - 1Q");
-	model.geom(GEOMETRY_TAG).feature("pi11")
-	    .set("inputexpr", new String[]{"R_g", "R_s", "3*delta_phi_B_IV+1*delta_phi_S_IV", "3*delta_phi_B_IV+2*delta_phi_S_IV"});
-	model.geom(GEOMETRY_TAG).feature("pi11").set("selkeepnoncontr", false);
-	model.geom(GEOMETRY_TAG).create("pi12", "PartInstance");
-	model.geom(GEOMETRY_TAG).feature("pi12").label("Cylinder Block 3 - Iron IV - 1Q");
-	model.geom(GEOMETRY_TAG).feature("pi12")
-	    .set("inputexpr", new String[]{"R_g", "R_s", "3*delta_phi_B_IV+2*delta_phi_S_IV", "3*delta_phi_B_IV+3*delta_phi_S_IV"});
-	model.geom(GEOMETRY_TAG).feature("pi12").set("selkeepnoncontr", false);
-	model.geom(GEOMETRY_TAG).create("mir1", "Mirror");
-	model.geom(GEOMETRY_TAG).feature("mir1").set("keep", true);
-	model.geom(GEOMETRY_TAG).feature("mir1").set("axis", new String[]{"1", "0"});
-	model.geom(GEOMETRY_TAG).feature("mir1").selection("input")
-	    .set(new String[]{"pi1", "pi10", "pi11", "pi12", "pi2", "pi3", "pi4", "pi5", "pi6", "pi7", 
-			      "pi8", "pi9"});
-	model.geom(GEOMETRY_TAG).create("c1", "Circle");
-	model.geom(GEOMETRY_TAG).feature("c1").set("r", "R_i");
-	model.geom(GEOMETRY_TAG).feature("c1").set("angle", "180");
-	model.geom(GEOMETRY_TAG).create("copy1", "Copy");
-	model.geom(GEOMETRY_TAG).feature("copy1").selection("input")
-	    .set(new String[]{"pi1", "pi2", "pi3", "pi7", "pi8", "pi9"});
-	model.geom(GEOMETRY_TAG).create("dif1", "Difference");
-	model.geom(GEOMETRY_TAG).feature("dif1").selection("input2").set(new String[]{"copy1"});
-	model.geom(GEOMETRY_TAG).feature("dif1").selection("input").set(new String[]{"c1"});
-	model.geom(GEOMETRY_TAG).create("c2", "Circle");
-	model.geom(GEOMETRY_TAG).feature("c2").set("r", "R_g");
-	model.geom(GEOMETRY_TAG).feature("c2").set("angle", "180");
-	model.geom(GEOMETRY_TAG).create("copy2", "Copy");
-	model.geom(GEOMETRY_TAG).feature("copy2").selection("input")
-	    .set(new String[]{"dif1", "mir1", "pi1", "pi10", "pi11", "pi12", "pi2", "pi3", "pi4", "pi5", 
-			      "pi6", "pi7", "pi8", "pi9"});
-	model.geom(GEOMETRY_TAG).create("dif2", "Difference");
-	model.geom(GEOMETRY_TAG).feature("dif2").selection("input2").set(new String[]{"copy2"});
-	model.geom(GEOMETRY_TAG).feature("dif2").selection("input").set(new String[]{"c2"});
-	model.geom(GEOMETRY_TAG).create("c4", "Circle");
-	model.geom(GEOMETRY_TAG).feature("c4").set("r", "R_c");
-	model.geom(GEOMETRY_TAG).feature("c4").set("angle", "180");
-	model.geom(GEOMETRY_TAG).create("copy3", "Copy");
-	model.geom(GEOMETRY_TAG).feature("copy3").selection("input")
-	    .set(new String[]{"dif1", "dif2", "mir1", "pi1", "pi10", "pi11", "pi12", "pi2", "pi3", "pi4", 
-			      "pi5", "pi6", "pi7", "pi8", "pi9"});
-	model.geom(GEOMETRY_TAG).create("dif3", "Difference");
-	model.geom(GEOMETRY_TAG).feature("dif3").selection("input2").set(new String[]{"copy3"});
-	model.geom(GEOMETRY_TAG).feature("dif3").selection("input").set(new String[]{"c4"});
-	model.geom(GEOMETRY_TAG).create("copy4", "Copy");
-	model.geom(GEOMETRY_TAG).feature("copy4").selection("input")
-	    .set(new String[]{"dif1", "dif2", "dif3", "mir1", "pi1", "pi10", "pi11", "pi12", "pi2", "pi3", 
-			      "pi4", "pi5", "pi6", "pi7", "pi8", "pi9"});
-	model.geom(GEOMETRY_TAG).create("c3", "Circle");
-	model.geom(GEOMETRY_TAG).feature("c3").set("r", "R_e");
-	model.geom(GEOMETRY_TAG).feature("c3").set("angle", "180");
-	model.geom(GEOMETRY_TAG).create("dif4", "Difference");
-	model.geom(GEOMETRY_TAG).feature("dif4").selection("input2").set(new String[]{"copy4"});
-	model.geom(GEOMETRY_TAG).feature("dif4").selection("input").set(new String[]{"c3"});
-	model.geom(GEOMETRY_TAG).run();
-	model.geom(GEOMETRY_TAG).run("fin");
+	geometry.run();
+	geometry.run("fin");
 
 	model.selection().create("sel1", "Explicit");
 	model.selection("sel1").set(new int[]{15});
