@@ -173,7 +173,7 @@ public class NestedHalbachIronSegmentsModel {
 	    magnetII1QBlockTags[i] = tag2Q;
 	    blockFeature = geomFeatures.create(tag2Q, "PartInstance");
 	    blockFeature.label("Cylinder Block " + i + " - Magnet II - 2Q");
-	    blockFeature.set("inputexpr", new String[]{"R_i", "R_o", "180[deg] - " + innerAngleExpr, "180[deg] - " + outerAngleExpr});
+	    blockFeature.set("inputexpr", new String[]{"R_i", "R_o", "180[deg] - " + outerAngleExpr, "180[deg] - " + innerAngleExpr});
 	    blockFeature.set("selkeepnoncontr", false);
 	    magnetII2QBlockFeatures[i] = blockFeature;
 
@@ -206,7 +206,7 @@ public class NestedHalbachIronSegmentsModel {
 	    magnetIV2QBlockTags[i] = tag2Q;
 	    blockFeature = geomFeatures.create(tag2Q, "PartInstance");
 	    blockFeature.label("Cylinder Block " + i + " - Magnet IV - 2Q");
-	    blockFeature.set("inputexpr", new String[]{"R_g", "R_s", "180[deg] - " + innerAngleExpr, "180[deg] - " + outerAngleExpr});
+	    blockFeature.set("inputexpr", new String[]{"R_g", "R_s", "180[deg] - " + outerAngleExpr, "180[deg] - " + innerAngleExpr});
 	    blockFeature.set("selkeepnoncontr", false);
 	    magnetIV2QBlockFeatures[i] = blockFeature;
 	}
