@@ -104,7 +104,7 @@ public class NestedHalbachIronSegmentsModel {
 	return part;
     }
 
-    private static GeomFeature buildCylinderBlock(String tagPrefix, String label, String[] inputExpression) {
+    private static GeomFeature buildCylinderBlock(String tag, String label, String[] inputExpression) {
 
 	GeomFeature cylinderBlock;
 
@@ -112,25 +112,56 @@ public class NestedHalbachIronSegmentsModel {
 	cylinderBlock.set("part",CYLINDER_BLOCK_PART_NAME);
 	cylinderBlock.label(label);
 	cylinderBlock.set("inputexpr",inputExpression);
-	cylidnerBlock.set("selkeepnoncontr", false);
+	cylinderBlock.set("selkeepnoncontr", false);
 
-	return cylinderBlock
+	return cylinderBlock;
 	
+    }
+
+    private static GeomFeature buildIronBlock(String magnetRegion) {
+
+	String tag = "";
+	String label = "";
+	String[] expression = null;
+
+	GeomFeature block;
+
+	if (magnetRegion.equals("II")) {
+	    
+	    tag = geomFeatures.uniquetag(IRON_II_BLOCK_TAG);
+	    ironIIBlockTag = tag;
+	    label = "Cylinder Block - Iron II";
+	    expression = new String[]{"R_i", "R_o", "phi_S_II", "180[deg] - phi_S_II"};
+	    
+	} else if (magnetRegion.equals("IV")) {
+
+	    tag = geomFeatures.uniquetag(IRON_IV_BLOCK_TAG);
+	    ironIVBlockTag = tag;
+	    label = "Cylinder Block - Iron IV";
+	    expression = new String[]{"R_g", "R_s", "phi_S_IV", "180[deg] - phi_S_IV"};
+	}
+
+	block = buildCylinderBlock(tag,label,expression);
+	return block;
+
+
     }
 
     private static  GeomFeature buildMagnetBlock(int index, String magnetRegion, String quadrant) {
 
 	GeomFeature blockFeature;
-	String tag;
-	String label;
-	String[] expression;
+	String tag = "";
+	String label = "";
+	String innerAngleExpr = "";
+	String outerAngleExpr = "";
+	String[] expression = null;
 
 	if (magnetRegion.equals("II")) {
 
 	    if (quadrant.equals("1Q")) {
 
 		tag = geomFeatures.uniquetag(MAGNET_II_1Q_BLOCK_TAG);
-		label = "Cylinder Block " + (i+1) + " - Magnet II - 1Q";
+		label = "Cylinder Block " + (index+1) + " - Magnet II - 1Q";
 		magnetII1QBlockTags[index] = tag;
 
 		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
@@ -141,7 +172,7 @@ public class NestedHalbachIronSegmentsModel {
 	    } else if (quadrant.equals("2Q")) {
 
 		tag = geomFeatures.uniquetag(MAGNET_II_2Q_BLOCK_TAG);
-		label = "Cylinder Block " + (i+1) + " - Magnet II - 2Q";
+		label = "Cylinder Block " + (index+1) + " - Magnet II - 2Q";
 		magnetII2QBlockTags[index] = tag;
 
 		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
@@ -156,7 +187,7 @@ public class NestedHalbachIronSegmentsModel {
 	    if (quadrant.equals("1Q")) {
 		
 		tag = geomFeatures.uniquetag(MAGNET_IV_1Q_BLOCK_TAG);
-		label = "Cylinder Block " + (i+1) + " - Magnet IV - 1Q";
+		label = "Cylinder Block " + (index+1) + " - Magnet IV - 1Q";
 		magnetIV1QBlockTags[index] = tag;
 
 		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
@@ -167,7 +198,7 @@ public class NestedHalbachIronSegmentsModel {
 	    } else if (quadrant.equals("2Q")) {
 
 		tag = geomFeatures.uniquetag(MAGNET_IV_2Q_BLOCK_TAG);
-		label = "Cylinder Block " + (i+1) + " - Magnet IV - 2Q";
+		label = "Cylinder Block " + (index+1) + " - Magnet IV - 2Q";
 		magnetIV2QBlockTags[index] = tag;
 
 		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
@@ -184,8 +215,115 @@ public class NestedHalbachIronSegmentsModel {
 	return blockFeature;
 	
     }
-    
 
+    private static GeomFeature buildShaftCircle() {
+
+	GeomFeature feature;
+	shaftTag = geomFeatures.uniquetag(SHAFT_TAG);
+
+	feature = geomFeatures.create(shaftTag,"Circle");
+	feature.label("Shaft Circle");
+	feature.set("r", "R_i");
+	feature.set("angle", "180");
+
+	return feature;
+    }
+
+    private static GeomFeature buildCylinderShell(String tag, String label, String[] inputExpression) {
+
+	GeomFeature cylinderShell;
+
+	cylinderShell = geomFeatures.create(tag,"PartInstance");
+	cylinderShell.set("part",CYLINDER_SHELL_PART_NAME);
+	cylinderShell.label(label);
+	cylinderShell.set("inputexpr",inputExpression);
+	cylinderShell.set("selkeepnoncontr", false);
+
+	return cylinderShell;
+	
+    }
+
+    private static GeomFeature buildAirGapShell() {
+
+	GeomFeature shell;
+	
+	airGapTag = geomFeatures.uniquetag(AIR_GAP_TAG);
+	String label = "Air Gap Cylinder Shell";
+	String[] expression = new String[]{"R_o","R_g","180[deg]"};
+
+	shell = buildCylinderShell(airGapTag,label,expression);
+	return shell;
+
+    }
+
+    private static GeomFeature buildEnvironmentShell() {
+
+	GeomFeature shell;
+	
+	environmentTag = geomFeatures.uniquetag(ENVIRONMENT_TAG);
+	String label = "Environment Cylinder Shell";
+	String[] expression = new String[]{"R_s","R_e","180[deg]"};
+
+	shell = buildCylinderShell(environmentTag,label,expression);
+	return shell;
+
+    }
+
+    private static void buildGeometry(){
+
+	geomFeatures = geometry.feature();
+
+	// loop to build the magnet II blocks
+	int nII = Integer.parseInt(params.get("n_II"));
+	magnetII1QBlockTags = new String[nII];
+	magnetII1QBlockFeatures = new GeomFeature[nII];
+
+	magnetII2QBlockTags = new String[nII];
+	magnetII2QBlockFeatures = new GeomFeature[nII];
+
+	for (int i = 0; i < nII; i++) {
+	    
+	    magnetII1QBlockFeatures[i] = buildMagnetBlock(i,"II","1Q");
+	    magnetII2QBlockFeatures[i] = buildMagnetBlock(i,"II","2Q");
+	    
+	}
+
+	// build the iron block in region II
+	ironIIBlockFeature = buildIronBlock("II");
+
+	// loop to build magnet blocks for region IV
+	// see previous loop for explanations
+	
+	int nIV = Integer.parseInt(params.get("n_IV"));
+	magnetIV1QBlockTags = new String[nII];
+	magnetIV1QBlockFeatures = new GeomFeature[nII];
+
+	magnetIV2QBlockTags = new String[nII];
+	magnetIV2QBlockFeatures = new GeomFeature[nII];
+	
+	for (int i = 0; i < nIV; i++) {
+
+	    magnetIV1QBlockFeatures[i] = buildMagnetBlock(i,"IV","1Q");
+	    magnetIV2QBlockFeatures[i] = buildMagnetBlock(i,"IV","2Q");
+
+	}
+
+	// build the iron block in region IV
+	ironIVBlockFeature = buildIronBlock("IV");
+	
+	// build the shaft region
+	shaftFeature = buildShaftCircle();
+	
+	// build the air gap region
+	airGapFeature = buildAirGapShell();
+
+	// build the external environment
+	environmentFeature = buildEnvironmentShell();
+	
+	geometry.run();
+	geometry.run("fin");
+    }
+    
     public static Model run() {
         model = ModelUtil.create("Model");
 
@@ -219,102 +357,9 @@ public class NestedHalbachIronSegmentsModel {
 	GeomSequence cylinderBlockPart = configureCylinderBlock();
 	GeomSequence cylinderShellPart = configureCylinderShell();
 
-	int nII = Integer.parseInt(params.get("n_II"));
-	
-
-	geomFeatures = geometry.feature();
-
-	magnetII1QBlockTags = new String[nII];
-	magnetII1QBlockFeatures = new GeomFeature[nII];
-
-	magnetII2QBlockTags = new String[nII];
-	magnetII2QBlockFeatures = new GeomFeature[nII];
-
-
-	// loop to build the magnet II blocks
-	for (int i = 0; i < nII; i++) {
-	    
-	    magnetII1QBlockFeatures[i] = buildMagnetBlock(i,"II","1Q");
-	    magnetII2QBlockFeatures[i] = buildMagnetBlock(i,"II","2Q");
-	    
-	}
-
-	// build the iron block in region II
-	ironIIBlockTag  = geomFeatures.uniquetag(IRON_II_BLOCK_TAG);
-	ironIIBlockFeature = geomFeatures.create(ironIIBlockTag, "PartInstance");
-	ironIIBlockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
-	ironIIBlockFeature.label("Cylinder Block 1 - Iron II - 1Q");
-	ironIIBlockFeature.set("inputexpr", new String[]{"R_i", "R_o", outerAngleExpr, "180[deg] - " + outerAngleExpr});
-	ironIIBlockFeature.set("selkeepnoncontr", false);
-
-	// loop to build magnet blocks for region IV
-	// see previous loop for explanations
-	
-	int nIV = Integer.parseInt(params.get("n_IV"));
-	magnetIV1QBlockTags = new String[nII];
-	magnetIV1QBlockFeatures = new GeomFeature[nII];
-
-	magnetIV2QBlockTags = new String[nII];
-	magnetIV2QBlockFeatures = new GeomFeature[nII];
-	
-	for (int i = 0; i < nIV; i++) {
-	    tag1Q = geomFeatures.uniquetag(MAGNET_IV_1Q_BLOCK_TAG);
-	    magnetIV1QBlockTags[i] = tag1Q;
-	    
-	    blockFeature = geomFeatures.create(tag1Q, "PartInstance");
-	    blockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
-	    blockFeature.label("Cylinder Block " + i + " - Magnet IV - 1Q");
-	    innerAngleExpr = String.format("%d * delta_phi_S_IV",i);
-	    outerAngleExpr = String.format("%d * delta_phi_S_IV",i+1);
-	    blockFeature.set("inputexpr", new String[]{"R_g", "R_s", innerAngleExpr, outerAngleExpr});
-	    blockFeature.set("selkeepnoncontr", false);
-	    magnetIV1QBlockFeatures[i] = blockFeature;
-
-	    tag2Q = geomFeatures.uniquetag(MAGNET_IV_2Q_BLOCK_TAG);
-	    magnetIV2QBlockTags[i] = tag2Q;
-	    blockFeature = geomFeatures.create(tag2Q, "PartInstance");
-	    blockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
-	    blockFeature.label("Cylinder Block " + i + " - Magnet IV - 2Q");
-	    blockFeature.set("inputexpr", new String[]{"R_g", "R_s", "180[deg] - " + outerAngleExpr, "180[deg] - " + innerAngleExpr});
-	    blockFeature.set("selkeepnoncontr", false);
-	    magnetIV2QBlockFeatures[i] = blockFeature;
-	}
-
-	// build the iron block in region IV
-	ironIVBlockTag  = geomFeatures.uniquetag(IRON_IV_BLOCK_TAG);
-	ironIVBlockFeature = geomFeatures.create(ironIVBlockTag, "PartInstance");
-	ironIVBlockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
-	ironIVBlockFeature.label("Cylinder Block 1 - Iron IV - 1Q");
-	ironIVBlockFeature
-	    .set("inputexpr", new String[]{"R_g", "R_s", outerAngleExpr, "180[deg] - " + outerAngleExpr});
-	ironIVBlockFeature.set("selkeepnoncontr", false);
-
-	// build the shaft region
-	shaftTag = geomFeatures.uniquetag(SHAFT_TAG);
-	shaftFeature = geomFeatures.create(shaftTag, "Circle");
-	shaftFeature.label("Shaft Circle");
-	shaftFeature.set("r", "R_i");
-	shaftFeature.set("angle", "180");
-
-	// build the air gap region
-	airGapTag = geomFeatures.uniquetag(AIR_GAP_TAG);
-	airGapFeature = geomFeatures.create(airGapTag,"PartInstance");
-	airGapFeature.set("part",CYLINDER_SHELL_PART_NAME);
-	airGapFeature.label("Air Gap Cylinder Shell");
-	airGapFeature.set("inputexpr", new String[]{"R_o","R_g","180[deg]"});
-	airGapFeature.set("selkeepnoncontr", false);
-
-	// build the external environment
-	environmentTag = geomFeatures.uniquetag(ENVIRONMENT_TAG);
-	environmentFeature = geomFeatures.create(environmentTag,"PartInstance");
-	environmentFeature.set("part",CYLINDER_SHELL_PART_NAME);
-	environmentFeature.label("Environment Cylinder Shell");
-	environmentFeature.set("inputexpr", new String[]{"R_s","R_e","180[deg]"});
-	environmentFeature.set("selkeepnoncontr",false);
+	buildGeometry();
 
 	
-	geometry.run();
-	geometry.run("fin");
 
 	model.selection().create("sel1", "Explicit");
 	model.selection("sel1").set(new int[]{15});
