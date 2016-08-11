@@ -146,6 +146,9 @@ public class NestedHalbachIronSegmentsModel {
 	magnetII1QBlockTags = new String[nII];
 	magnetII1QBlockFeatures = new GeomFeature[nII];
 
+	magnetII2QBlockTags = new String[nII];
+	magnetII2QBlockFeatures = new GeomFeature[nII];
+
 	GeomFeature blockFeature;
 	String innerAngleExpr = null;
 	String outerAngleExpr = null;
@@ -159,7 +162,8 @@ public class NestedHalbachIronSegmentsModel {
 	    magnetII1QBlockTags[i] = tag1Q;
 	    
 	    blockFeature = geomFeatures.create(tag1Q, "PartInstance");
-	    blockFeature.label("Cylinder Block " + i + " - Magnet II - 1Q");
+	    blockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
+	    blockFeature.label("Cylinder Block " + (i+1) + " - Magnet II - 1Q");
 
 	    // the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
 	    innerAngleExpr = String.format("%d * delta_phi_S_II",i);
@@ -170,9 +174,10 @@ public class NestedHalbachIronSegmentsModel {
 
 	    // repeat the above procedure, but "mirroring" the angles for the second quadrant
 	    tag2Q = geomFeatures.uniquetag(MAGNET_II_2Q_BLOCK_TAG);
-	    magnetII1QBlockTags[i] = tag2Q;
+	    magnetII2QBlockTags[i] = tag2Q;
 	    blockFeature = geomFeatures.create(tag2Q, "PartInstance");
-	    blockFeature.label("Cylinder Block " + i + " - Magnet II - 2Q");
+	    blockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
+	    blockFeature.label("Cylinder Block " + (i+1) + " - Magnet II - 2Q");
 	    blockFeature.set("inputexpr", new String[]{"R_i", "R_o", "180[deg] - " + outerAngleExpr, "180[deg] - " + innerAngleExpr});
 	    blockFeature.set("selkeepnoncontr", false);
 	    magnetII2QBlockFeatures[i] = blockFeature;
@@ -183,18 +188,27 @@ public class NestedHalbachIronSegmentsModel {
 	// build the iron block in region II
 	ironIIBlockTag  = geomFeatures.uniquetag(IRON_II_BLOCK_TAG);
 	ironIIBlockFeature = geomFeatures.create(ironIIBlockTag, "PartInstance");
+	ironIIBlockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
 	ironIIBlockFeature.label("Cylinder Block 1 - Iron II - 1Q");
 	ironIIBlockFeature.set("inputexpr", new String[]{"R_i", "R_o", outerAngleExpr, "180[deg] - " + outerAngleExpr});
 	ironIIBlockFeature.set("selkeepnoncontr", false);
 
 	// loop to build magnet blocks for region IV
 	// see previous loop for explanations
+	
 	int nIV = Integer.parseInt(params.get("n_IV"));
+	magnetIV1QBlockTags = new String[nII];
+	magnetIV1QBlockFeatures = new GeomFeature[nII];
+
+	magnetIV2QBlockTags = new String[nII];
+	magnetIV2QBlockFeatures = new GeomFeature[nII];
+	
 	for (int i = 0; i < nIV; i++) {
 	    tag1Q = geomFeatures.uniquetag(MAGNET_IV_1Q_BLOCK_TAG);
 	    magnetIV1QBlockTags[i] = tag1Q;
 	    
 	    blockFeature = geomFeatures.create(tag1Q, "PartInstance");
+	    blockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
 	    blockFeature.label("Cylinder Block " + i + " - Magnet IV - 1Q");
 	    innerAngleExpr = String.format("%d * delta_phi_S_IV",i);
 	    outerAngleExpr = String.format("%d * delta_phi_S_IV",i+1);
@@ -205,6 +219,7 @@ public class NestedHalbachIronSegmentsModel {
 	    tag2Q = geomFeatures.uniquetag(MAGNET_IV_2Q_BLOCK_TAG);
 	    magnetIV2QBlockTags[i] = tag2Q;
 	    blockFeature = geomFeatures.create(tag2Q, "PartInstance");
+	    blockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
 	    blockFeature.label("Cylinder Block " + i + " - Magnet IV - 2Q");
 	    blockFeature.set("inputexpr", new String[]{"R_g", "R_s", "180[deg] - " + outerAngleExpr, "180[deg] - " + innerAngleExpr});
 	    blockFeature.set("selkeepnoncontr", false);
@@ -214,6 +229,7 @@ public class NestedHalbachIronSegmentsModel {
 	// build the iron block in region IV
 	ironIVBlockTag  = geomFeatures.uniquetag(IRON_IV_BLOCK_TAG);
 	ironIVBlockFeature = geomFeatures.create(ironIVBlockTag, "PartInstance");
+	ironIVBlockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
 	ironIVBlockFeature.label("Cylinder Block 1 - Iron IV - 1Q");
 	ironIVBlockFeature
 	    .set("inputexpr", new String[]{"R_g", "R_s", outerAngleExpr, "180[deg] - " + outerAngleExpr});
@@ -229,6 +245,7 @@ public class NestedHalbachIronSegmentsModel {
 	// build the air gap region
 	airGapTag = geomFeatures.uniquetag(AIR_GAP_TAG);
 	airGapFeature = geomFeatures.create(airGapTag,"PartInstance");
+	airGapFeature.set("part",CYLINDER_SHELL_PART_NAME);
 	airGapFeature.label("Air Gap Cylinder Shell");
 	airGapFeature.set("inputexpr", new String[]{"R_o","R_g","180[deg]"});
 	airGapFeature.set("selkeepnoncontr", false);
@@ -236,6 +253,7 @@ public class NestedHalbachIronSegmentsModel {
 	// build the external environment
 	environmentTag = geomFeatures.uniquetag(ENVIRONMENT_TAG);
 	environmentFeature = geomFeatures.create(environmentTag,"PartInstance");
+	environmentFeature.set("part",CYLINDER_SHELL_PART_NAME);
 	environmentFeature.label("Environment Cylinder Shell");
 	environmentFeature.set("inputexpr", new String[]{"R_s","R_e","180[deg]"});
 	environmentFeature.set("selkeepnoncontr",false);
