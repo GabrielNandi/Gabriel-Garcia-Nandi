@@ -103,6 +103,87 @@ public class NestedHalbachIronSegmentsModel {
 
 	return part;
     }
+
+    private static GeomFeature buildCylinderBlock(String tagPrefix, String label, String[] inputExpression) {
+
+	GeomFeature cylinderBlock;
+
+	cylinderBlock = geomFeatures.create(tag,"PartInstance");
+	cylinderBlock.set("part",CYLINDER_BLOCK_PART_NAME);
+	cylinderBlock.label(label);
+	cylinderBlock.set("inputexpr",inputExpression);
+	cylidnerBlock.set("selkeepnoncontr", false);
+
+	return cylinderBlock
+	
+    }
+
+    private static  GeomFeature buildMagnetBlock(int index, String magnetRegion, String quadrant) {
+
+	GeomFeature blockFeature;
+	String tag;
+	String label;
+	String[] expression;
+
+	if (magnetRegion.equals("II")) {
+
+	    if (quadrant.equals("1Q")) {
+
+		tag = geomFeatures.uniquetag(MAGNET_II_1Q_BLOCK_TAG);
+		label = "Cylinder Block " + (i+1) + " - Magnet II - 1Q";
+		magnetII1QBlockTags[index] = tag;
+
+		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
+		innerAngleExpr = String.format("%d * delta_phi_S_II",index);
+		outerAngleExpr = String.format("%d * delta_phi_S_II",index+1);
+		expression = new String[]{"R_i", "R_o", innerAngleExpr, outerAngleExpr};
+	    
+	    } else if (quadrant.equals("2Q")) {
+
+		tag = geomFeatures.uniquetag(MAGNET_II_2Q_BLOCK_TAG);
+		label = "Cylinder Block " + (i+1) + " - Magnet II - 2Q";
+		magnetII2QBlockTags[index] = tag;
+
+		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
+		innerAngleExpr = String.format("180[deg] - %d * delta_phi_S_II",index+1);
+		outerAngleExpr = String.format("180[deg] - %d * delta_phi_S_II",index);
+		expression = new String[]{"R_i", "R_o", innerAngleExpr, outerAngleExpr};
+		
+	    }
+
+	} else if (magnetRegion.equals("IV")) {
+	    
+	    if (quadrant.equals("1Q")) {
+		
+		tag = geomFeatures.uniquetag(MAGNET_IV_1Q_BLOCK_TAG);
+		label = "Cylinder Block " + (i+1) + " - Magnet IV - 1Q";
+		magnetIV1QBlockTags[index] = tag;
+
+		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
+		innerAngleExpr = String.format("%d * delta_phi_S_IV",index);
+		outerAngleExpr = String.format("%d * delta_phi_S_IV",index+1);
+		expression = new String[]{"R_g", "R_s", innerAngleExpr, outerAngleExpr};
+	    
+	    } else if (quadrant.equals("2Q")) {
+
+		tag = geomFeatures.uniquetag(MAGNET_IV_2Q_BLOCK_TAG);
+		label = "Cylinder Block " + (i+1) + " - Magnet IV - 2Q";
+		magnetIV2QBlockTags[index] = tag;
+
+		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
+		innerAngleExpr = String.format("180[deg] - %d * delta_phi_S_IV",index+1);
+		outerAngleExpr = String.format("180[deg] - %d * delta_phi_S_IV",index);
+		expression = new String[]{"R_g", "R_s", innerAngleExpr, outerAngleExpr};
+		
+	    }
+
+       
+	}
+
+	blockFeature = buildCylinderBlock(tag,label, expression);
+	return blockFeature;
+	
+    }
     
 
     public static Model run() {
@@ -149,39 +230,12 @@ public class NestedHalbachIronSegmentsModel {
 	magnetII2QBlockTags = new String[nII];
 	magnetII2QBlockFeatures = new GeomFeature[nII];
 
-	GeomFeature blockFeature;
-	String innerAngleExpr = null;
-	String outerAngleExpr = null;
-
-	String tag1Q;
-	String tag2Q;
 
 	// loop to build the magnet II blocks
 	for (int i = 0; i < nII; i++) {
-	    tag1Q = geomFeatures.uniquetag(MAGNET_II_1Q_BLOCK_TAG);
-	    magnetII1QBlockTags[i] = tag1Q;
 	    
-	    blockFeature = geomFeatures.create(tag1Q, "PartInstance");
-	    blockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
-	    blockFeature.label("Cylinder Block " + (i+1) + " - Magnet II - 1Q");
-
-	    // the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
-	    innerAngleExpr = String.format("%d * delta_phi_S_II",i);
-	    outerAngleExpr = String.format("%d * delta_phi_S_II",i+1);
-	    blockFeature.set("inputexpr", new String[]{"R_i", "R_o", innerAngleExpr, outerAngleExpr});
-	    blockFeature.set("selkeepnoncontr", false);
-	    magnetII1QBlockFeatures[i] = blockFeature;
-
-	    // repeat the above procedure, but "mirroring" the angles for the second quadrant
-	    tag2Q = geomFeatures.uniquetag(MAGNET_II_2Q_BLOCK_TAG);
-	    magnetII2QBlockTags[i] = tag2Q;
-	    blockFeature = geomFeatures.create(tag2Q, "PartInstance");
-	    blockFeature.set("part",CYLINDER_BLOCK_PART_NAME);
-	    blockFeature.label("Cylinder Block " + (i+1) + " - Magnet II - 2Q");
-	    blockFeature.set("inputexpr", new String[]{"R_i", "R_o", "180[deg] - " + outerAngleExpr, "180[deg] - " + innerAngleExpr});
-	    blockFeature.set("selkeepnoncontr", false);
-	    magnetII2QBlockFeatures[i] = blockFeature;
-
+	    magnetII1QBlockFeatures[i] = buildMagnetBlock(i,"II","1Q");
+	    magnetII2QBlockFeatures[i] = buildMagnetBlock(i,"II","2Q");
 	    
 	}
 
