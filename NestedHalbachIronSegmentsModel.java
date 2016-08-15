@@ -228,6 +228,7 @@ public class NestedHalbachIronSegmentsModel {
 	feature.label("Shaft Circle");
 	feature.set("r", "R_i");
 	feature.set("angle", "180");
+	feature.set("selresult","on");
 
 	return feature;
     }
@@ -329,6 +330,7 @@ public class NestedHalbachIronSegmentsModel {
 	
 	// build the shaft region
 	shaftFeature = buildShaftCircle();
+
 	
 	// build the air gap region
 	airGapFeature = buildAirGapShell();
@@ -378,17 +380,19 @@ public class NestedHalbachIronSegmentsModel {
 
 	buildGeometry();
 
-	
-
 	model.selection().create("sel1", "Explicit");
-	model.selection("sel1").set(new int[]{15});
+	model.selection("sel1").label("Shaft");
+	String selTag = GEOMETRY_TAG + "_"+shaftTag + "_dom";
+	int[] shaftEntities = model.selection(selTag).entities(2);
+	model.selection("sel1").set(shaftEntities);
+
 	model.selection().create("sel2", "Explicit");
 	model.selection("sel2").set(new int[]{7});
 	model.selection().create("sel3", "Explicit");
 	model.selection("sel3").set(new int[]{6, 8, 12, 13, 14, 16, 17, 18, 22, 23});
 	model.selection().create("sel4", "Explicit");
 	model.selection("sel4").set(new int[]{3, 4, 5, 9, 10, 11, 19, 20, 21, 24, 25, 26});
-	model.selection("sel1").label("Shaft");
+
 	model.selection("sel2").label("Air gap");
 	model.selection("sel3").label("Iron regions");
 	model.selection("sel4").label("Magnet regions");
