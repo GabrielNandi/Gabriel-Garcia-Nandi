@@ -11,11 +11,9 @@ public class SimpleBlocks {
   public static Model run() {
     Model model = ModelUtil.create("Model");
 
-    model.modelPath("C:\\Users\\fabiofortkamp\\code\\TeslaMax");
-
     model.label("SimpleBlocks.mph");
 
-    model.comments("Untitled\n\n");
+
 
     model.modelNode().create("comp1");
 
@@ -23,6 +21,8 @@ public class SimpleBlocks {
 
     model.mesh().create("mesh1", "geom1");
 
+    // define the part instance to be used as tempalte
+    // a 'cylinder block' is the circular section between radii r1 and r2 and angular coordinates phi1 and phi2
     model.geom().create("part1", "Part", 2);
     model.geom("part1").label("Cylinder block");
     model.geom("part1").inputParam().set("r1", "10[mm]");
@@ -41,18 +41,34 @@ public class SimpleBlocks {
     model.geom("part1").feature("dif1").selection("input2").set(new String[]{"c2"});
     model.geom("part1").feature("dif1").selection("input").set(new String[]{"c1"});
     model.geom("part1").run();
+
+    // define three of these blocks
     model.geom("geom1").create("pi1", "PartInstance");
     model.geom("geom1").feature("pi1").set("inputexpr", new String[]{"10[mm]", "20[mm]", "0[deg]", "15[deg]"});
     model.geom("geom1").feature("pi1").set("selkeepnoncontr", false);
+    
     model.geom("geom1").create("pi2", "PartInstance");
     model.geom("geom1").feature("pi2").set("selkeepnoncontr", false);
     model.geom("geom1").create("pi3", "PartInstance");
+    
     model.geom("geom1").feature("pi3").set("inputexpr", new String[]{"10[mm]", "20[mm]", "30[deg]", "45[deg]"});
     model.geom("geom1").feature("pi3").set("selkeepnoncontr", false);
+
+    // define a new feature from the built-in circle feature
     model.geom("geom1").create("c1", "Circle");
     model.geom("geom1").feature("c1").set("r", "10[mm]");
     model.geom("geom1").feature("c1").set("angle", "45");
+    model.geom("geom1").feature("c1").set("selresult",true);
+    
     model.geom("geom1").run();
+
+    model.selection().create("sel1", "Explicit");
+    model.selection("sel1").label("Shaft");
+    String selTag = "geom1_c1_dom";
+    int[] shaftEntities = model.selection(selTag).entities(2);
+    model.selection("sel1").set(shaftEntities);
+
+    
 
     model.material().create("mat1", "Common", "comp1");
     model.material("mat1").selection().set(new int[]{2, 3, 4});
