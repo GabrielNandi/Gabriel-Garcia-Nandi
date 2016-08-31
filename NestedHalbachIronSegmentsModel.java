@@ -112,6 +112,11 @@ public class NestedHalbachIronSegmentsModel {
 	part.feature("dif1").selection("input").set(new String[]{"c1"});
 	part.run();
 
+	part.run("dif1");
+	part.create(CYLINDER_SHELL_SELECTION_TAG,"ExplicitSelection");
+	part.feature(CYLINDER_SHELL_SELECTION_TAG).selection("selection").set("dif1",new int[]{1});
+	part.run(CYLINDER_SHELL_SELECTION_TAG);
+
 	return part;
     }
 
@@ -253,6 +258,9 @@ public class NestedHalbachIronSegmentsModel {
 	cylinderShell.label(label);
 	cylinderShell.set("inputexpr",inputExpression);
 	cylinderShell.set("selkeepnoncontr", false);
+
+	String selTag = tag + "_" + CYLINDER_SHELL_SELECTION_TAG;
+	cylinderShell.setEntry("selkeepdom",selTag,"on");
 
 	return cylinderShell;
 	
