@@ -26,6 +26,9 @@ public class NestedHalbachIronSegmentsModel {
     private static final String AIR_GAP_TAG = "air_gap";
     private static final String FLUX_CONCENTRATOR_TAG = "flux_concentrator";
     private static final String ENVIRONMENT_TAG = "environment";
+
+    private static final String CYLINDER_BLOCK_SELECTION_TAG = "cylinder_block_sel";
+    private static final String CYLINDER_SHELL_SELECTION_TAG = "cylinder_shell_sel";
     
     private static Model model;
     private static ModelNodeList modelNodes;
@@ -81,9 +84,9 @@ public class NestedHalbachIronSegmentsModel {
 	part.run();
 
 	part.run("dif1");
-	part.create("sel1","ExplicitSelection");
-	part.feature("sel1").selection("selection").set("dif1",new int[]{1});
-	part.run("sel1");
+	part.create(CYLINDER_BLOCK_SELECTION_TAG,"ExplicitSelection");
+	part.feature(CYLINDER_BLOCK_SELECTION_TAG).selection("selection").set("dif1",new int[]{1});
+	part.run(CYLINDER_BLOCK_SELECTION_TAG);
 
 	return part;
 
@@ -122,7 +125,7 @@ public class NestedHalbachIronSegmentsModel {
 	cylinderBlock.set("inputexpr",inputExpression);
 	cylinderBlock.set("selkeepnoncontr", false);
 
-	String selTag = tag + "_sel1";
+	String selTag = tag + "_" + CYLINDER_BLOCK_SELECTION_TAG;
 	cylinderBlock.setEntry("selkeepdom",selTag,"on");
 
 	return cylinderBlock;
