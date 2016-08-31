@@ -432,6 +432,14 @@ public class NestedHalbachIronSegmentsModel {
 	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
 	}
 
+	model.selection().create(IRON_SELECTION_TAG,"Explicit");
+	model.selection(IRON_SELECTION_TAG).label("Iron region");
+	model.selection(IRON_SELECTION_TAG).add(getDomainEntities(ironIIBlockTag));
+	model.selection(IRON_SELECTION_TAG).add(getDomainEntities(ironIVBlockTag));
+	model.selection(IRON_SELECTION_TAG).add(getDomainEntities(fluxConcentratorTag));
+
+	
+
 
 
 	model.selection().create("sel3", "Explicit");
