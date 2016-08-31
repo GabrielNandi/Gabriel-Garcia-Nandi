@@ -426,7 +426,12 @@ public class NestedHalbachIronSegmentsModel {
 	model.selection("sel1").set(shaftEntities);
 
 	model.selection().create("sel2", "Explicit");
-	model.selection("sel2").set(new int[]{7});
+	model.selection("sel2").label("Air gap");
+	selTag = GEOMETRY_TAG + "_" + airGapTag + "_" + CYLINDER_SHELL_SELECTION_TAG;
+	int[] airGapEntities = model.selection(selTag).entities(2);
+	model.selection("sel2").set(airGapEntities);
+
+	
 	model.selection().create("sel3", "Explicit");
 	model.selection("sel3").set(new int[]{6, 8, 12, 13, 14, 16, 17, 18, 22, 23});
 	model.selection().create("sel4", "Explicit");
