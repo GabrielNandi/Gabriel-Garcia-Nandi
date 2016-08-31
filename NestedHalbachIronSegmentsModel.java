@@ -28,7 +28,14 @@ public class NestedHalbachIronSegmentsModel {
     private static final String ENVIRONMENT_TAG = "environment";
 
     private static final String SELECTION_DOMAIN_SUFFIX = "dom";
-    
+
+    private static final String SHAFT_SELECTION_TAG = "shaft_selection";
+    private static final String MAGNETS_SELECTION_TAG = "magnets_selection";
+    private static final String IRON_SELECTION_TAG = "iron_selection";
+    private static final String AIR_GAP_SELECTION_TAG = "air_gap_selection";
+    private static final String ENVIRONMENT_SELECTION_TAG = "environment_selection";
+    private static final String AIR_REGIONS_SELECTION_TAG = "air_regions_selection_tag";
+           
     private static Model model;
     private static ModelNodeList modelNodes;
     private static ModelParam params;
@@ -365,25 +372,67 @@ public class NestedHalbachIronSegmentsModel {
 	geometry.run("fin");
     }
 
+    private static String getDomainSelectionTag(String ftag){
+
+	String suffix = "";
+	
+	if (ftag.equals(shaftTag)) {
+	    suffix = "dom";
+	} else {
+	    suffix = SELECTION_DOMAIN_SUFFIX;
+	}
+
+	String tag = GEOMETRY_TAG + "_" + ftag + "_" + suffix;
+	return tag;
+	}
+
+    private static int[] getDomainEntities(String ftag){
+
+	String domainTag = getDomainSelectionTag(ftag);
+	return model.selection(domainTag).entities(2);
+	}
+
     private static void createSelections() {
 
 	String selTag;
 	String domTag;
 	int[] entities;
 	
-	selTag = shaftTag + "_" + SELECTION_DOMAIN_SUFFIX;
-	model.selection().create(selTag, "Explicit");
-	model.selection(selTag).label("Shaft");
-	domTag = GEOMETRY_TAG + "_"+ shaftTag + "_" + SELECTION_DOMAIN_SUFFIX;
-	entities = model.selection(domTag).entities(2);
-	model.selection(selTag).set(entities);
+	
+	model.selection().create(SHAFT_SELECTION_TAG, "Explicit");
+	model.selection(SHAFT_SELECTION_TAG).label("Shaft");
+	entities = getDomainEntities(shaftTag);
+	model.selection(SHAFT_SELECTION_TAG).set(entities);
 
-	selTag = airGapTag + "_" + SELECTION_DOMAIN_SUFFIX;
-	model.selection().create(selTag, "Explicit");
-	model.selection(selTag).label("Air gap");
-	domTag = GEOMETRY_TAG + "_" + airGapTag + "_" + SELECTION_DOMAIN_SUFFIX;
-	entities = model.selection(domTag).entities(2);
-	model.selection(selTag).set(entities);
+	model.selection().create(AIR_GAP_SELECTION_TAG, "Explicit");
+	model.selection(AIR_GAP_SELECTION_TAG).label("Air Gap");
+	entities = getDomainEntities(airGapTag);
+	model.selection(AIR_GAP_SELECTION_TAG).set(entities);
+
+	model.selection().create(ENVIRONMENT_SELECTION_TAG, "Explicit");
+	model.selection(ENVIRONMENT_SELECTION_TAG).label("Environment");
+	entities = getDomainEntities(environmentTag);
+	model.selection(ENVIRONMENT_SELECTION_TAG).set(entities);
+
+	model.selection().create(MAGNETS_SELECTION_TAG, "Explicit");
+	model.selection(MAGNETS_SELECTION_TAG).label("Magnets region");
+	for (String ftag : magnetII1QBlockTags) {
+	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
+	}
+
+	for (String ftag : magnetII2QBlockTags) {
+	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
+	}
+
+	for (String ftag : magnetIV1QBlockTags) {
+	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
+	}
+
+	for (String ftag : magnetIV2QBlockTags) {
+	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
+	}
+
+
 
 	model.selection().create("sel3", "Explicit");
 	model.selection("sel3").set(new int[]{6, 8, 12, 13, 14, 16, 17, 18, 22, 23});
