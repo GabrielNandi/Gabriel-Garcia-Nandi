@@ -438,18 +438,12 @@ public class NestedHalbachIronSegmentsModel {
 	model.selection(IRON_SELECTION_TAG).add(getDomainEntities(ironIVBlockTag));
 	model.selection(IRON_SELECTION_TAG).add(getDomainEntities(fluxConcentratorTag));
 
-	
+	model.selection().create(AIR_REGIONS_SELECTION_TAG,"Explicit");
+	model.selection(AIR_REGIONS_SELECTION_TAG).label("Air regions");
+	model.selection(AIR_REGIONS_SELECTION_TAG).add(getDomainEntities(shaftTag));
+	model.selection(AIR_REGIONS_SELECTION_TAG).add(getDomainEntities(airGapTag));
+	model.selection(AIR_REGIONS_SELECTION_TAG).add(getDomainEntities(environmentTag));
 
-
-
-	model.selection().create("sel3", "Explicit");
-	model.selection("sel3").set(new int[]{6, 8, 12, 13, 14, 16, 17, 18, 22, 23});
-	model.selection().create("sel4", "Explicit");
-	model.selection("sel4").set(new int[]{3, 4, 5, 9, 10, 11, 19, 20, 21, 24, 25, 26});
-
-	model.selection("sel2").label("Air gap");
-	model.selection("sel3").label("Iron regions");
-	model.selection("sel4").label("Magnet regions");
 
     }
     
