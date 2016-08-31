@@ -27,10 +27,7 @@ public class NestedHalbachIronSegmentsModel {
     private static final String FLUX_CONCENTRATOR_TAG = "flux_concentrator";
     private static final String ENVIRONMENT_TAG = "environment";
 
-    private static final String CYLINDER_BLOCK_DOMAIN_SELECTION_TAG = "cylinder_block_sel_dom";
-    private static final String CYLINDER_SHELL_DOMAIN_SELECTION_TAG = "cylinder_shell_sel_dom";
-
-    private static final String SELECTION_DOMAIN_SUFFIX = "sel_dom";
+    private static final String SELECTION_DOMAIN_SUFFIX = "dom";
     
     private static Model model;
     private static ModelNodeList modelNodes;
@@ -86,9 +83,9 @@ public class NestedHalbachIronSegmentsModel {
 	part.run();
 
 	part.run("dif1");
-	part.create(CYLINDER_BLOCK_DOMAIN_SELECTION_TAG,"ExplicitSelection");
-	part.feature(CYLINDER_BLOCK_DOMAIN_SELECTION_TAG).selection("selection").set("dif1",new int[]{1});
-	part.run(CYLINDER_BLOCK_DOMAIN_SELECTION_TAG);
+	part.create(SELECTION_DOMAIN_SUFFIX,"ExplicitSelection");
+	part.feature(SELECTION_DOMAIN_SUFFIX).selection("selection").set("dif1",new int[]{1});
+	part.run(SELECTION_DOMAIN_SUFFIX);
 
 	return part;
 
@@ -115,9 +112,9 @@ public class NestedHalbachIronSegmentsModel {
 	part.run();
 
 	part.run("dif1");
-	part.create(CYLINDER_SHELL_DOMAIN_SELECTION_TAG,"ExplicitSelection");
-	part.feature(CYLINDER_SHELL_DOMAIN_SELECTION_TAG).selection("selection").set("dif1",new int[]{1});
-	part.run(CYLINDER_SHELL_DOMAIN_SELECTION_TAG);
+	part.create(SELECTION_DOMAIN_SUFFIX,"ExplicitSelection");
+	part.feature(SELECTION_DOMAIN_SUFFIX).selection("selection").set("dif1",new int[]{1});
+	part.run(SELECTION_DOMAIN_SUFFIX);
 
 	return part;
     }
@@ -132,7 +129,7 @@ public class NestedHalbachIronSegmentsModel {
 	cylinderBlock.set("inputexpr",inputExpression);
 	cylinderBlock.set("selkeepnoncontr", false);
 
-	String selTag = tag + "_" + CYLINDER_BLOCK_DOMAIN_SELECTION_TAG;
+	String selTag = tag + "_" + SELECTION_DOMAIN_SUFFIX;
 	cylinderBlock.setEntry("selkeepdom",selTag,"on");
 
 	return cylinderBlock;
@@ -242,10 +239,12 @@ public class NestedHalbachIronSegmentsModel {
 	GeomFeature feature;
 	shaftTag = geomFeatures.uniquetag(SHAFT_TAG);
 
+	String label = "Circle";
+
 	feature = geomFeatures.create(shaftTag,"Circle");
-	feature.label("Shaft Circle");
-	feature.set("r", "R_i");
-	feature.set("angle", "180");
+	feature.label(label);
+	feature.set("r","R_i");
+	feature.set("angle","180[deg]");
 	feature.set("selresult","on");
 
 	return feature;
@@ -261,7 +260,7 @@ public class NestedHalbachIronSegmentsModel {
 	cylinderShell.set("inputexpr",inputExpression);
 	cylinderShell.set("selkeepnoncontr", false);
 
-	String selTag = tag + "_" + CYLINDER_SHELL_DOMAIN_SELECTION_TAG;
+	String selTag = tag + "_" + SELECTION_DOMAIN_SUFFIX;
 	cylinderShell.setEntry("selkeepdom",selTag,"on");
 
 	return cylinderShell;
@@ -375,14 +374,14 @@ public class NestedHalbachIronSegmentsModel {
 	selTag = shaftTag + "_" + SELECTION_DOMAIN_SUFFIX;
 	model.selection().create(selTag, "Explicit");
 	model.selection(selTag).label("Shaft");
-	domTag = GEOMETRY_TAG + "_"+shaftTag + "_dom";
+	domTag = GEOMETRY_TAG + "_"+ shaftTag + "_" + SELECTION_DOMAIN_SUFFIX;
 	entities = model.selection(domTag).entities(2);
 	model.selection(selTag).set(entities);
 
 	selTag = airGapTag + "_" + SELECTION_DOMAIN_SUFFIX;
 	model.selection().create(selTag, "Explicit");
 	model.selection(selTag).label("Air gap");
-	domTag = GEOMETRY_TAG + "_" + airGapTag + "_" + CYLINDER_SHELL_DOMAIN_SELECTION_TAG;
+	domTag = GEOMETRY_TAG + "_" + airGapTag + "_" + SELECTION_DOMAIN_SUFFIX;
 	entities = model.selection(domTag).entities(2);
 	model.selection(selTag).set(entities);
 
