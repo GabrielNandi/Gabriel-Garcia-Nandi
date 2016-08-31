@@ -80,6 +80,11 @@ public class NestedHalbachIronSegmentsModel {
 	part.feature("dif1").selection("input").set(new String[]{"c1"});
 	part.run();
 
+	part.run("dif1");
+	part.create("sel1","ExplicitSelection");
+	part.feature("sel1").selection("selection").set("dif1",new int[]{1});
+	part.run("sel1");
+
 	return part;
 
 	
@@ -116,6 +121,9 @@ public class NestedHalbachIronSegmentsModel {
 	cylinderBlock.label(label);
 	cylinderBlock.set("inputexpr",inputExpression);
 	cylinderBlock.set("selkeepnoncontr", false);
+
+	String selTag = tag + "_sel1";
+	cylinderBlock.setEntry("selkeepdom",selTag,"on");
 
 	return cylinderBlock;
 	
@@ -379,6 +387,26 @@ public class NestedHalbachIronSegmentsModel {
 	GeomSequence cylinderShellPart = configureCylinderShell();
 
 	buildGeometry();
+
+	/*
+	model.geom("part1").run("dif1");
+	model.geom("part1").create("sel1", "ExplicitSelection");
+	model.geom("part1").feature("sel1").selection("selection").set("dif1", new int[]{1});
+	model.geom("part1").run("sel1");
+	model.geom("geom1").run("pi1");
+	model.geom("geom1").feature("pi1").setEntry("selkeepdom", "pi1_sel1", "on");
+	model.geom("geom1").run("pi2");
+	model.geom("geom1").feature("pi2").setEntry("selkeepdom", "pi2_sel1", "on");
+	model.geom("geom1").run("pi3");
+	model.geom("geom1").feature("pi3").setEntry("selkeepdom", "pi3_sel1", "on");
+	model.geom("geom1").runPre("fin");
+	model.geom("geom1").run("fin");
+	model.geom("geom1").run("fin");
+	model.geom("geom1").create("unisel1", "UnionSelection");
+	model.geom("geom1").feature("unisel1").set("input", new String[]{"pi3_sel1", "pi2_sel1", "pi1_sel1"});
+	model.geom("geom1").feature("unisel1").label("union_cylinder_blocks");
+	model.geom("geom1").run();
+	*/
 
 	model.selection().create("sel1", "Explicit");
 	model.selection("sel1").label("Shaft");
