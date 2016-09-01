@@ -35,6 +35,7 @@ public class NestedHalbachIronSegmentsModel {
     private static final String IRON_SELECTION_TAG = "iron_selection";
     private static final String AIR_GAP_SELECTION_TAG = "air_gap_selection";
     private static final String ENVIRONMENT_SELECTION_TAG = "environment_selection";
+    private static final String ENVIRONMENT_HORIZONTAL_BOUNDARY_SELECTION_TAG = "environment_horization_boundary_selection";
     private static final String AIR_REGIONS_SELECTION_TAG = "air_regions_selection_tag";
            
     private static Model model;
@@ -76,6 +77,8 @@ public class NestedHalbachIronSegmentsModel {
 
     private static int nII;
     private static int nIV;
+
+    private static MeshSequence modelMesh;
 
     private static GeomSequence configureCylinderBlock(){
 
@@ -423,6 +426,34 @@ public class NestedHalbachIronSegmentsModel {
 	entities = getDomainEntities(environmentTag);
 	model.selection(ENVIRONMENT_SELECTION_TAG).set(entities);
 
+	// for the 'infinite element' configuration of the environment layer,
+	// we need to access its horizontal boundary
+	// we do this by selecting the boundary that is at coorfinates (+-x0,0),
+	// where x0 is between the flux concentrator and the final boundary
+	SelectionFeature environmentBoundarySelection = model.selection().create(ENVIRONMENT_HORIZONTAL_BOUNDARY_SELECTION_TAG,"Union");
+
+	double R_c = params.evaluate("R_c");
+	double R_e = params.evaluate("R_e");
+	double posx = (R_c+R_e)/2;
+	double r = 0.001;
+
+	SelectionFeature environmentBoundarySelectionRight = model.selection().create("environment_sel_right","Ball");
+	environmentBoundarySelectionRight.set("entitydim",1);
+	environmentBoundarySelectionRight.set("posx",posx);
+	environmentBoundarySelectionRight.set("r",r);
+	environmentBoundarySelectionRight.label("Environment Horizontal Right Boundary");
+	
+	SelectionFeature environmentBoundarySelectionLeft = model.selection().create("environment_sel_left","Ball");
+	environmentBoundarySelectionLeft.set("entitydim",1);
+	environmentBoundarySelectionLeft.set("posx",-posx);
+	environmentBoundarySelectionLeft.set("r",r);
+	environmentBoundarySelectionRight.label("Environment Horizontal Left Boundary");
+
+	
+	environmentBoundarySelection.label("Environment boundary");
+	environmentBoundarySelection.set("entitydim",1);
+	environmentBoundarySelection.set("input",new String[]{"environment_sel_right","environment_sel_left"});
+
 	model.selection().create(MAGNETS_SELECTION_TAG, "Explicit");
 	model.selection(MAGNETS_SELECTION_TAG).label("Magnets region");
 	for (String ftag : magnetII1QBlockTags) {
@@ -727,6 +758,33 @@ public class NestedHalbachIronSegmentsModel {
 	}
 
     }
+
+    private static void configureMesh(){
+
+	modelMesh = model.mesh().create("mesh1", GEOMETRY_TAG);
+
+	MeshFeature meshSizeConfiguration = modelMesh.feature("size");
+	meshSizeConfiguration.set("hauto", 3);
+	meshSizeConfiguration.set("custom", "on");
+	meshSizeConfiguration.set("hnarrow", "5");
+	
+	MeshFeature meshBoundaryDistributionConfiguration = modelMesh.create("dis1", "Distribution");
+	meshBoundaryDistributionConfiguration.selection().named(ENVIRONMENT_HORIZONTAL_BOUNDARY_SELECTION_TAG);
+	meshBoundaryDistributionConfiguration.set("type", "predefined");
+
+		
+	MeshFeature meshFreeTriangularConfiguration = modelMesh.create("ftri1", "FreeTri");
+	meshFreeTriangularConfiguration.selection()
+	    .set(new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26});
+	meshFreeTriangularConfiguration.selection().geom(GEOMETRY_TAG, 2);
+		
+	MeshFeature meshMapConfiguration = modelMesh.create("map1", "Map");
+	meshMapConfiguration.selection().geom(GEOMETRY_TAG, 2);
+	meshMapConfiguration.selection().named(ENVIRONMENT_SELECTION_TAG);
+	meshMapConfiguration.set("adjustedgdistr", true);
+
+	modelMesh.run();
+    }
     
     public static Model run() {
         model = ModelUtil.create("Model");
@@ -759,8 +817,6 @@ public class NestedHalbachIronSegmentsModel {
 	geometryList = model.geom();
 	geometry = geometryList.create(GEOMETRY_TAG, 2);
 
-	model.mesh().create("mesh1", GEOMETRY_TAG);
-
 	GeomSequence cylinderBlockPart = configureCylinderBlock();
 	GeomSequence cylinderShellPart = configureCylinderShell();
 
@@ -774,17 +830,11 @@ public class NestedHalbachIronSegmentsModel {
 
 	configurePhysics();
 
+	configureMesh();
 
 
-	model.mesh("mesh1").create("dis1", "Distribution");
-	model.mesh("mesh1").create("ftri1", "FreeTri");
-	model.mesh("mesh1").create("map1", "Map");
-	model.mesh("mesh1").feature("dis1").selection().set(new int[]{1, 32});
-	model.mesh("mesh1").feature("ftri1").selection().geom(GEOMETRY_TAG, 2);
-	model.mesh("mesh1").feature("ftri1").selection()
-	    .set(new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26});
-	model.mesh("mesh1").feature("map1").selection().geom(GEOMETRY_TAG, 2);
-	model.mesh("mesh1").feature("map1").selection().set(new int[]{1});
+
+
 
 	model.view("view1").axis().set("abstractviewrratio", "0.05000001937150955");
 	model.view("view1").axis().set("abstractviewlratio", "-0.05000001937150955");
@@ -823,12 +873,6 @@ public class NestedHalbachIronSegmentsModel {
 
 	
 
-	model.mesh("mesh1").feature("size").set("hauto", 3);
-	model.mesh("mesh1").feature("size").set("custom", "on");
-	model.mesh("mesh1").feature("size").set("hnarrow", "5");
-	model.mesh("mesh1").feature("dis1").set("type", "predefined");
-	model.mesh("mesh1").feature("map1").set("adjustedgdistr", true);
-	model.mesh("mesh1").run();
 
 	model.study().create("std1");
 	model.study("std1").create("stat", "Stationary");
