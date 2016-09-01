@@ -632,6 +632,13 @@ public class NestedHalbachIronSegmentsModel {
 
 
     }
+    private static void configureInfiniteElementLayer(){
+
+	model.coordSystem().create("ie1", GEOMETRY_TAG, "InfiniteElement");
+	model.coordSystem("ie1").selection().named(ENVIRONMENT_SELECTION_TAG);
+	model.coordSystem("ie1").label("External environment");
+	model.coordSystem("ie1").set("ScalingType", "Cylindrical");
+    }
     
     public static Model run() {
         model = ModelUtil.create("Model");
@@ -672,9 +679,7 @@ public class NestedHalbachIronSegmentsModel {
 
 	configureMaterials();
 
-		
-	model.coordSystem().create("ie1", GEOMETRY_TAG, "InfiniteElement");
-	model.coordSystem("ie1").selection().set(new int[]{1});
+	configureInfiniteElementLayer();
 
 	model.physics().create("mfnc", "MagnetostaticsNoCurrents", GEOMETRY_TAG);
 	model.physics("mfnc").create("mfc2", "MagneticFluxConservation", 2);
@@ -747,8 +752,7 @@ public class NestedHalbachIronSegmentsModel {
 
 
 
-	model.coordSystem("ie1").label("External environment");
-	model.coordSystem("ie1").set("ScalingType", "Cylindrical");
+
 
 	model.physics("mfnc").prop("MeshControl").set("EnableMeshControl", "1");
 	model.physics("mfnc").feature("mfc1").label("Magnetic Flux Conservation - Air regions");
