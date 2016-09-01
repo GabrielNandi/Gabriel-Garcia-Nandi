@@ -67,6 +67,10 @@ public class NestedHalbachIronSegmentsModel {
     private static GeomFeature fluxConcentratorFeature;
     private static GeomFeature environmentFeature;
 
+    private static Material airMaterial;
+    private static Material ironMaterial;
+    private static Material magnetMaterial;
+
     private static GeomSequence configureCylinderBlock(){
 
 	GeomSequence part = geometryList.create(CYLINDER_BLOCK_PART_NAME, "Part", 2);
@@ -446,59 +450,81 @@ public class NestedHalbachIronSegmentsModel {
 
 
     }
-    
-    public static Model run() {
-        model = ModelUtil.create("Model");
 
-	params = model.param();
+    private static void configureAirMaterial(Material mat){
 
-	params.set("R_i", "15[mm]");
-	params.set("R_o", "50[mm]");
-	params.set("h_gap", "20[mm]");
-	params.set("R_s", "140[mm]");
-	params.set("h_fc", "20[mm]");
-	params.set("R_e", "2[m]");
-	params.set("n_II", "3", "Number of segments in magnet II");
-	params.set("n_IV", "3", "Number of segments in magnet IV");
-	params.set("R_g", "R_o+h_gap");
-	params.set("phi_S_II", "45[deg]");
-	params.set("phi_S_IV", "45[deg]");
-	params.set("delta_phi_S_II", "(phi_S_II)/n_II");
-	params.set("delta_phi_S_IV", "(phi_S_IV)/n_IV");
-	params.set("B_rem", "1.47[T]");
-	params.set("R_c", "R_s+h_fc");
+	mat.label("Air");
+	mat.set("family", "air");
 
-	modelNodes = model.modelNode();
+	mat.propertyGroup("def").func().create("eta", "Piecewise");
+	mat.propertyGroup("def").func().create("Cp", "Piecewise");
+	mat.propertyGroup("def").func().create("rho", "Analytic");
+	mat.propertyGroup("def").func().create("k", "Piecewise");
+	mat.propertyGroup("def").func().create("cs", "Analytic");
+	mat.propertyGroup().create("RefractiveIndex", "Refractive index");
 
-	component = modelNodes.create(COMPONENT_NAME);
+	mat.propertyGroup("def").func("eta")
+	    .set("pieces", new String[][]{{"200.0", "1600.0", "-8.38278E-7+8.35717342E-8*T^1-7.69429583E-11*T^2+4.6437266E-14*T^3-1.06585607E-17*T^4"}});
+	mat.propertyGroup("def").func("eta").set("arg", "T");
+	mat.propertyGroup("def").func("Cp")
+	    .set("pieces", new String[][]{{"200.0", "1600.0", "1047.63657-0.372589265*T^1+9.45304214E-4*T^2-6.02409443E-7*T^3+1.2858961E-10*T^4"}});
+	mat.propertyGroup("def").func("Cp").set("arg", "T");
+	mat.propertyGroup("def").func("rho").set("args", new String[]{"pA", "T"});
+	mat.propertyGroup("def").func("rho").set("expr", "pA*0.02897/8.314/T");
+	mat.propertyGroup("def").func("rho").set("dermethod", "manual");
+	mat.propertyGroup("def").func("rho")
+	    .set("plotargs", new String[][]{{"pA", "0", "1"}, {"T", "0", "1"}});
+	mat.propertyGroup("def").func("rho")
+	    .set("argders", new String[][]{{"pA", "d(pA*0.02897/8.314/T,pA)"}, {"T", "d(pA*0.02897/8.314/T,T)"}});
+	mat.propertyGroup("def").func("k")
+	    .set("pieces", new String[][]{{"200.0", "1600.0", "-0.00227583562+1.15480022E-4*T^1-7.90252856E-8*T^2+4.11702505E-11*T^3-7.43864331E-15*T^4"}});
+	mat.propertyGroup("def").func("k").set("arg", "T");
+	mat.propertyGroup("def").func("cs").set("args", new String[]{"T"});
+	mat.propertyGroup("def").func("cs").set("expr", "sqrt(1.4*287*T)");
+	mat.propertyGroup("def").func("cs").set("dermethod", "manual");
+	mat.propertyGroup("def").func("cs").set("plotargs", new String[][]{{"T", "0", "1"}});
+	mat.propertyGroup("def").func("cs")
+	    .set("argders", new String[][]{{"T", "d(sqrt(1.4*287*T),T)"}});
+	mat.propertyGroup("def")
+	    .set("relpermeability", new String[]{"1", "0", "0", "0", "1", "0", "0", "0", "1"});
+	mat.propertyGroup("def")
+	    .set("relpermittivity", new String[]{"1", "0", "0", "0", "1", "0", "0", "0", "1"});
+	mat.propertyGroup("def").set("dynamicviscosity", "eta(T[1/K])[Pa*s]");
+	mat.propertyGroup("def").set("ratioofspecificheat", "1.4");
+	mat.propertyGroup("def")
+	    .set("electricconductivity", new String[]{"0[S/m]", "0", "0", "0", "0[S/m]", "0", "0", "0", "0[S/m]"});
+	mat.propertyGroup("def").set("heatcapacity", "Cp(T[1/K])[J/(kg*K)]");
+	mat.propertyGroup("def").set("density", "rho(pA[1/Pa],T[1/K])[kg/m^3]");
+	mat.propertyGroup("def")
+	    .set("thermalconductivity", new String[]{"k(T[1/K])[W/(m*K)]", "0", "0", "0", "k(T[1/K])[W/(m*K)]", "0", "0", "0", "k(T[1/K])[W/(m*K)]"});
+	mat.propertyGroup("def").set("soundspeed", "cs(T[1/K])[m/s]");
+	mat.propertyGroup("def").addInput("temperature");
+	mat.propertyGroup("def").addInput("pressure");
+	mat.propertyGroup("RefractiveIndex").set("n", "");
+	mat.propertyGroup("RefractiveIndex").set("ki", "");
+	mat.propertyGroup("RefractiveIndex")
+	    .set("n", new String[]{"1", "0", "0", "0", "1", "0", "0", "0", "1"});
+	mat.propertyGroup("RefractiveIndex")
+	    .set("ki", new String[]{"0", "0", "0", "0", "0", "0", "0", "0", "0"});
+	}
 
-	geometryList = model.geom();
-	geometry = geometryList.create(GEOMETRY_TAG, 2);
+    private static void configureIronMaterial(){
 
-	model.mesh().create("mesh1", GEOMETRY_TAG);
+	}
 
-	GeomSequence cylinderBlockPart = configureCylinderBlock();
-	GeomSequence cylinderShellPart = configureCylinderShell();
+    private static void configureMagnetMaterial(){
 
-	buildGeometry();
+	}
 
-	createSelections();
+    private static void configureMaterials() {
 
-
-
+	airMaterial = model.material().create("mat1", "Common", COMPONENT_NAME);
+	configureAirMaterial(airMaterial);
+	airMaterial.selection().named(AIR_REGIONS_SELECTION_TAG);
+	//model.material("mat1").selection().set(new int[]{1, 2, 7, 15});
 	
 
-
-	model.material().create("mat1", "Common", COMPONENT_NAME);
 	model.material().create("mat2", "Common", COMPONENT_NAME);
-	model.material().create("mat3", "Common", COMPONENT_NAME);
-	model.material("mat1").selection().set(new int[]{1, 2, 7, 15});
-	model.material("mat1").propertyGroup("def").func().create("eta", "Piecewise");
-	model.material("mat1").propertyGroup("def").func().create("Cp", "Piecewise");
-	model.material("mat1").propertyGroup("def").func().create("rho", "Analytic");
-	model.material("mat1").propertyGroup("def").func().create("k", "Piecewise");
-	model.material("mat1").propertyGroup("def").func().create("cs", "Analytic");
-	model.material("mat1").propertyGroup().create("RefractiveIndex", "Refractive index");
 	model.material("mat2").selection().set(new int[]{2, 6, 8, 12, 13, 14, 16, 17, 18, 22, 23});
 	model.material("mat2").propertyGroup().create("BHCurve", "BH curve");
 	model.material("mat2").propertyGroup("BHCurve").func().create("BH", "Interpolation");
@@ -508,126 +534,11 @@ public class NestedHalbachIronSegmentsModel {
 	model.material("mat2").propertyGroup("EffectiveBHCurve").func().create("BHeff", "Interpolation");
 	model.material("mat2").propertyGroup().create("EffectiveHBCurve", "Effective HB curve");
 	model.material("mat2").propertyGroup("EffectiveHBCurve").func().create("HBeff", "Interpolation");
+
+	model.material().create("mat3", "Common", COMPONENT_NAME);
 	model.material("mat3").selection().named("sel4");
 
-	model.coordSystem().create("ie1", GEOMETRY_TAG, "InfiniteElement");
-	model.coordSystem("ie1").selection().set(new int[]{1});
-
-	model.physics().create("mfnc", "MagnetostaticsNoCurrents", GEOMETRY_TAG);
-	model.physics("mfnc").create("mfc2", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc2").selection().set(new int[]{2, 6, 8, 12, 13, 14, 16, 17, 18, 22, 23});
-	model.physics("mfnc").create("mfc3", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc3").selection().set(new int[]{21});
-	model.physics("mfnc").create("mfc4", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc4").selection().set(new int[]{20});
-	model.physics("mfnc").create("mfc5", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc5").selection().set(new int[]{19});
-	model.physics("mfnc").create("mfc6", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc6").selection().set(new int[]{9});
-	model.physics("mfnc").create("mfc7", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc7").selection().set(new int[]{10});
-	model.physics("mfnc").create("mfc8", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc8").selection().set(new int[]{11});
-	model.physics("mfnc").create("mfc9", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc9").selection().set(new int[]{26});
-	model.physics("mfnc").create("mfc10", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc10").selection().set(new int[]{25});
-	model.physics("mfnc").create("mfc11", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc11").selection().set(new int[]{24});
-	model.physics("mfnc").create("mfc12", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc12").selection().set(new int[]{3});
-	model.physics("mfnc").create("mfc13", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc13").selection().set(new int[]{4});
-	model.physics("mfnc").create("mfc14", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc14").selection().set(new int[]{5});
-
-	model.mesh("mesh1").create("dis1", "Distribution");
-	model.mesh("mesh1").create("ftri1", "FreeTri");
-	model.mesh("mesh1").create("map1", "Map");
-	model.mesh("mesh1").feature("dis1").selection().set(new int[]{1, 32});
-	model.mesh("mesh1").feature("ftri1").selection().geom(GEOMETRY_TAG, 2);
-	model.mesh("mesh1").feature("ftri1").selection()
-	    .set(new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26});
-	model.mesh("mesh1").feature("map1").selection().geom(GEOMETRY_TAG, 2);
-	model.mesh("mesh1").feature("map1").selection().set(new int[]{1});
-
-	model.view("view1").axis().set("abstractviewrratio", "0.05000001937150955");
-	model.view("view1").axis().set("abstractviewlratio", "-0.05000001937150955");
-	model.view("view1").axis().set("abstractviewxscale", "1.7412134911864996E-4");
-	model.view("view1").axis().set("abstractviewbratio", "-0.20146028697490692");
-	model.view("view1").axis().set("xmax", "0.1679999679327011");
-	model.view("view1").axis().set("xmin", "-0.1679999679327011");
-	model.view("view1").axis().set("abstractviewyscale", "1.7412134911864996E-4");
-	model.view("view1").axis().set("ymax", "0.18563207983970642");
-	model.view("view1").axis().set("ymin", "-0.025632094591856003");
-	model.view("view1").axis().set("abstractviewtratio", "0.20146028697490692");
-	model.view("view2").axis().set("abstractviewrratio", "0.2330528348684311");
-	model.view("view2").axis().set("abstractviewlratio", "-0.2330528348684311");
-	model.view("view2").axis().set("abstractviewxscale", "6.460277654696256E-5");
-	model.view("view2").axis().set("abstractviewbratio", "-0.049999963492155075");
-	model.view("view2").axis().set("xmax", "0.05863120034337044");
-	model.view("view2").axis().set("xmin", "-0.002834910526871681");
-	model.view("view2").axis().set("abstractviewyscale", "6.460277654696256E-5");
-	model.view("view2").axis().set("ymax", "0.04428674280643463");
-	model.view("view2").axis().set("ymin", "0.002896810881793499");
-	model.view("view2").axis().set("abstractviewtratio", "0.049999963492155075");
-	model.view("view3").axis().set("abstractviewrratio", "0.05000002309679985");
-	model.view("view3").axis().set("abstractviewlratio", "-0.05000002309679985");
-	model.view("view3").axis().set("abstractviewxscale", "2.487050660420209E-4");
-	model.view("view3").axis().set("abstractviewbratio", "-0.4331461191177368");
-	model.view("view3").axis().set("xmax", "0.1111711636185646");
-	model.view("view3").axis().set("xmin", "-0.1111711636185646");
-	model.view("view3").axis().set("abstractviewyscale", "2.487050660420209E-4");
-	model.view("view3").axis().set("ymax", "0.11510521918535233");
-	model.view("view3").axis().set("ymin", "-0.03461522236466408");
-	model.view("view3").axis().set("abstractviewtratio", "0.43314605951309204");
-
-	model.material("mat1").label("Air");
-	model.material("mat1").set("family", "air");
-	model.material("mat1").propertyGroup("def").func("eta")
-	    .set("pieces", new String[][]{{"200.0", "1600.0", "-8.38278E-7+8.35717342E-8*T^1-7.69429583E-11*T^2+4.6437266E-14*T^3-1.06585607E-17*T^4"}});
-	model.material("mat1").propertyGroup("def").func("eta").set("arg", "T");
-	model.material("mat1").propertyGroup("def").func("Cp")
-	    .set("pieces", new String[][]{{"200.0", "1600.0", "1047.63657-0.372589265*T^1+9.45304214E-4*T^2-6.02409443E-7*T^3+1.2858961E-10*T^4"}});
-	model.material("mat1").propertyGroup("def").func("Cp").set("arg", "T");
-	model.material("mat1").propertyGroup("def").func("rho").set("args", new String[]{"pA", "T"});
-	model.material("mat1").propertyGroup("def").func("rho").set("expr", "pA*0.02897/8.314/T");
-	model.material("mat1").propertyGroup("def").func("rho").set("dermethod", "manual");
-	model.material("mat1").propertyGroup("def").func("rho")
-	    .set("plotargs", new String[][]{{"pA", "0", "1"}, {"T", "0", "1"}});
-	model.material("mat1").propertyGroup("def").func("rho")
-	    .set("argders", new String[][]{{"pA", "d(pA*0.02897/8.314/T,pA)"}, {"T", "d(pA*0.02897/8.314/T,T)"}});
-	model.material("mat1").propertyGroup("def").func("k")
-	    .set("pieces", new String[][]{{"200.0", "1600.0", "-0.00227583562+1.15480022E-4*T^1-7.90252856E-8*T^2+4.11702505E-11*T^3-7.43864331E-15*T^4"}});
-	model.material("mat1").propertyGroup("def").func("k").set("arg", "T");
-	model.material("mat1").propertyGroup("def").func("cs").set("args", new String[]{"T"});
-	model.material("mat1").propertyGroup("def").func("cs").set("expr", "sqrt(1.4*287*T)");
-	model.material("mat1").propertyGroup("def").func("cs").set("dermethod", "manual");
-	model.material("mat1").propertyGroup("def").func("cs").set("plotargs", new String[][]{{"T", "0", "1"}});
-	model.material("mat1").propertyGroup("def").func("cs")
-	    .set("argders", new String[][]{{"T", "d(sqrt(1.4*287*T),T)"}});
-	model.material("mat1").propertyGroup("def")
-	    .set("relpermeability", new String[]{"1", "0", "0", "0", "1", "0", "0", "0", "1"});
-	model.material("mat1").propertyGroup("def")
-	    .set("relpermittivity", new String[]{"1", "0", "0", "0", "1", "0", "0", "0", "1"});
-	model.material("mat1").propertyGroup("def").set("dynamicviscosity", "eta(T[1/K])[Pa*s]");
-	model.material("mat1").propertyGroup("def").set("ratioofspecificheat", "1.4");
-	model.material("mat1").propertyGroup("def")
-	    .set("electricconductivity", new String[]{"0[S/m]", "0", "0", "0", "0[S/m]", "0", "0", "0", "0[S/m]"});
-	model.material("mat1").propertyGroup("def").set("heatcapacity", "Cp(T[1/K])[J/(kg*K)]");
-	model.material("mat1").propertyGroup("def").set("density", "rho(pA[1/Pa],T[1/K])[kg/m^3]");
-	model.material("mat1").propertyGroup("def")
-	    .set("thermalconductivity", new String[]{"k(T[1/K])[W/(m*K)]", "0", "0", "0", "k(T[1/K])[W/(m*K)]", "0", "0", "0", "k(T[1/K])[W/(m*K)]"});
-	model.material("mat1").propertyGroup("def").set("soundspeed", "cs(T[1/K])[m/s]");
-	model.material("mat1").propertyGroup("def").addInput("temperature");
-	model.material("mat1").propertyGroup("def").addInput("pressure");
-	model.material("mat1").propertyGroup("RefractiveIndex").set("n", "");
-	model.material("mat1").propertyGroup("RefractiveIndex").set("ki", "");
-	model.material("mat1").propertyGroup("RefractiveIndex")
-	    .set("n", new String[]{"1", "0", "0", "0", "1", "0", "0", "0", "1"});
-	model.material("mat1").propertyGroup("RefractiveIndex")
-	    .set("ki", new String[]{"0", "0", "0", "0", "0", "0", "0", "0", "0"});
-	model.material("mat2").label("Soft Iron (with losses)");
+		model.material("mat2").label("Soft Iron (with losses)");
 	model.material("mat2").set("family", "iron");
 	model.material("mat2").propertyGroup("def")
 	    .set("electricconductivity", new String[]{"1.12e7[S/m]", "0", "0", "0", "1.12e7[S/m]", "0", "0", "0", "1.12e7[S/m]"});
@@ -716,6 +627,122 @@ public class NestedHalbachIronSegmentsModel {
 	model.material("mat3").label("Nd-Fe-B");
 	model.material("mat3").propertyGroup("def")
 	    .set("relpermeability", new String[]{"1.05", "0", "0", "0", "1.05", "0", "0", "0", "1.05"});
+
+    }
+    
+    public static Model run() {
+        model = ModelUtil.create("Model");
+
+	params = model.param();
+
+	params.set("R_i", "15[mm]");
+	params.set("R_o", "50[mm]");
+	params.set("h_gap", "20[mm]");
+	params.set("R_s", "140[mm]");
+	params.set("h_fc", "20[mm]");
+	params.set("R_e", "2[m]");
+	params.set("n_II", "3", "Number of segments in magnet II");
+	params.set("n_IV", "3", "Number of segments in magnet IV");
+	params.set("R_g", "R_o+h_gap");
+	params.set("phi_S_II", "45[deg]");
+	params.set("phi_S_IV", "45[deg]");
+	params.set("delta_phi_S_II", "(phi_S_II)/n_II");
+	params.set("delta_phi_S_IV", "(phi_S_IV)/n_IV");
+	params.set("B_rem", "1.47[T]");
+	params.set("R_c", "R_s+h_fc");
+
+	modelNodes = model.modelNode();
+
+	component = modelNodes.create(COMPONENT_NAME);
+
+	geometryList = model.geom();
+	geometry = geometryList.create(GEOMETRY_TAG, 2);
+
+	model.mesh().create("mesh1", GEOMETRY_TAG);
+
+	GeomSequence cylinderBlockPart = configureCylinderBlock();
+	GeomSequence cylinderShellPart = configureCylinderShell();
+
+	buildGeometry();
+
+	createSelections();
+
+	configureMaterials();
+
+		
+	model.coordSystem().create("ie1", GEOMETRY_TAG, "InfiniteElement");
+	model.coordSystem("ie1").selection().set(new int[]{1});
+
+	model.physics().create("mfnc", "MagnetostaticsNoCurrents", GEOMETRY_TAG);
+	model.physics("mfnc").create("mfc2", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc2").selection().set(new int[]{2, 6, 8, 12, 13, 14, 16, 17, 18, 22, 23});
+	model.physics("mfnc").create("mfc3", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc3").selection().set(new int[]{21});
+	model.physics("mfnc").create("mfc4", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc4").selection().set(new int[]{20});
+	model.physics("mfnc").create("mfc5", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc5").selection().set(new int[]{19});
+	model.physics("mfnc").create("mfc6", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc6").selection().set(new int[]{9});
+	model.physics("mfnc").create("mfc7", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc7").selection().set(new int[]{10});
+	model.physics("mfnc").create("mfc8", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc8").selection().set(new int[]{11});
+	model.physics("mfnc").create("mfc9", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc9").selection().set(new int[]{26});
+	model.physics("mfnc").create("mfc10", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc10").selection().set(new int[]{25});
+	model.physics("mfnc").create("mfc11", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc11").selection().set(new int[]{24});
+	model.physics("mfnc").create("mfc12", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc12").selection().set(new int[]{3});
+	model.physics("mfnc").create("mfc13", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc13").selection().set(new int[]{4});
+	model.physics("mfnc").create("mfc14", "MagneticFluxConservation", 2);
+	model.physics("mfnc").feature("mfc14").selection().set(new int[]{5});
+
+	model.mesh("mesh1").create("dis1", "Distribution");
+	model.mesh("mesh1").create("ftri1", "FreeTri");
+	model.mesh("mesh1").create("map1", "Map");
+	model.mesh("mesh1").feature("dis1").selection().set(new int[]{1, 32});
+	model.mesh("mesh1").feature("ftri1").selection().geom(GEOMETRY_TAG, 2);
+	model.mesh("mesh1").feature("ftri1").selection()
+	    .set(new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26});
+	model.mesh("mesh1").feature("map1").selection().geom(GEOMETRY_TAG, 2);
+	model.mesh("mesh1").feature("map1").selection().set(new int[]{1});
+
+	model.view("view1").axis().set("abstractviewrratio", "0.05000001937150955");
+	model.view("view1").axis().set("abstractviewlratio", "-0.05000001937150955");
+	model.view("view1").axis().set("abstractviewxscale", "1.7412134911864996E-4");
+	model.view("view1").axis().set("abstractviewbratio", "-0.20146028697490692");
+	model.view("view1").axis().set("xmax", "0.1679999679327011");
+	model.view("view1").axis().set("xmin", "-0.1679999679327011");
+	model.view("view1").axis().set("abstractviewyscale", "1.7412134911864996E-4");
+	model.view("view1").axis().set("ymax", "0.18563207983970642");
+	model.view("view1").axis().set("ymin", "-0.025632094591856003");
+	model.view("view1").axis().set("abstractviewtratio", "0.20146028697490692");
+	model.view("view2").axis().set("abstractviewrratio", "0.2330528348684311");
+	model.view("view2").axis().set("abstractviewlratio", "-0.2330528348684311");
+	model.view("view2").axis().set("abstractviewxscale", "6.460277654696256E-5");
+	model.view("view2").axis().set("abstractviewbratio", "-0.049999963492155075");
+	model.view("view2").axis().set("xmax", "0.05863120034337044");
+	model.view("view2").axis().set("xmin", "-0.002834910526871681");
+	model.view("view2").axis().set("abstractviewyscale", "6.460277654696256E-5");
+	model.view("view2").axis().set("ymax", "0.04428674280643463");
+	model.view("view2").axis().set("ymin", "0.002896810881793499");
+	model.view("view2").axis().set("abstractviewtratio", "0.049999963492155075");
+	model.view("view3").axis().set("abstractviewrratio", "0.05000002309679985");
+	model.view("view3").axis().set("abstractviewlratio", "-0.05000002309679985");
+	model.view("view3").axis().set("abstractviewxscale", "2.487050660420209E-4");
+	model.view("view3").axis().set("abstractviewbratio", "-0.4331461191177368");
+	model.view("view3").axis().set("xmax", "0.1111711636185646");
+	model.view("view3").axis().set("xmin", "-0.1111711636185646");
+	model.view("view3").axis().set("abstractviewyscale", "2.487050660420209E-4");
+	model.view("view3").axis().set("ymax", "0.11510521918535233");
+	model.view("view3").axis().set("ymin", "-0.03461522236466408");
+	model.view("view3").axis().set("abstractviewtratio", "0.43314605951309204");
+
+
 
 	model.coordSystem("ie1").label("External environment");
 	model.coordSystem("ie1").set("ScalingType", "Cylindrical");
