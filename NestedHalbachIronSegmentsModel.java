@@ -4,6 +4,7 @@
 
 import com.comsol.model.*;
 import com.comsol.model.util.*;
+import com.comsol.model.physics.*;
 
 /** Model exported on Aug 8 2016, 09:24 by COMSOL 5.2.1.152. */
 public class NestedHalbachIronSegmentsModel {
@@ -70,6 +71,11 @@ public class NestedHalbachIronSegmentsModel {
     private static Material airMaterial;
     private static Material ironMaterial;
     private static Material magnetMaterial;
+
+    private static Physics mfncPhysics;
+
+    private static int nII;
+    private static int nIV;
 
     private static GeomSequence configureCylinderBlock(){
 
@@ -322,7 +328,7 @@ public class NestedHalbachIronSegmentsModel {
 	geomFeatures = geometry.feature();
 
 	// loop to build the magnet II blocks
-	int nII = Integer.parseInt(params.get("n_II"));
+
 	magnetII1QBlockTags = new String[nII];
 	magnetII1QBlockFeatures = new GeomFeature[nII];
 
@@ -342,7 +348,6 @@ public class NestedHalbachIronSegmentsModel {
 	// loop to build magnet blocks for region IV
 	// see previous loop for explanations
 	
-	int nIV = Integer.parseInt(params.get("n_IV"));
 	magnetIV1QBlockTags = new String[nII];
 	magnetIV1QBlockFeatures = new GeomFeature[nII];
 
@@ -639,6 +644,89 @@ public class NestedHalbachIronSegmentsModel {
 	model.coordSystem("ie1").label("External environment");
 	model.coordSystem("ie1").set("ScalingType", "Cylindrical");
     }
+
+    private static double calculateRemanenceAngle(int index,String magnet, String quadrant){
+
+	// just for test
+	return 0.0;
+    }
+    
+
+    private static void configureMagnetFluxConservation(int index, String magnet, String quadrant){
+
+
+	String physicsFeatureTag = mfncPhysics.feature().uniquetag("mfc");
+	PhysicsFeature feature = mfncPhysics.create(physicsFeatureTag,"MagneticFluxConservation",2);
+	
+	Double angle = calculateRemanenceAngle(index,magnet,quadrant);
+
+	String label = String.format("Magnetic Flux Conservation - Magnet %s %d - %s", magnet,index+1,quadrant);
+
+	if (magnet.equals("II")) {
+
+	    
+
+	    if (quadrant.equals("1Q")) {
+
+		feature.selection().set(getDomainEntities(magnetII1QBlockTags[index]));
+		 		
+	    }
+	    else if (quadrant.equals("2Q")) {
+		
+		feature.selection().set(getDomainEntities(magnetII2QBlockTags[index]));
+	    }
+	    
+	} else if (magnet.equals("IV")){
+
+	    if (quadrant.equals("1Q")) {
+
+		feature.selection().set(getDomainEntities(magnetIV1QBlockTags[index]));
+		
+	    } else if (quadrant.equals("2Q")) {
+
+		feature.selection().set(getDomainEntities(magnetIV2QBlockTags[index]));
+	    }
+
+	    
+	}
+
+	feature.set("ConstitutiveRelationH", "RemanentFluxDensity");
+	feature.set("materialType", "from_mat");
+	feature.label(label);
+
+	String B_rem_x_expr = String.format("B_rem*cos(%f[deg])",angle);
+	String B_rem_y_expr = String.format("B_rem*sin(%f[deg])",angle);
+	String B_rem_z_expr = "0";
+	feature.set("Br", new String[][]{{B_rem_x_expr}, {B_rem_y_expr}, {B_rem_z_expr}});
+
+    }
+
+    private static void configurePhysics(){
+
+	mfncPhysics = model.physics().create("mfnc", "MagnetostaticsNoCurrents", GEOMETRY_TAG);
+	mfncPhysics.prop("MeshControl").set("EnableMeshControl", "1");
+
+	model.physics("mfnc").feature("mfc1").label("Magnetic Flux Conservation - Air regions");
+	
+	PhysicsFeature ironFluxConservation = model.physics("mfnc").create("mfc2", "MagneticFluxConservation", 2);
+	ironFluxConservation.selection().named(IRON_SELECTION_TAG);
+	ironFluxConservation.set("ConstitutiveRelationH", "BHCurve");
+	ironFluxConservation.set("materialType", "from_mat");
+	ironFluxConservation.label("Magnetic Flux Conservation - Iron regions");
+
+	
+	for (int i = 0; i < nII; i++) {
+	    
+	    configureMagnetFluxConservation(i,"II","1Q");
+	    configureMagnetFluxConservation(i,"II","2Q");
+	}
+
+	for (int i = 0; i < nIV; i++) {
+	    configureMagnetFluxConservation(i,"IV","1Q");
+	    configureMagnetFluxConservation(i,"IV","2Q");
+	}
+
+    }
     
     public static Model run() {
         model = ModelUtil.create("Model");
@@ -661,6 +749,9 @@ public class NestedHalbachIronSegmentsModel {
 	params.set("B_rem", "1.47[T]");
 	params.set("R_c", "R_s+h_fc");
 
+	nII = Integer.parseInt(params.get("n_II"));
+	nIV = Integer.parseInt(params.get("n_IV"));
+	
 	modelNodes = model.modelNode();
 
 	component = modelNodes.create(COMPONENT_NAME);
@@ -681,33 +772,9 @@ public class NestedHalbachIronSegmentsModel {
 
 	configureInfiniteElementLayer();
 
-	model.physics().create("mfnc", "MagnetostaticsNoCurrents", GEOMETRY_TAG);
-	model.physics("mfnc").create("mfc2", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc2").selection().set(new int[]{2, 6, 8, 12, 13, 14, 16, 17, 18, 22, 23});
-	model.physics("mfnc").create("mfc3", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc3").selection().set(new int[]{21});
-	model.physics("mfnc").create("mfc4", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc4").selection().set(new int[]{20});
-	model.physics("mfnc").create("mfc5", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc5").selection().set(new int[]{19});
-	model.physics("mfnc").create("mfc6", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc6").selection().set(new int[]{9});
-	model.physics("mfnc").create("mfc7", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc7").selection().set(new int[]{10});
-	model.physics("mfnc").create("mfc8", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc8").selection().set(new int[]{11});
-	model.physics("mfnc").create("mfc9", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc9").selection().set(new int[]{26});
-	model.physics("mfnc").create("mfc10", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc10").selection().set(new int[]{25});
-	model.physics("mfnc").create("mfc11", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc11").selection().set(new int[]{24});
-	model.physics("mfnc").create("mfc12", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc12").selection().set(new int[]{3});
-	model.physics("mfnc").create("mfc13", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc13").selection().set(new int[]{4});
-	model.physics("mfnc").create("mfc14", "MagneticFluxConservation", 2);
-	model.physics("mfnc").feature("mfc14").selection().set(new int[]{5});
+	configurePhysics();
+
+
 
 	model.mesh("mesh1").create("dis1", "Distribution");
 	model.mesh("mesh1").create("ftri1", "FreeTri");
@@ -754,71 +821,7 @@ public class NestedHalbachIronSegmentsModel {
 
 
 
-	model.physics("mfnc").prop("MeshControl").set("EnableMeshControl", "1");
-	model.physics("mfnc").feature("mfc1").label("Magnetic Flux Conservation - Air regions");
-	model.physics("mfnc").feature("mfc2").set("ConstitutiveRelationH", "BHCurve");
-	model.physics("mfnc").feature("mfc2").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc2").label("Magnetic Flux Conservation - Iron regions");
-	model.physics("mfnc").feature("mfc3").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc3")
-	    .set("Br", new String[][]{{"B_rem*cos(0[deg])"}, {"B_rem*sin(0[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc3").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc3").label("Magnetic Flux Conservation - Magnet II 1 - 1Q");
-	model.physics("mfnc").feature("mfc4").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc4")
-	    .set("Br", new String[][]{{"B_rem*cos(-15[deg])"}, {"B_rem*sin(-15[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc4").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc4").label("Magnetic Flux Conservation - Magnet II 2 - 1Q");
-	model.physics("mfnc").feature("mfc5").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc5")
-	    .set("Br", new String[][]{{"B_rem*cos(-30[deg])"}, {"B_rem*sin(-30[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc5").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc5").label("Magnetic Flux Conservation - Magnet II 3 - 1Q");
-	model.physics("mfnc").feature("mfc6").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc6")
-	    .set("Br", new String[][]{{"B_rem*cos(0[deg])"}, {"B_rem*sin(0[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc6").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc6").label("Magnetic Flux Conservation - Magnet II 1 - 2Q");
-	model.physics("mfnc").feature("mfc7").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc7")
-	    .set("Br", new String[][]{{"B_rem*cos(15[deg])"}, {"B_rem*sin(15[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc7").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc7").label("Magnetic Flux Conservation - Magnet II 2 - 2Q");
-	model.physics("mfnc").feature("mfc8").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc8")
-	    .set("Br", new String[][]{{"B_rem*cos(30[deg])"}, {"B_rem*sin(30[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc8").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc8").label("Magnetic Flux Conservation - Magnet II 3 - 2Q");
-	model.physics("mfnc").feature("mfc9").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc9")
-	    .set("Br", new String[][]{{"B_rem*cos(0[deg])"}, {"B_rem*sin(0[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc9").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc9").label("Magnetic Flux Conservation - Magnet IV 1 - 1Q");
-	model.physics("mfnc").feature("mfc10").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc10")
-	    .set("Br", new String[][]{{"B_rem*cos(15[deg])"}, {"B_rem*sin(15[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc10").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc10").label("Magnetic Flux Conservation - Magnet IV 2 - 1Q");
-	model.physics("mfnc").feature("mfc11").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc11")
-	    .set("Br", new String[][]{{"B_rem*cos(30[deg])"}, {"B_rem*sin(30[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc11").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc11").label("Magnetic Flux Conservation - Magnet IV 3 - 1Q");
-	model.physics("mfnc").feature("mfc12").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc12")
-	    .set("Br", new String[][]{{"B_rem*cos(0[deg])"}, {"B_rem*sin(0[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc12").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc12").label("Magnetic Flux Conservation - Magnet IV 1 - 2Q");
-	model.physics("mfnc").feature("mfc13").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc13")
-	    .set("Br", new String[][]{{"B_rem*cos(-15[deg])"}, {"B_rem*sin(-15[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc13").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc13").label("Magnetic Flux Conservation - Magnet IV 2 - 2Q");
-	model.physics("mfnc").feature("mfc14").set("ConstitutiveRelationH", "RemanentFluxDensity");
-	model.physics("mfnc").feature("mfc14")
-	    .set("Br", new String[][]{{"B_rem*cos(-30[deg])"}, {"B_rem*sin(-30[deg])"}, {"0"}});
-	model.physics("mfnc").feature("mfc14").set("materialType", "from_mat");
-	model.physics("mfnc").feature("mfc14").label("Magnetic Flux Conservation - Magnet IV 3 - 2Q");
+	
 
 	model.mesh("mesh1").feature("size").set("hauto", 3);
 	model.mesh("mesh1").feature("size").set("custom", "on");
