@@ -508,44 +508,25 @@ public class NestedHalbachIronSegmentsModel {
 	    .set("ki", new String[]{"0", "0", "0", "0", "0", "0", "0", "0", "0"});
 	}
 
-    private static void configureIronMaterial(){
+    private static void configureIronMaterial(Material mat){
 
-	}
-
-    private static void configureMagnetMaterial(){
-
-	}
-
-    private static void configureMaterials() {
-
-	airMaterial = model.material().create("mat1", "Common", COMPONENT_NAME);
-	configureAirMaterial(airMaterial);
-	airMaterial.selection().named(AIR_REGIONS_SELECTION_TAG);
-	//model.material("mat1").selection().set(new int[]{1, 2, 7, 15});
+	mat.label("Soft Iron (with losses)");
+	mat.set("family", "iron");
 	
-
-	model.material().create("mat2", "Common", COMPONENT_NAME);
-	model.material("mat2").selection().set(new int[]{2, 6, 8, 12, 13, 14, 16, 17, 18, 22, 23});
-	model.material("mat2").propertyGroup().create("BHCurve", "BH curve");
-	model.material("mat2").propertyGroup("BHCurve").func().create("BH", "Interpolation");
-	model.material("mat2").propertyGroup().create("HBCurve", "HB curve");
-	model.material("mat2").propertyGroup("HBCurve").func().create("HB", "Interpolation");
-	model.material("mat2").propertyGroup().create("EffectiveBHCurve", "Effective BH curve");
-	model.material("mat2").propertyGroup("EffectiveBHCurve").func().create("BHeff", "Interpolation");
-	model.material("mat2").propertyGroup().create("EffectiveHBCurve", "Effective HB curve");
-	model.material("mat2").propertyGroup("EffectiveHBCurve").func().create("HBeff", "Interpolation");
-
-	model.material().create("mat3", "Common", COMPONENT_NAME);
-	model.material("mat3").selection().named("sel4");
-
-		model.material("mat2").label("Soft Iron (with losses)");
-	model.material("mat2").set("family", "iron");
-	model.material("mat2").propertyGroup("def")
+	mat.propertyGroup().create("BHCurve", "BH curve");
+	mat.propertyGroup("BHCurve").func().create("BH", "Interpolation");
+	mat.propertyGroup().create("HBCurve", "HB curve");
+	mat.propertyGroup("HBCurve").func().create("HB", "Interpolation");
+	mat.propertyGroup().create("EffectiveBHCurve", "Effective BH curve");
+	mat.propertyGroup("EffectiveBHCurve").func().create("BHeff", "Interpolation");
+	mat.propertyGroup().create("EffectiveHBCurve", "Effective HB curve");
+	mat.propertyGroup("EffectiveHBCurve").func().create("HBeff", "Interpolation");
+	mat.propertyGroup("def")
 	    .set("electricconductivity", new String[]{"1.12e7[S/m]", "0", "0", "0", "1.12e7[S/m]", "0", "0", "0", "1.12e7[S/m]"});
-	model.material("mat2").propertyGroup("def")
+	mat.propertyGroup("def")
 	    .set("relpermittivity", new String[]{"1", "0", "0", "0", "1", "0", "0", "0", "1"});
-	model.material("mat2").propertyGroup("BHCurve").func("BH").set("extrap", "linear");
-	model.material("mat2").propertyGroup("BHCurve").func("BH")
+	mat.propertyGroup("BHCurve").func("BH").set("extrap", "linear");
+	mat.propertyGroup("BHCurve").func("BH")
 	    .set("table", new String[][]{{"0", "0"}, 
 					 {"663.146", "1"}, 
 					 {"1067.5", "1.1"}, 
@@ -562,10 +543,10 @@ public class NestedHalbachIronSegmentsModel {
 					 {"175070", "2.2"}, 
 					 {"261469", "2.3"}, 
 					 {"318310", "2.4"}});
-	model.material("mat2").propertyGroup("BHCurve").set("normB", "BH(normH[m/A])[T]");
-	model.material("mat2").propertyGroup("BHCurve").addInput("magneticfield");
-	model.material("mat2").propertyGroup("HBCurve").func("HB").set("extrap", "linear");
-	model.material("mat2").propertyGroup("HBCurve").func("HB")
+	mat.propertyGroup("BHCurve").set("normB", "BH(normH[m/A])[T]");
+	mat.propertyGroup("BHCurve").addInput("magneticfield");
+	mat.propertyGroup("HBCurve").func("HB").set("extrap", "linear");
+	mat.propertyGroup("HBCurve").func("HB")
 	    .set("table", new String[][]{{"0", "0"}, 
 					 {"1", "663.146"}, 
 					 {"1.1", "1067.5"}, 
@@ -582,10 +563,10 @@ public class NestedHalbachIronSegmentsModel {
 					 {"2.2", "175070"}, 
 					 {"2.3", "261469"}, 
 					 {"2.4", "318310"}});
-	model.material("mat2").propertyGroup("HBCurve").set("normH", "HB(normB[1/T])[A/m]");
-	model.material("mat2").propertyGroup("HBCurve").addInput("magneticfluxdensity");
-	model.material("mat2").propertyGroup("EffectiveBHCurve").func("BHeff").set("extrap", "linear");
-	model.material("mat2").propertyGroup("EffectiveBHCurve").func("BHeff")
+	mat.propertyGroup("HBCurve").set("normH", "HB(normB[1/T])[A/m]");
+	mat.propertyGroup("HBCurve").addInput("magneticfluxdensity");
+	mat.propertyGroup("EffectiveBHCurve").func("BHeff").set("extrap", "linear");
+	mat.propertyGroup("EffectiveBHCurve").func("BHeff")
 	    .set("table", new String[][]{{"0", "0"}, 
 					 {"663.146", "1"}, 
 					 {"1067.5", "1.4943906486860214"}, 
@@ -602,10 +583,10 @@ public class NestedHalbachIronSegmentsModel {
 					 {"175070", "4.941198649690261"}, 
 					 {"261469", "5.1446599438425515"}, 
 					 {"318310", "5.253346039640234"}});
-	model.material("mat2").propertyGroup("EffectiveBHCurve").set("normBeff", "BHeff(normHeff[m/A])[T]");
-	model.material("mat2").propertyGroup("EffectiveBHCurve").addInput("magneticfield");
-	model.material("mat2").propertyGroup("EffectiveHBCurve").func("HBeff").set("extrap", "linear");
-	model.material("mat2").propertyGroup("EffectiveHBCurve").func("HBeff")
+	mat.propertyGroup("EffectiveBHCurve").set("normBeff", "BHeff(normHeff[m/A])[T]");
+	mat.propertyGroup("EffectiveBHCurve").addInput("magneticfield");
+	mat.propertyGroup("EffectiveHBCurve").func("HBeff").set("extrap", "linear");
+	mat.propertyGroup("EffectiveHBCurve").func("HBeff")
 	    .set("table", new String[][]{{"0", "0"}, 
 					 {"1", "663.146"}, 
 					 {"1.4943906486860214", "1067.5"}, 
@@ -622,11 +603,33 @@ public class NestedHalbachIronSegmentsModel {
 					 {"4.941198649690261", "175070"}, 
 					 {"5.1446599438425515", "261469"}, 
 					 {"5.253346039640234", "318310"}});
-	model.material("mat2").propertyGroup("EffectiveHBCurve").set("normHeff", "HBeff(normBeff[1/T])[A/m]");
-	model.material("mat2").propertyGroup("EffectiveHBCurve").addInput("magneticfluxdensity");
-	model.material("mat3").label("Nd-Fe-B");
-	model.material("mat3").propertyGroup("def")
+	mat.propertyGroup("EffectiveHBCurve").set("normHeff", "HBeff(normBeff[1/T])[A/m]");
+	mat.propertyGroup("EffectiveHBCurve").addInput("magneticfluxdensity");
+
+	}
+
+    private static void configureMagnetMaterial(Material mat){
+
+	
+	mat.label("Nd-Fe-B");
+	mat.propertyGroup("def")
 	    .set("relpermeability", new String[]{"1.05", "0", "0", "0", "1.05", "0", "0", "0", "1.05"});
+	}
+
+    private static void configureMaterials() {
+
+	airMaterial = model.material().create("mat1", "Common", COMPONENT_NAME);
+	configureAirMaterial(airMaterial);
+	airMaterial.selection().named(AIR_REGIONS_SELECTION_TAG);
+
+	ironMaterial = model.material().create("mat2", "Common", COMPONENT_NAME);
+	configureIronMaterial(ironMaterial);
+	ironMaterial.selection().named(IRON_SELECTION_TAG);
+
+	magnetMaterial = model.material().create("mat3", "Common", COMPONENT_NAME);
+	configureMagnetMaterial(magnetMaterial);
+	magnetMaterial.selection().named(MAGNETS_SELECTION_TAG);
+
 
     }
     
