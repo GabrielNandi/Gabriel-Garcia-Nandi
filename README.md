@@ -19,3 +19,7 @@ This will result into a Java `.class` file, which you can open normally with COM
 	comsolbatch -inputfile <filename>.class
 
 This will run COMSOL in *batch* mode, without the graphical interface. If everything is successful, you have a `<filename>_Model.mph` file that you can load into COMSOL to see the results.
+
+## Parameters
+
+Parameters are read from the file `params.txt` in the current directory. This table-like file can be changed as you were typing in the parameters table inside COMSOL.
