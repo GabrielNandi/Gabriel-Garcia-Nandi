@@ -858,44 +858,6 @@ public class NestedHalbachIronSegmentsModel {
 
 	configureMesh();
 
-	model.view("view1").axis().set("abstractviewrratio", "0.05000001937150955");
-	model.view("view1").axis().set("abstractviewlratio", "-0.05000001937150955");
-	model.view("view1").axis().set("abstractviewxscale", "1.7412134911864996E-4");
-	model.view("view1").axis().set("abstractviewbratio", "-0.20146028697490692");
-	model.view("view1").axis().set("xmax", "0.1679999679327011");
-	model.view("view1").axis().set("xmin", "-0.1679999679327011");
-	model.view("view1").axis().set("abstractviewyscale", "1.7412134911864996E-4");
-	model.view("view1").axis().set("ymax", "0.18563207983970642");
-	model.view("view1").axis().set("ymin", "-0.025632094591856003");
-	model.view("view1").axis().set("abstractviewtratio", "0.20146028697490692");
-	model.view("view2").axis().set("abstractviewrratio", "0.2330528348684311");
-	model.view("view2").axis().set("abstractviewlratio", "-0.2330528348684311");
-	model.view("view2").axis().set("abstractviewxscale", "6.460277654696256E-5");
-	model.view("view2").axis().set("abstractviewbratio", "-0.049999963492155075");
-	model.view("view2").axis().set("xmax", "0.05863120034337044");
-	model.view("view2").axis().set("xmin", "-0.002834910526871681");
-	model.view("view2").axis().set("abstractviewyscale", "6.460277654696256E-5");
-	model.view("view2").axis().set("ymax", "0.04428674280643463");
-	model.view("view2").axis().set("ymin", "0.002896810881793499");
-	model.view("view2").axis().set("abstractviewtratio", "0.049999963492155075");
-	model.view("view3").axis().set("abstractviewrratio", "0.05000002309679985");
-	model.view("view3").axis().set("abstractviewlratio", "-0.05000002309679985");
-	model.view("view3").axis().set("abstractviewxscale", "2.487050660420209E-4");
-	model.view("view3").axis().set("abstractviewbratio", "-0.4331461191177368");
-	model.view("view3").axis().set("xmax", "0.1111711636185646");
-	model.view("view3").axis().set("xmin", "-0.1111711636185646");
-	model.view("view3").axis().set("abstractviewyscale", "2.487050660420209E-4");
-	model.view("view3").axis().set("ymax", "0.11510521918535233");
-	model.view("view3").axis().set("ymin", "-0.03461522236466408");
-	model.view("view3").axis().set("abstractviewtratio", "0.43314605951309204");
-
-
-
-
-
-	
-
-
 	model.study().create("std1");
 	model.study("std1").create("stat", "Stationary");
 
