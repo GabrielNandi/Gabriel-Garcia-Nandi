@@ -36,7 +36,8 @@ public class NestedHalbachIronSegmentsModel {
     private static final String AIR_GAP_SELECTION_TAG = "air_gap_selection";
     private static final String ENVIRONMENT_SELECTION_TAG = "environment_selection";
     private static final String ENVIRONMENT_HORIZONTAL_BOUNDARY_SELECTION_TAG = "environment_horization_boundary_selection";
-    private static final String AIR_REGIONS_SELECTION_TAG = "air_regions_selection_tag";
+    private static final String AIR_REGIONS_SELECTION_TAG = "air_regions_selection";
+    private static final String CIRCUIT_REGIONS_SELECTION_TAG = "magnetic_circuit_regions_seletion";
            
     private static Model model;
     private static ModelNodeList modelNodes;
@@ -484,6 +485,31 @@ public class NestedHalbachIronSegmentsModel {
 	model.selection(AIR_REGIONS_SELECTION_TAG).add(getDomainEntities(airGapTag));
 	model.selection(AIR_REGIONS_SELECTION_TAG).add(getDomainEntities(environmentTag));
 
+	// configure selection for the "circuit" (everything but the environment)
+	model.selection().create(CIRCUIT_REGIONS_SELECTION_TAG,"Explicit");
+	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).label("Magnetic circuit regions (except environment)");
+	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(shaftTag));
+	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(airGapTag));
+	for (String ftag : magnetII1QBlockTags) {
+	    model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(ftag));
+	}
+
+	for (String ftag : magnetII2QBlockTags) {
+	    model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(ftag));
+	}
+
+	for (String ftag : magnetIV1QBlockTags) {
+	    model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(ftag));
+	}
+
+	for (String ftag : magnetIV2QBlockTags) {
+	    model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(ftag));
+	}
+	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(ironIIBlockTag));
+	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(ironIVBlockTag));
+	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(fluxConcentratorTag));
+
+
 
     }
 
@@ -774,9 +800,9 @@ public class NestedHalbachIronSegmentsModel {
 
 		
 	MeshFeature meshFreeTriangularConfiguration = modelMesh.create("ftri1", "FreeTri");
-	meshFreeTriangularConfiguration.selection()
-	    .set(new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26});
 	meshFreeTriangularConfiguration.selection().geom(GEOMETRY_TAG, 2);
+	meshFreeTriangularConfiguration.selection().named(CIRCUIT_REGIONS_SELECTION_TAG);
+
 		
 	MeshFeature meshMapConfiguration = modelMesh.create("map1", "Map");
 	meshMapConfiguration.selection().geom(GEOMETRY_TAG, 2);
@@ -831,10 +857,6 @@ public class NestedHalbachIronSegmentsModel {
 	configurePhysics();
 
 	configureMesh();
-
-
-
-
 
 	model.view("view1").axis().set("abstractviewrratio", "0.05000001937150955");
 	model.view("view1").axis().set("abstractviewlratio", "-0.05000001937150955");
