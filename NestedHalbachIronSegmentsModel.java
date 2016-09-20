@@ -352,11 +352,11 @@ public class NestedHalbachIronSegmentsModel {
 	// loop to build magnet blocks for region IV
 	// see previous loop for explanations
 	
-	magnetIV1QBlockTags = new String[nII];
-	magnetIV1QBlockFeatures = new GeomFeature[nII];
+	magnetIV1QBlockTags = new String[nIV];
+	magnetIV1QBlockFeatures = new GeomFeature[nIV];
 
-	magnetIV2QBlockTags = new String[nII];
-	magnetIV2QBlockFeatures = new GeomFeature[nII];
+	magnetIV2QBlockTags = new String[nIV];
+	magnetIV2QBlockFeatures = new GeomFeature[nIV];
 	
 	for (int i = 0; i < nIV; i++) {
 
@@ -930,8 +930,8 @@ public class NestedHalbachIronSegmentsModel {
 	params.set("R_s", "140[mm]");
 	params.set("h_fc", "20[mm]");
 	params.set("R_e", "2[m]");
-	params.set("n_II", "3", "Number of segments in magnet II");
-	params.set("n_IV", "3", "Number of segments in magnet IV");
+	params.set("n_II", "4", "Number of segments in magnet II");
+	params.set("n_IV", "5", "Number of segments in magnet IV");
 	params.set("R_g", "R_o+h_gap");
 	params.set("phi_S_II", "45[deg]");
 	params.set("phi_S_IV", "45[deg]");
