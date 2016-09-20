@@ -1,0 +1,15 @@
+R_i 15[mm]
+R_o 50[mm]
+h_gap 20[mm]
+R_s 140[mm]
+h_fc 20[mm]
+R_e 2[m]
+n_II 4 
+n_IV 5 
+R_g R_o+h_gap
+phi_S_II 45[deg]
+phi_S_IV 45[deg]
+delta_phi_S_II (phi_S_II)/n_II
+delta_phi_S_IV (phi_S_IV)/n_IV
+B_rem 1.47[T]
+R_c R_s+h_fc

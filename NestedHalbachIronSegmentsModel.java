@@ -38,6 +38,8 @@ public class NestedHalbachIronSegmentsModel {
     private static final String ENVIRONMENT_HORIZONTAL_BOUNDARY_SELECTION_TAG = "environment_horization_boundary_selection";
     private static final String AIR_REGIONS_SELECTION_TAG = "air_regions_selection";
     private static final String CIRCUIT_REGIONS_SELECTION_TAG = "magnetic_circuit_regions_seletion";
+
+    private static final String PARAMETER_FILE_NAME = "params.txt";
            
     private static Model model;
     private static ModelNodeList modelNodes;
@@ -924,21 +926,7 @@ public class NestedHalbachIronSegmentsModel {
 
 	params = model.param();
 
-	params.set("R_i", "15[mm]");
-	params.set("R_o", "50[mm]");
-	params.set("h_gap", "20[mm]");
-	params.set("R_s", "140[mm]");
-	params.set("h_fc", "20[mm]");
-	params.set("R_e", "2[m]");
-	params.set("n_II", "4", "Number of segments in magnet II");
-	params.set("n_IV", "5", "Number of segments in magnet IV");
-	params.set("R_g", "R_o+h_gap");
-	params.set("phi_S_II", "45[deg]");
-	params.set("phi_S_IV", "45[deg]");
-	params.set("delta_phi_S_II", "(phi_S_II)/n_II");
-	params.set("delta_phi_S_IV", "(phi_S_IV)/n_IV");
-	params.set("B_rem", "1.47[T]");
-	params.set("R_c", "R_s+h_fc");
+	params.loadFile(PARAMETER_FILE_NAME);
 
 	nII = Integer.parseInt(params.get("n_II"));
 	nIV = Integer.parseInt(params.get("n_IV"));
