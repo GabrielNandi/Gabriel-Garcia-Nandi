@@ -833,6 +833,91 @@ public class NestedHalbachIronSegmentsModel {
 	model.sol("sol1").runAll();
 
 	}
+
+    private static void configureResults(){
+
+	// configure the datasets
+	model.result().dataset("dset1").selection().geom(GEOMETRY_TAG, 2);
+	model.result().dataset("dset1").label("Air gap");
+	model.result().dataset("dset1").selection().named(AIR_GAP_SELECTION_TAG);
+	model.result().dataset("dset1").selection().inherit(true);
+	
+	model.result().dataset().create("dset2", "Solution");
+	model.result().dataset("dset2").label("Magnets");
+	model.result().dataset("dset2").selection().geom(GEOMETRY_TAG, 2);
+	model.result().dataset("dset2").selection().named(MAGNETS_SELECTION_TAG);
+	model.result().dataset("dset2").selection().inherit(true);
+
+	
+	model.result().dataset().create("pc1", "ParCurve2D");
+	model.result().dataset("pc1").label("Air gap central line");
+	model.result().dataset("pc1").set("parmax1", "pi");
+	model.result().dataset("pc1").set("exprx", "(R_o+h_gap/2)*cos(s)");
+	model.result().dataset("pc1").set("expry", "(R_o+h_gap/2)*sin(s)");
+	
+
+	// configure plot groupd
+
+
+	model.result().create("pg2", "PlotGroup2D");
+	model.result("pg2").create("surf1", "Surface");
+	model.result("pg2").label("Air gap");
+	model.result("pg2").set("data","dset1");
+	model.result("pg2").feature("surf1").label("B");
+	model.result("pg2").feature("surf1").set("unit", "T");
+	model.result("pg2").feature("surf1").set("expr", "mfnc.normB");
+	model.result("pg2").feature("surf1").set("descr", "Magnetic flux density norm");
+	model.result("pg2").feature("surf1").set("resolution", "normal");
+
+	
+	model.result().create("pg3", "PlotGroup2D");
+	model.result("pg3").set("data", "dset2");
+	model.result("pg3").create("arws1", "ArrowSurface");
+	model.result("pg3").create("surf1", "Surface");
+	model.result("pg3").create("arws2", "ArrowSurface");
+	model.result("pg3").label("Magnets");
+	model.result("pg3").feature("arws1").label("B_rem");
+	model.result("pg3").feature("arws1").set("scale", "0.0077221241233942925");
+	model.result("pg3").feature("arws1").set("arrowbase", "center");
+	model.result("pg3").feature("arws1").set("expr", new String[]{"mfnc.Brx", "mfnc.Bry"});
+	model.result("pg3").feature("arws1").set("descr", "Remanent flux density");
+	model.result("pg3").feature("arws1").set("scaleactive", false);
+	model.result("pg3").feature("surf1").label("Psi");
+	model.result("pg3").feature("surf1").set("unit", "kPa");
+	model.result("pg3").feature("surf1")
+	    .set("expr", "abs((mfnc.Bx*mfnc.Brx+mfnc.By*mfnc.Bry)/mfnc.normBr)*abs((mfnc.Hx*mfnc.Brx+mfnc.Hy*mfnc.Bry)/mfnc.normBr)");
+	model.result("pg3").feature("surf1").set("rangedatamax", "409");
+	model.result("pg3").feature("surf1")
+	    .set("descr", "abs((mfnc.Bx*mfnc.Brx+mfnc.By*mfnc.Bry)/mfnc.normBr)*abs((mfnc.Hx*mfnc.Brx+mfnc.Hy*mfnc.Bry)/mfnc.normBr)");
+	model.result("pg3").feature("surf1").set("rangecoloractive", "on");
+	model.result("pg3").feature("surf1").set("rangedataactive", "on");
+	model.result("pg3").feature("surf1").set("rangecolormax", "409");
+	model.result("pg3").feature("surf1").set("resolution", "normal");
+	model.result("pg3").feature("arws2").label("H");
+	model.result("pg3").feature("arws2").set("scale", "0.010592406010573617");
+	model.result("pg3").feature("arws2").set("descractive", true);
+	model.result("pg3").feature("arws2").set("arrowbase", "center");
+	model.result("pg3").feature("arws2").set("expr", new String[]{"mu0_const*mfnc.Hx", "mu0_const*mfnc.Hy"});
+	model.result("pg3").feature("arws2").set("descr", "mu0*H");
+	model.result("pg3").feature("arws2").set("color", "black");
+	model.result("pg3").feature("arws2").set("scaleactive", false);
+
+	
+	model.result().create("pg4", "PlotGroup1D");
+	model.result("pg4").create("lngr1", "LineGraph");
+	model.result("pg4").label("Air gap central line");
+	model.result("pg4").set("data", "pc1");
+	model.result("pg4").set("ylabel", "Magnetic flux density norm (T)");
+	model.result("pg4").set("xlabel", "Arc length");
+	model.result("pg4").set("xlabelactive", false);
+	model.result("pg4").set("ylabelactive", false);
+	model.result("pg4").feature("lngr1").set("unit", "T");
+	model.result("pg4").feature("lngr1").set("descr", "Magnetic flux density norm");
+	model.result("pg4").feature("lngr1").set("expr", "mfnc.normB");
+	model.result("pg4").feature("lngr1").set("resolution", "normal");
+
+
+	}
     
     public static Model run() {
         model = ModelUtil.create("Model");
@@ -882,104 +967,15 @@ public class NestedHalbachIronSegmentsModel {
 
 	configureStudy();
 
+	configureResults();
+
  	return model;
     }
 
-    public static Model run2(Model model) {
-
-
-	model.result().dataset().create("dset2", "Solution");
-	model.result().dataset().create("pc1", "ParCurve2D");
-	model.result().dataset().create("dset3", "Solution");
-	model.result().dataset("dset1").selection().geom(GEOMETRY_TAG, 2);
-	model.result().dataset("dset1").selection().set(new int[]{7});
-	model.result().dataset("dset2").selection().geom(GEOMETRY_TAG, 2);
-	model.result().dataset("dset2").selection().set(new int[]{3, 4, 5, 9, 10, 11, 19, 20, 21, 24, 25, 26});
-	model.result().dataset("dset3").selection().geom(GEOMETRY_TAG, 2);
-	model.result().dataset("dset3").selection()
-	    .set(new int[]{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26});
-	model.result().create("pg2", "PlotGroup2D");
-	model.result().create("pg3", "PlotGroup2D");
-	model.result().create("pg4", "PlotGroup1D");
-	model.result().create("pg5", "PlotGroup2D");
-	model.result("pg2").create("surf1", "Surface");
-	model.result("pg3").set("data", "dset2");
-	model.result("pg3").create("arws1", "ArrowSurface");
-	model.result("pg3").create("surf1", "Surface");
-	model.result("pg3").create("arws2", "ArrowSurface");
-	model.result("pg4").create("lngr1", "LineGraph");
-	model.result("pg5").set("data", "dset3");
-	model.result("pg5").create("str1", "Streamline");
-	model.result("pg5").create("arws1", "ArrowSurface");
-	model.result("pg5").feature("str1").selection()
-	    .set(new int[]{35, 36, 37, 39, 41, 42, 43, 45, 46, 72, 74, 75, 76, 77, 78, 80, 81, 82});
-
-
-
-	model.result().dataset("dset1").label("Air gap");
-	model.result().dataset("dset2").label("Magnets");
-	model.result().dataset("pc1").label("Air gap central line");
-	model.result().dataset("pc1").set("parmax1", "pi");
-	model.result().dataset("pc1").set("exprx", "(R_o+h_gap/2)*cos(s)");
-	model.result().dataset("pc1").set("expry", "(R_o+h_gap/2)*sin(s)");
-	model.result().dataset("dset3").label("Whole");
-	model.result("pg2").label("Air gap");
-	model.result("pg2").feature("surf1").label("B");
-	model.result("pg2").feature("surf1").set("unit", "T");
-	model.result("pg2").feature("surf1").set("expr", "mfnc.normB");
-	model.result("pg2").feature("surf1").set("descr", "Magnetic flux density norm");
-	model.result("pg2").feature("surf1").set("resolution", "normal");
-	model.result("pg3").label("Magnets");
-	model.result("pg3").feature("arws1").label("B_rem");
-	model.result("pg3").feature("arws1").set("scale", "0.0077221241233942925");
-	model.result("pg3").feature("arws1").set("arrowbase", "center");
-	model.result("pg3").feature("arws1").set("expr", new String[]{"mfnc.Brx", "mfnc.Bry"});
-	model.result("pg3").feature("arws1").set("descr", "Remanent flux density");
-	model.result("pg3").feature("arws1").set("scaleactive", false);
-	model.result("pg3").feature("surf1").label("Psi");
-	model.result("pg3").feature("surf1").set("unit", "kPa");
-	model.result("pg3").feature("surf1")
-	    .set("expr", "abs((mfnc.Bx*mfnc.Brx+mfnc.By*mfnc.Bry)/mfnc.normBr)*abs((mfnc.Hx*mfnc.Brx+mfnc.Hy*mfnc.Bry)/mfnc.normBr)");
-	model.result("pg3").feature("surf1").set("rangedatamax", "409");
-	model.result("pg3").feature("surf1")
-	    .set("descr", "abs((mfnc.Bx*mfnc.Brx+mfnc.By*mfnc.Bry)/mfnc.normBr)*abs((mfnc.Hx*mfnc.Brx+mfnc.Hy*mfnc.Bry)/mfnc.normBr)");
-	model.result("pg3").feature("surf1").set("rangecoloractive", "on");
-	model.result("pg3").feature("surf1").set("rangedataactive", "on");
-	model.result("pg3").feature("surf1").set("rangecolormax", "409");
-	model.result("pg3").feature("surf1").set("resolution", "normal");
-	model.result("pg3").feature("arws2").label("H");
-	model.result("pg3").feature("arws2").set("scale", "0.010592406010573617");
-	model.result("pg3").feature("arws2").set("descractive", true);
-	model.result("pg3").feature("arws2").set("arrowbase", "center");
-	model.result("pg3").feature("arws2").set("expr", new String[]{"mu0_const*mfnc.Hx", "mu0_const*mfnc.Hy"});
-	model.result("pg3").feature("arws2").set("descr", "mu0*H");
-	model.result("pg3").feature("arws2").set("color", "black");
-	model.result("pg3").feature("arws2").set("scaleactive", false);
-	model.result("pg4").label("Air gap central line");
-	model.result("pg4").set("data", "pc1");
-	model.result("pg4").set("ylabel", "Magnetic flux density norm (T)");
-	model.result("pg4").set("xlabel", "Arc length");
-	model.result("pg4").set("xlabelactive", false);
-	model.result("pg4").set("ylabelactive", false);
-	model.result("pg4").feature("lngr1").set("unit", "T");
-	model.result("pg4").feature("lngr1").set("descr", "Magnetic flux density norm");
-	model.result("pg4").feature("lngr1").set("expr", "mfnc.normB");
-	model.result("pg4").feature("lngr1").set("resolution", "normal");
-	model.result("pg5").label("Whole domain");
-	model.result("pg5").feature("str1").active(false);
-	model.result("pg5").feature("str1").set("color", "blue");
-	model.result("pg5").feature("str1").set("resolution", "normal");
-	model.result("pg5").feature("arws1").label("B");
-	model.result("pg5").feature("arws1").set("scale", "0.0048866785798066924");
-	model.result("pg5").feature("arws1").set("arrowbase", "center");
-	model.result("pg5").feature("arws1").set("scaleactive", false);
-
-	return model;
-    }
 
     public static void main(String[] args) {
 	model = run();
-	run2(model);
+
     }
 
 }
