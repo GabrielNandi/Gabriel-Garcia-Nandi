@@ -811,6 +811,28 @@ public class NestedHalbachIronSegmentsModel {
 
 	modelMesh.run();
     }
+
+    private static void configureStudy(){
+
+	model.study().create("std1");
+	model.study("std1").create("stat", "Stationary");
+
+	model.sol().create("sol1");
+	model.sol("sol1").study("std1");
+	model.sol("sol1").attach("std1");
+	model.sol("sol1").create("st1", "StudyStep");
+	model.sol("sol1").create("v1", "Variables");
+	model.sol("sol1").create("s1", "Stationary");
+
+	model.sol("sol1").feature("s1").create("fc1", "FullyCoupled");
+	model.sol("sol1").feature("s1").create("i1", "Iterative");
+	model.sol("sol1").feature("s1").feature().remove("fcDef");
+
+	
+	model.sol("sol1").attach("std1");
+	model.sol("sol1").runAll();
+
+	}
     
     public static Model run() {
         model = ModelUtil.create("Model");
@@ -858,23 +880,13 @@ public class NestedHalbachIronSegmentsModel {
 
 	configureMesh();
 
-	model.study().create("std1");
-	model.study("std1").create("stat", "Stationary");
+	configureStudy();
 
-	model.sol().create("sol1");
-	model.sol("sol1").study("std1");
-	model.sol("sol1").attach("std1");
-	model.sol("sol1").create("st1", "StudyStep");
-	model.sol("sol1").create("v1", "Variables");
-	model.sol("sol1").create("s1", "Stationary");
-
-	return model;
+ 	return model;
     }
 
     public static Model run2(Model model) {
-	model.sol("sol1").feature("s1").create("fc1", "FullyCoupled");
-	model.sol("sol1").feature("s1").create("i1", "Iterative");
-	model.sol("sol1").feature("s1").feature().remove("fcDef");
+
 
 	model.result().dataset().create("dset2", "Solution");
 	model.result().dataset().create("pc1", "ParCurve2D");
@@ -902,8 +914,7 @@ public class NestedHalbachIronSegmentsModel {
 	model.result("pg5").feature("str1").selection()
 	    .set(new int[]{35, 36, 37, 39, 41, 42, 43, 45, 46, 72, 74, 75, 76, 77, 78, 80, 81, 82});
 
-	model.sol("sol1").attach("std1");
-	model.sol("sol1").runAll();
+
 
 	model.result().dataset("dset1").label("Air gap");
 	model.result().dataset("dset2").label("Magnets");
