@@ -706,8 +706,21 @@ public class NestedHalbachIronSegmentsModel {
 
     private static double calculateRemanenceAngle(int index,String magnet, String quadrant){
 
-	// just for test
-	return 0.0;
+	// in the parameter file, the angles are specified like this: alpha_rem_II_2
+	String param = String.format("alpha_rem_%s_%d", magnet, index+1);
+	double angle = 0.0;
+
+	// it can be shown that, to maintain the two-pole symmetry, the y components of the 1st and 2nd
+	// quadrant must be opposite
+	if (quadrant.equals("1Q")) {
+	    angle = params.evaluate(param);
+	} else {
+	    angle = -params.evaluate(param);
+	}
+
+	return angle;
+	
+	
     }
     
 
