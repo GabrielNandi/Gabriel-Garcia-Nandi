@@ -34,6 +34,8 @@ public class NestedHalbachIronSegmentsModel {
     private static final String MAGNETS_SELECTION_TAG = "magnets_selection";
     private static final String IRON_SELECTION_TAG = "iron_selection";
     private static final String AIR_GAP_SELECTION_TAG = "air_gap_selection";
+    private static final String AIR_GAP_HIGH_SELECTION_TAG = "air_gap_high_selection";
+    private static final String AIR_GAP_LOW_SELECTION_TAG = "air_gap_low_selection";
     private static final String ENVIRONMENT_SELECTION_TAG = "environment_selection";
     private static final String ENVIRONMENT_HORIZONTAL_BOUNDARY_SELECTION_TAG = "environment_horization_boundary_selection";
     private static final String AIR_REGIONS_SELECTION_TAG = "air_regions_selection";
@@ -57,7 +59,10 @@ public class NestedHalbachIronSegmentsModel {
     private static String ironIIBlockTag;
     private static String ironIVBlockTag;
     private static String shaftTag;
-    private static String airGapTag;
+    private static String airGapHigh1QTag;
+    private static String airGapHigh2QTag;
+    private static String airGapLow1QTag;
+    private static String airGapLow2QTag;
     private static String fluxConcentratorTag;
     private static String environmentTag;
 
@@ -68,7 +73,10 @@ public class NestedHalbachIronSegmentsModel {
     private static GeomFeature ironIIBlockFeature;
     private static GeomFeature ironIVBlockFeature;
     private static GeomFeature shaftFeature;
-    private static GeomFeature airGapFeature;
+    private static GeomFeature airGapHigh1QFeature;
+    private static GeomFeature airGapHigh2QFeature;
+    private static GeomFeature airGapLow1QFeature;
+    private static GeomFeature airGapLow2QFeature;
     private static GeomFeature fluxConcentratorFeature;
     private static GeomFeature environmentFeature;
 
@@ -290,18 +298,64 @@ public class NestedHalbachIronSegmentsModel {
 	
     }
 
-    private static GeomFeature buildAirGapShell() {
+    private static GeomFeature buildAirGapBlock(String region, String quadrant) {
 
-	GeomFeature shell;
+	String label = "Air Gap Cylinder Block " + region + " Field  " + quadrant;
+
+	// by convention, the high field region will be delimited by the
+	// mean angle between phi_S_II and phi_S_IV
+	String angle = String.format("(0.5*(%s + %s))",params.get("phi_S_II"),params.get("phi_S_IV"));
+	String angle_start_expr = "";
+	String angle_end_expr = "";
+	String tag = "";
+
+	if (region.equals("High")) {
+
+	    if (quadrant.equals("1Q")) {
+
+		airGapHigh1QTag = geomFeatures.uniquetag(AIR_GAP_TAG);
+		tag = airGapHigh1QTag;
+		angle_start_expr = "0";
+		angle_end_expr = String.format("%s", angle);
+	    
+	    }
+	    else {
+
+		airGapHigh2QTag = geomFeatures.uniquetag(AIR_GAP_TAG);
+		tag = airGapHigh2QTag;
+		angle_start_expr = String.format("180[deg]-%s",angle);
+		angle_end_expr = "180[deg]";
+	    }
+	    
+	} else {
+	    
+	    if (quadrant.equals("1Q")) {
+
+		airGapLow1QTag = geomFeatures.uniquetag(AIR_GAP_TAG);
+		tag = airGapLow1QTag;
+		angle_start_expr = String.format("%s", angle);
+		angle_end_expr = "90[deg]";
+	    
+	    }
+	    else {
+
+		airGapLow2QTag = geomFeatures.uniquetag(AIR_GAP_TAG);
+		tag = airGapLow2QTag;
+		angle_start_expr = "90[deg]";
+		angle_end_expr = String.format("180[deg]-%s",angle);
+	    }
+	}
+
 	
-	airGapTag = geomFeatures.uniquetag(AIR_GAP_TAG);
-	String label = "Air Gap Cylinder Shell";
-	String[] expression = new String[]{"R_o","R_g","180[deg]"};
-
-	shell = buildCylinderShell(airGapTag,label,expression);
-	return shell;
+	
+	String[] expression = new String[]{"R_o", "R_g", angle_start_expr,angle_end_expr};
+	
+	GeomFeature block = buildCylinderBlock(tag,label,expression);
+	return block;
 
     }
+
+
 
     private static GeomFeature buildFluxConcentratorShell() {
 
@@ -375,7 +429,10 @@ public class NestedHalbachIronSegmentsModel {
 
 	
 	// build the air gap region
-	airGapFeature = buildAirGapShell();
+	airGapHigh1QFeature = buildAirGapBlock("High","1Q");
+	airGapLow1QFeature = buildAirGapBlock("Low","1Q");
+	airGapHigh2QFeature = buildAirGapBlock("High","2Q");
+	airGapLow2QFeature = buildAirGapBlock("Low","2Q");
 
 	// build the flux concentrator region
 	fluxConcentratorFeature = buildFluxConcentratorShell();
@@ -419,10 +476,23 @@ public class NestedHalbachIronSegmentsModel {
 	entities = getDomainEntities(shaftTag);
 	model.selection(SHAFT_SELECTION_TAG).set(entities);
 
+	model.selection().create(AIR_GAP_HIGH_SELECTION_TAG, "Explicit");
+	model.selection(AIR_GAP_HIGH_SELECTION_TAG).label("Air Gap High");
+	entities = getDomainEntities(airGapHigh1QTag);
+	model.selection(AIR_GAP_HIGH_SELECTION_TAG).set(entities);
+
+	model.selection().create(AIR_GAP_LOW_SELECTION_TAG, "Explicit");
+	model.selection(AIR_GAP_LOW_SELECTION_TAG).label("Air Gap Low");
+	entities = getDomainEntities(airGapLow1QTag);
+	model.selection(AIR_GAP_LOW_SELECTION_TAG).set(entities);
+
+	
 	model.selection().create(AIR_GAP_SELECTION_TAG, "Explicit");
 	model.selection(AIR_GAP_SELECTION_TAG).label("Air Gap");
-	entities = getDomainEntities(airGapTag);
-	model.selection(AIR_GAP_SELECTION_TAG).set(entities);
+	model.selection(AIR_GAP_SELECTION_TAG).add(getDomainEntities(airGapHigh1QTag));
+	model.selection(AIR_GAP_SELECTION_TAG).add(getDomainEntities(airGapHigh2QTag));
+	model.selection(AIR_GAP_SELECTION_TAG).add(getDomainEntities(airGapLow1QTag));
+	model.selection(AIR_GAP_SELECTION_TAG).add(getDomainEntities(airGapLow2QTag));
 
 	model.selection().create(ENVIRONMENT_SELECTION_TAG, "Explicit");
 	model.selection(ENVIRONMENT_SELECTION_TAG).label("Environment");
@@ -484,14 +554,14 @@ public class NestedHalbachIronSegmentsModel {
 	model.selection().create(AIR_REGIONS_SELECTION_TAG,"Explicit");
 	model.selection(AIR_REGIONS_SELECTION_TAG).label("Air regions");
 	model.selection(AIR_REGIONS_SELECTION_TAG).add(getDomainEntities(shaftTag));
-	model.selection(AIR_REGIONS_SELECTION_TAG).add(getDomainEntities(airGapTag));
 	model.selection(AIR_REGIONS_SELECTION_TAG).add(getDomainEntities(environmentTag));
+	model.selection(AIR_REGIONS_SELECTION_TAG).add(model.selection(AIR_GAP_SELECTION_TAG).entities(2));
 
 	// configure selection for the "circuit" (everything but the environment)
 	model.selection().create(CIRCUIT_REGIONS_SELECTION_TAG,"Explicit");
 	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).label("Magnetic circuit regions (except environment)");
 	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(shaftTag));
-	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(airGapTag));
+	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(model.selection(AIR_GAP_SELECTION_TAG).entities(2));
 	for (String ftag : magnetII1QBlockTags) {
 	    model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(ftag));
 	}
