@@ -91,6 +91,9 @@ public class NestedHalbachIronSegmentsModel {
 
     private static MeshSequence modelMesh;
 
+    private static Results modelResults;
+    private static DatasetFeatureList modelDataSets;
+
     private static GeomSequence configureCylinderBlock(){
 
 	GeomSequence part = geometryList.create(CYLINDER_BLOCK_PART_NAME, "Part", 2);
@@ -919,30 +922,42 @@ public class NestedHalbachIronSegmentsModel {
 
 	}
 
+    private static DatasetFeature configureDataSet(String label, String selectionTag){
+
+	String tag = modelDataSets.uniquetag("dset");
+	DatasetFeature dset = modelDataSets.create(tag,"Solution");
+	dset.selection().geom(GEOMETRY_TAG,2);
+	dset.label(label);
+	dset.selection().named(selectionTag);
+	dset.selection().inherit(true);
+
+	return dset;
+	}
+    
+
     private static void configureResults(){
 
+	modelResults = model.result();
+	modelDataSets = modelResults.dataset();
+	
 	// configure the datasets
-	model.result().dataset("dset1").selection().geom(GEOMETRY_TAG, 2);
-	model.result().dataset("dset1").label("Air gap");
-	model.result().dataset("dset1").selection().named(AIR_GAP_SELECTION_TAG);
-	model.result().dataset("dset1").selection().inherit(true);
-	
-	model.result().dataset().create("dset2", "Solution");
-	model.result().dataset("dset2").label("Magnets");
-	model.result().dataset("dset2").selection().geom(GEOMETRY_TAG, 2);
-	model.result().dataset("dset2").selection().named(MAGNETS_SELECTION_TAG);
-	model.result().dataset("dset2").selection().inherit(true);
+	DatasetFeature airGapDataSet = configureDataSet("Air gap", AIR_GAP_SELECTION_TAG);
 
 	
-	model.result().dataset().create("pc1", "ParCurve2D");
-	model.result().dataset("pc1").label("Air gap central line");
-	model.result().dataset("pc1").set("parmax1", "pi");
-	model.result().dataset("pc1").set("exprx", "(R_o+h_gap/2)*cos(s)");
-	model.result().dataset("pc1").set("expry", "(R_o+h_gap/2)*sin(s)");
+	DatasetFeature magnetsDataSet = configureDataSet("Magnets", MAGNETS_SELECTION_TAG);
+
+	DatasetFeature airGapHighDataSet = configureDataSet("Air Gap High Field Region", AIR_GAP_HIGH_SELECTION_TAG);
+	DatasetFeature airGapLowDataSet = configureDataSet("Air Gap Low Field Region", AIR_GAP_LOW_SELECTION_TAG);
+	
+	
+	DatasetFeature magneticProfileDataSet = modelDataSets.create("pc1", "ParCurve2D");
+	magneticProfileDataSet.label("Air gap central line");
+	magneticProfileDataSet.set("parmax1", "pi");
+	magneticProfileDataSet.set("exprx", "(R_o+h_gap/2)*cos(s)");
+	magneticProfileDataSet.set("expry", "(R_o+h_gap/2)*sin(s)");
 	
 
-	// configure plot groupd
-
+	// configure plot groups
 
 	model.result().create("pg2", "PlotGroup2D");
 	model.result("pg2").create("surf1", "Surface");
