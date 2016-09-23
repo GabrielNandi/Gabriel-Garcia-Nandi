@@ -959,62 +959,66 @@ public class NestedHalbachIronSegmentsModel {
 
 	// configure plot groups
 
-	model.result().create("pg2", "PlotGroup2D");
-	model.result("pg2").create("surf1", "Surface");
-	model.result("pg2").label("Air gap");
-	model.result("pg2").set("data","dset1");
-	model.result("pg2").feature("surf1").label("B");
-	model.result("pg2").feature("surf1").set("unit", "T");
-	model.result("pg2").feature("surf1").set("expr", "mfnc.normB");
-	model.result("pg2").feature("surf1").set("descr", "Magnetic flux density norm");
-	model.result("pg2").feature("surf1").set("resolution", "normal");
+	ResultFeature airGapPlotGroup = modelResults.create("pg2", "PlotGroup2D");
+	airGapPlotGroup.create("surf1", "Surface");
+	airGapPlotGroup.label("Air gap");
+	airGapPlotGroup.set("data",airGapDataSet.tag());
+	airGapPlotGroup.feature("surf1").label("B");
+	airGapPlotGroup.feature("surf1").set("unit", "T");
+	airGapPlotGroup.feature("surf1").set("expr", "mfnc.normB");
+	airGapPlotGroup.feature("surf1").set("descr", "Magnetic flux density norm");
+	airGapPlotGroup.feature("surf1").set("resolution", "normal");
 
 	
-	model.result().create("pg3", "PlotGroup2D");
-	model.result("pg3").set("data", "dset2");
-	model.result("pg3").create("arws1", "ArrowSurface");
-	model.result("pg3").create("surf1", "Surface");
-	model.result("pg3").create("arws2", "ArrowSurface");
-	model.result("pg3").label("Magnets");
-	model.result("pg3").feature("arws1").label("B_rem");
-	model.result("pg3").feature("arws1").set("scale", "0.0077221241233942925");
-	model.result("pg3").feature("arws1").set("arrowbase", "center");
-	model.result("pg3").feature("arws1").set("expr", new String[]{"mfnc.Brx", "mfnc.Bry"});
-	model.result("pg3").feature("arws1").set("descr", "Remanent flux density");
-	model.result("pg3").feature("arws1").set("scaleactive", false);
-	model.result("pg3").feature("surf1").label("Psi");
-	model.result("pg3").feature("surf1").set("unit", "kPa");
-	model.result("pg3").feature("surf1")
+	ResultFeature magnetsPlotGroup = modelResults.create("pg3", "PlotGroup2D");
+	magnetsPlotGroup.set("data", magnetsDataSet.tag());
+	magnetsPlotGroup.label("Magnets");
+	
+	ResultFeature magnetsRemanenceVectorPlot = magnetsPlotGroup.create("arws1", "ArrowSurface");
+	magnetsRemanenceVectorPlot.label("B_rem");
+	magnetsRemanenceVectorPlot.set("scale", "0.0077221241233942925");
+	magnetsRemanenceVectorPlot.set("arrowbase", "center");
+	magnetsRemanenceVectorPlot.set("expr", new String[]{"mfnc.Brx", "mfnc.Bry"});
+	magnetsRemanenceVectorPlot.set("descr", "Remanent flux density");
+	magnetsRemanenceVectorPlot.set("scaleactive", false);
+	
+	ResultFeature magnetsEnergyPlot = magnetsPlotGroup.create("surf1", "Surface");
+	magnetsEnergyPlot.label("Psi");
+	magnetsEnergyPlot.set("unit", "kPa");
+	magnetsEnergyPlot
 	    .set("expr", "abs((mfnc.Bx*mfnc.Brx+mfnc.By*mfnc.Bry)/mfnc.normBr)*abs((mfnc.Hx*mfnc.Brx+mfnc.Hy*mfnc.Bry)/mfnc.normBr)");
-	model.result("pg3").feature("surf1").set("rangedatamax", "409");
-	model.result("pg3").feature("surf1")
+	magnetsEnergyPlot.set("rangedatamax", "409");
+	magnetsEnergyPlot
 	    .set("descr", "abs((mfnc.Bx*mfnc.Brx+mfnc.By*mfnc.Bry)/mfnc.normBr)*abs((mfnc.Hx*mfnc.Brx+mfnc.Hy*mfnc.Bry)/mfnc.normBr)");
-	model.result("pg3").feature("surf1").set("rangecoloractive", "on");
-	model.result("pg3").feature("surf1").set("rangedataactive", "on");
-	model.result("pg3").feature("surf1").set("rangecolormax", "409");
-	model.result("pg3").feature("surf1").set("resolution", "normal");
-	model.result("pg3").feature("arws2").label("H");
-	model.result("pg3").feature("arws2").set("scale", "0.010592406010573617");
-	model.result("pg3").feature("arws2").set("descractive", true);
-	model.result("pg3").feature("arws2").set("arrowbase", "center");
-	model.result("pg3").feature("arws2").set("expr", new String[]{"mu0_const*mfnc.Hx", "mu0_const*mfnc.Hy"});
-	model.result("pg3").feature("arws2").set("descr", "mu0*H");
-	model.result("pg3").feature("arws2").set("color", "black");
-	model.result("pg3").feature("arws2").set("scaleactive", false);
+	magnetsEnergyPlot.set("rangecoloractive", "on");
+	magnetsEnergyPlot.set("rangedataactive", "on");
+	magnetsEnergyPlot.set("rangecolormax", "409");
+	magnetsEnergyPlot.set("resolution", "normal");
+	
+	ResultFeature magnetsMagneticFieldVectorPlot = magnetsPlotGroup.create("arws2", "ArrowSurface");
+	magnetsMagneticFieldVectorPlot.label("H");
+	magnetsMagneticFieldVectorPlot.set("scale", "0.010592406010573617");
+	magnetsMagneticFieldVectorPlot.set("descractive", true);
+	magnetsMagneticFieldVectorPlot.set("arrowbase", "center");
+	magnetsMagneticFieldVectorPlot.set("expr", new String[]{"mu0_const*mfnc.Hx", "mu0_const*mfnc.Hy"});
+	magnetsMagneticFieldVectorPlot.set("descr", "mu0*H");
+	magnetsMagneticFieldVectorPlot.set("color", "black");
+	magnetsMagneticFieldVectorPlot.set("scaleactive", false);
 
 	
-	model.result().create("pg4", "PlotGroup1D");
-	model.result("pg4").create("lngr1", "LineGraph");
-	model.result("pg4").label("Air gap central line");
-	model.result("pg4").set("data", "pc1");
-	model.result("pg4").set("ylabel", "Magnetic flux density norm (T)");
-	model.result("pg4").set("xlabel", "Arc length");
-	model.result("pg4").set("xlabelactive", false);
-	model.result("pg4").set("ylabelactive", false);
-	model.result("pg4").feature("lngr1").set("unit", "T");
-	model.result("pg4").feature("lngr1").set("descr", "Magnetic flux density norm");
-	model.result("pg4").feature("lngr1").set("expr", "mfnc.normB");
-	model.result("pg4").feature("lngr1").set("resolution", "normal");
+	ResultFeature magneticProfilePlotGroup = modelResults.create("pg4", "PlotGroup1D");
+	magneticProfilePlotGroup.label("Air gap central line");
+	magneticProfilePlotGroup.set("data", magneticProfileDataSet.tag());
+	magneticProfilePlotGroup.set("ylabel", "Magnetic flux density norm (T)");
+	magneticProfilePlotGroup.set("xlabel", "Arc length");
+	magneticProfilePlotGroup.set("xlabelactive", false);
+	magneticProfilePlotGroup.set("ylabelactive", false);
+	ResultFeature magneticProfileLinePlot = magneticProfilePlotGroup.create("lngr1", "LineGraph");
+	magneticProfileLinePlot.label("Magnetic Profile");
+	magneticProfileLinePlot.set("unit", "T");
+	magneticProfileLinePlot.set("descr", "Magnetic flux density norm");
+	magneticProfileLinePlot.set("expr", "mfnc.normB");
+	magneticProfileLinePlot.set("resolution", "normal");
 
 
 	}
