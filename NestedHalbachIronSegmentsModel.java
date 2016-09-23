@@ -1020,6 +1020,21 @@ public class NestedHalbachIronSegmentsModel {
 	magneticProfileLinePlot.set("expr", "mfnc.normB");
 	magneticProfileLinePlot.set("resolution", "normal");
 
+	// create export groups
+	ExportFeatureList  modelExportList = modelResults.export();
+	
+	ExportFeature airGapHighDataExport = modelExportList.create("export1",airGapHighDataSet.tag(),"Data");
+	airGapHighDataExport.set("filename","B_high.txt");
+	airGapHighDataExport.set("expr","mfnc.normB");
+	airGapHighDataExport.run();
+
+	ExportFeature airGapLowDataExport = modelExportList.create("export2",airGapLowDataSet.tag(),"Data");
+	airGapHighDataExport.set("filename","B_low.txt");
+	airGapHighDataExport.set("expr","mfnc.normB");
+	airGapHighDataExport.run();
+	
+	    
+
 
 	}
     
