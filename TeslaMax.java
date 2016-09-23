@@ -1,5 +1,5 @@
 /*
- * NestedHalbachIronSegmentsModel.java
+ * TeslaMax.java
  */
 
 import com.comsol.model.*;
@@ -7,7 +7,7 @@ import com.comsol.model.util.*;
 import com.comsol.model.physics.*;
 
 /** Model exported on Aug 8 2016, 09:24 by COMSOL 5.2.1.152. */
-public class NestedHalbachIronSegmentsModel {
+public class TeslaMax {
 
     public static final String COMPONENT_NAME = "nhalbach_system";
 
