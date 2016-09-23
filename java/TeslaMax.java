@@ -5,6 +5,7 @@
 import com.comsol.model.*;
 import com.comsol.model.util.*;
 import com.comsol.model.physics.*;
+import java.io.*;
 
 /** Model exported on Aug 8 2016, 09:24 by COMSOL 5.2.1.152. */
 public class TeslaMax {
