@@ -1,7 +1,9 @@
 *~
+B_high.txt
+B_low.txt
 
 *.class
-*.class.status
+*status
 *.mph*
 
 # Mobile Tools for Java (J2ME)
