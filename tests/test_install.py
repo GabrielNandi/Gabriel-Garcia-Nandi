@@ -10,11 +10,5 @@ def test_teslamax_in_system_path():
 
     assert shutil.which(TESLAMAX_COMMAND), install_message
 
-# check that the teslamax program has the correct docstring
 
-# check that, if the program gets the help flag as argument,
-# it will print the docstring
-
-# check that, if the program gets the help flag as argument,
-# it will exit immediately
     
