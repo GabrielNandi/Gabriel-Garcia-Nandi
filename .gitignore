@@ -2,6 +2,10 @@
 B_high.txt
 B_low.txt
 
+.cache
+
+*.pyc
+
 *.class
 *status
 *.mph*
