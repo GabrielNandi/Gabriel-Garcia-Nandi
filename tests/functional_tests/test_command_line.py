@@ -1,4 +1,5 @@
 import subprocess
+import pytest
 
 HELP_FLAG = '--help'
 
@@ -13,6 +14,8 @@ Options:
 """
 
 TESLAMAX_COMMAND = 'teslamax'
+
+pytestmark = pytest.mark.usefixtures("configure_installation")
 
 def get_output_from_teslamax_command(work_dir,flag=None):
     """Run the teslamax command from 'work_dir', possibly

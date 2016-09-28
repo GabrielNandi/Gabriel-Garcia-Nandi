@@ -5,6 +5,7 @@ B_low.txt
 .cache
 
 *.pyc
+*.egg-info
 
 *.class
 *status
