@@ -30,3 +30,20 @@ def test_teslamax_exit_sucess_with_help_argument(tmpdir):
                                                                    conftest.HELP_FLAG)
 
     assert status_code == 0
+
+# if no argument is passed, the docstring should not be printed
+def test_teslamax_doesnt_print_doctring_with_no_argument(tmpdir):
+
+    work_dir = tmpdir.strpath
+
+    status_code, return_message = conftest.get_output_from_teslamax_command(work_dir)
+
+    assert return_message != teslamax.__doc__
+
+# if no argument is passed, the COMSOL batch command should be called
+
+# if no argument is passed, the correct COMSOL class file should be passed to
+# the batch command
+
+
+

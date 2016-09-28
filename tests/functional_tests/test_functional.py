@@ -24,6 +24,8 @@ def test_run_command_with_no_flag_return_success(tmpdir):
     # string to be printed if the COMSOL model is ran successfully
 
     work_dir = tmpdir.strpath
+
+    # copy a sample parameter file to work_dir
     
     status_code, return_message = conftest.get_output_from_teslamax_command(work_dir)
 
