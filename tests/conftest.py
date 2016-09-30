@@ -18,7 +18,7 @@ Options:
 
 TESLAMAX_COMMAND = 'teslamax'
 
-pytestmark = pytest.mark.usefixtures("configure_installation")
+
 
 def get_output_from_teslamax_command(work_dir,flag=None):
     """Run the teslamax command from 'work_dir', possibly
@@ -64,7 +64,7 @@ def install_teslamax():
     run_pip_install_development(teslamax_dir)
 
 def uninstall_teslamax():
-    pip_uninstall_arg = ["pip", "uninstall",TESLAMAX_NAME]
+    pip_uninstall_arg = ["pip", "uninstall","-y",TESLAMAX_NAME]
 
     subprocess.run(pip_uninstall_arg)
 
