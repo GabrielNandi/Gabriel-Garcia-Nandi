@@ -1,9 +1,19 @@
-import teslamax
+"""Usage: teslamax [--help]
+
+Read 'comsol-parameters.txt' from the current directory and execute the
+TeslaMax COMSOL model
+
+Options:
+
+-h, --help    Print this help message and exit
+"""
+
+from docopt import docopt
 
 def main():
-    # to be accurate when just printing the package docstring, we specify
-    # an empty 'end' argument to avoid inserting a newline
-    print(teslamax.__doc__,end='')
+
+    arguments = docopt(__doc__)
+
 
 if __name__ == '__main__':
     main()
