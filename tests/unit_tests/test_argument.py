@@ -1,9 +1,7 @@
 import pytest
-import teslamax
 
 import conftest
-
-pytestmark = pytest.mark.usefixtures("configure_installation")
+import teslamax
 
 # check that the teslamax program has the correct docstring
 def test_teslamax_program_has_correct_doctring():

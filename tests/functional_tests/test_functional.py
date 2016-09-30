@@ -3,8 +3,6 @@ import pytest
 
 import conftest
 
-pytestmark = pytest.mark.usefixtures("configure_installation")
-
 # I want to see how the teslamax script works. Following standard Unix rules,
 # I run 'teslamax --help' from an arbitrary directory and get a helpful message
 def test_run_command_with_help_flag_return_message(tmpdir):
