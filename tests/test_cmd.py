@@ -61,6 +61,13 @@ def test_run_command_with_no_flag_return_success(tmpdir):
     # (hence the split and the -1 index) of the return message
     assert success_string in return_message.strip().split("\n")[-1]
     
+# with a correct parameters file, two files, 'B_high.txt' and 'B_low.txt'
+# are created
+
+# with a correct parameters file, a summary file, 'COMSOL Main Results.txt' is
+# created
+
+# with a correct parameters file, a file 'Magnetic Profile.txt' is created
 
 # finish writing the tests!
 def test_finish_tests():
