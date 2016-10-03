@@ -59,7 +59,7 @@ def test_run_command_with_no_flag_return_success(tmpdir):
 
     # make sure that the success string is contained in the last line
     # (hence the split and the -1 index) of the return message
-    assert success_string in return_message.split()[-1]
+    assert success_string in return_message.strip().split("\n")[-1]
     
 
 # finish writing the tests!

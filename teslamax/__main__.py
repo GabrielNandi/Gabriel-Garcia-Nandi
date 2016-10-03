@@ -21,9 +21,11 @@ def get_teslamax_class_file_path():
     # the class file is located in a 'java' directory,
     # in the parent directory of the present file
 
-    java_dir = os.path.join(__file__,os.pardir,"java")
+    java_dir = os.path.join(os.path.dirname(__file__),
+                            os.pardir,
+                            "java")
     class_file = os.path.join(java_dir,"TeslaMax.class")
-    return os.path.abspath(class_file)
+    return os.path.realpath(class_file)
 
 def run_comsol_mode():
     """Run the TeslaMax COMSOL Java model from the current directory
