@@ -9,7 +9,7 @@ import conftest
 def test_run_command_with_help_flag_return_message(teslamax_help_mode):
 
 
-    return_message = teslamax_help_mode.stdout
+    return_message = teslamax_help_mode.return_message
     
     assert return_message == conftest.HELP_MESSAGE
 
@@ -19,7 +19,7 @@ def test_run_command_with_help_flag_return_message(teslamax_help_mode):
 # return sucessfully
 def test_run_command_with_no_flag_return_success(teslamax_comsol_mode_params):
 
-    return_message = teslamax_comsol_mode_params.stdout
+    return_message = teslamax_comsol_mode_params.return_message
 
     # based on some experimentation, a string "Total time: ..." is the last
     # string to be printed if the COMSOL model is ran successfully
@@ -28,14 +28,6 @@ def test_run_command_with_no_flag_return_success(teslamax_comsol_mode_params):
     # make sure that the success string is contained in the last line
     # (hence the split and the -1 index) of the return message
     assert success_string in return_message.strip().split("\n")[-1]
-    
-# with a correct parameters file, two files, 'B_high.txt' and 'B_low.txt'
-# are created
-
-# with a correct parameters file, a summary file, 'COMSOL Main Results.txt' is
-# created
-
-# with a correct parameters file, a file 'Magnetic Profile.txt' is created
 
 # finish writing the tests!
 def test_finish_tests():

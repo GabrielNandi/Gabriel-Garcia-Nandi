@@ -19,8 +19,23 @@ Options:
 
 TESLAMAX_COMMAND = 'teslamax'
 
-
 PARAMETER_FILE_NAME = "params.txt"
+
+class TeslaMaxProcess:
+    """
+    Represents the result of running the teslamax program
+    in a given directory.
+    """
+
+    def __init__(self,flag,cwd,return_code,return_message):
+        
+        self.flag = flag
+        self.cwd = cwd
+        self.return_code = return_code
+        self.return_message = return_message
+        
+    
+
 
 def get_output_from_teslamax_command(work_dir,flag=None):
     """Run the teslamax command from 'work_dir', possibly
@@ -39,7 +54,12 @@ def get_output_from_teslamax_command(work_dir,flag=None):
                              cwd=work_dir,
                              shell=True)
 
-    return process
+    teslamax_process = TeslaMaxProcess(flag="",
+                                       cwd=work_dir,
+                                       return_code=process.returncode,
+                                       return_message=process.stdout)
+
+    return teslamax_process
 
 @pytest.fixture()
 def teslamax_help_mode():
