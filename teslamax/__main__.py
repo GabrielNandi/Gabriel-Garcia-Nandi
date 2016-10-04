@@ -40,8 +40,18 @@ def write_main_results_file():
     assuming the teslamax command was already ran
     
     """
+    
+    p = Path('.') / MAIN_RESULTS_FILENAME
+    p.touch()
+    
 
-    p = Path(MAIN_RESULTS_FILENAME)
+def write_magnetic_profile_file():
+    """Create a file "COMSOL Magnetic Profile.txt" in the current directory,
+    assuming the teslamax command was already ran
+    
+    """
+    
+    p = Path('.') / MAGNETIC_PROFILE_FILENAME
     p.touch()
     
     
