@@ -61,7 +61,7 @@ def get_output_from_teslamax_command(work_dir,flag=None):
 
     return teslamax_process
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def teslamax_help_mode():
     """Run the teslamax command with a '--help' in a temporary directory.
 
@@ -75,7 +75,7 @@ def teslamax_help_mode():
 
         yield teslamax_process
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def teslamax_comsol_mode_params():
     """Run the teslamax command with no args in a temporary directory,
     copying a sample (correct) parameter file to it.
