@@ -589,6 +589,41 @@ public class TeslaMax {
 
     }
 
+    private static void createProbes(){
+
+	ProbeFeatureList modelProbes = model.probe();
+
+	ProbeFeature airGapHighProbe = modelProbes.create("prb1","Domain");
+	airGapHighProbe.model(COMPONENT_NAME);
+	airGapHighProbe.selection().named(AIR_GAP_HIGH_SELECTION_TAG);
+	airGapHighProbe.set("expr","mfnc.normB");
+	airGapHighProbe.set("unit","T");
+	airGapHighProbe.label("Maximum Field");
+
+	ProbeFeature airGapLowProbe = modelProbes.create("prb2","Domain");
+	airGapLowProbe.model(COMPONENT_NAME);
+	airGapLowProbe.selection().named(AIR_GAP_LOW_SELECTION_TAG);
+	airGapLowProbe.set("expr","mfnc.normB");
+	airGapLowProbe.set("unit","T");
+	airGapLowProbe.label("Minimum Field");
+
+	ProbeFeature airGapAreaProbe = modelProbes.create("prb3","Domain");
+	airGapAreaProbe.model(COMPONENT_NAME);
+	airGapAreaProbe.selection().named(AIR_GAP_SELECTION_TAG);
+	airGapAreaProbe.set("expr","1");
+	airGapAreaProbe.set("unit","m^2");
+	airGapAreaProbe.set("type","integral");
+	airGapAreaProbe.label("Air Gap Area");
+	
+	ProbeFeature magnetAreaProbe = modelProbes.create("prb4","Domain");
+	magnetAreaProbe.model(COMPONENT_NAME);
+	magnetAreaProbe.selection().named(MAGNETS_SELECTION_TAG);
+	magnetAreaProbe.set("expr","1");
+	magnetAreaProbe.set("unit","m^2");
+	magnetAreaProbe.set("type","integral");
+	magnetAreaProbe.label("Magnets Area");
+    }
+
     private static void configureAirMaterial(Material mat){
 
 	mat.label("Air");
@@ -1062,6 +1097,8 @@ public class TeslaMax {
 	buildGeometry();
 
 	createSelections();
+
+	createProbes();
 
 	configureMaterials();
 
