@@ -43,6 +43,8 @@ public class TeslaMax {
     private static final String CIRCUIT_REGIONS_SELECTION_TAG = "magnetic_circuit_regions_seletion";
 
     private static final String PARAMETER_FILE_NAME = "params.txt";
+
+    private static final String RESULTS_TABLE_TAG = "results_table";
            
     private static Model model;
     private static ModelNodeList modelNodes;
@@ -94,6 +96,8 @@ public class TeslaMax {
 
     private static Results modelResults;
     private static DatasetFeatureList modelDataSets;
+
+    private static TableFeature resultsTable;
 
     private static GeomSequence configureCylinderBlock(){
 
@@ -593,19 +597,25 @@ public class TeslaMax {
 
 	ProbeFeatureList modelProbes = model.probe();
 
+	resultsTable = model.result().table().create(RESULTS_TABLE_TAG,"Table");
+
 	ProbeFeature airGapHighProbe = modelProbes.create("prb1","Domain");
 	airGapHighProbe.model(COMPONENT_NAME);
 	airGapHighProbe.selection().named(AIR_GAP_HIGH_SELECTION_TAG);
 	airGapHighProbe.set("expr","mfnc.normB");
 	airGapHighProbe.set("unit","T");
+	airGapHighProbe.set("table",RESULTS_TABLE_TAG);
 	airGapHighProbe.label("Maximum Field");
-
+	airGapHighProbe.genResult(null);
+	
 	ProbeFeature airGapLowProbe = modelProbes.create("prb2","Domain");
 	airGapLowProbe.model(COMPONENT_NAME);
 	airGapLowProbe.selection().named(AIR_GAP_LOW_SELECTION_TAG);
 	airGapLowProbe.set("expr","mfnc.normB");
 	airGapLowProbe.set("unit","T");
+	airGapLowProbe.set("table",RESULTS_TABLE_TAG);
 	airGapLowProbe.label("Minimum Field");
+	airGapLowProbe.genResult(null);
 
 	ProbeFeature airGapAreaProbe = modelProbes.create("prb3","Domain");
 	airGapAreaProbe.model(COMPONENT_NAME);
@@ -613,7 +623,9 @@ public class TeslaMax {
 	airGapAreaProbe.set("expr","1");
 	airGapAreaProbe.set("unit","m^2");
 	airGapAreaProbe.set("type","integral");
+	airGapAreaProbe.set("table",RESULTS_TABLE_TAG);
 	airGapAreaProbe.label("Air Gap Area");
+	airGapAreaProbe.genResult(null);
 	
 	ProbeFeature magnetAreaProbe = modelProbes.create("prb4","Domain");
 	magnetAreaProbe.model(COMPONENT_NAME);
@@ -621,7 +633,9 @@ public class TeslaMax {
 	magnetAreaProbe.set("expr","1");
 	magnetAreaProbe.set("unit","m^2");
 	magnetAreaProbe.set("type","integral");
+	magnetAreaProbe.set("table",RESULTS_TABLE_TAG);
 	magnetAreaProbe.label("Magnets Area");
+	magnetAreaProbe.genResult(null);
     }
 
     private static void configureAirMaterial(Material mat){
@@ -1068,10 +1082,6 @@ public class TeslaMax {
 	airGapHighDataExport.set("filename","B_low.txt");
 	airGapHighDataExport.set("expr","mfnc.normB");
 	airGapHighDataExport.run();
-	
-	    
-
-
 	}
     
     public static Model run() {
