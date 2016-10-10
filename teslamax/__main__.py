@@ -62,30 +62,7 @@ def get_comsol_parameters_series():
 
     return param_comsol_series
 
-def calculate_magnet_area(params):
-    """Calculate the magnet area from the fields of 'params'
-    
-    Keyword Arguments:
-    params -- dict-like, must contain the fields 'R_i','R_o',
-    'R_g' and 'R_s'
-    """
 
-    area_magnet_II = np.pi/4 * (params['R_o']**2 - params['R_i']**2)
-    area_magnet_IV = np.pi/4 * (params['R_s']**2 - params['R_g']**2)
-
-    return (area_magnet_II + area_magnet_IV)
-
-def calculate_air_gap_area(params):
-    """Calculate the air gap area from the fields of 'params'
-    
-    Keyword Arguments:
-    params -- dict-like, must contain the fields 'R_i','R_o',
-    'R_g' and 'R_s'
-    """
-
-    area_gap = np.pi/4 * (params['R_g']**2 - params['R_o']**2)
-
-    return area_gap
 
 def read_comsol_data_file(filename):
     """Read and parse 'filename' as exported by COMSOL. Assume
@@ -108,36 +85,31 @@ def calculate_area_average(data):
     
     
 
-def write_main_results_file():
-    """Create a file "COMSOL Main Results.txt" in the current directory,
-    assuming the teslamax command was already ran
+def process_main_results_file():
+    """Take the file "COMSOL Main Results.txt" as exported by COMSOL and
+    clean the header data.
     
     """
     
     p = Path('.') / MAIN_RESULTS_FILENAME
 
     param_comsol_series = get_comsol_parameters_series()
+
+    results = pd.read_table(MAIN_RESULTS_FILENAME,
+                            sep="\s+",
+                            skiprows=5,
+                            index_col=None,
+                            header=None,
+                            names=["B_high[T]",
+                                   "B_low[T]",
+                                   "A_gap[m2]",
+                                   "A_magnet[m2]"])
     
-    A_magnet = calculate_magnet_area(param_comsol_series)
-    A_gap = calculate_air_gap_area(param_comsol_series)
-
-    B_high_data = read_comsol_data_file(B_HIGH_FILENAME)
-    B_low_data = read_comsol_data_file(B_LOW_FILENAME)
-
-    B_high_avg = calculate_area_average(B_high_data)
-    B_low_avg = calculate_area_average(B_low_data)
-
-    results_series = pd.Series()
-    results_series.name = "COMSOL Main Results"
-
-    results_series[A_MAGNET_INDEX] = A_magnet
-    results_series[A_GAP_INDEX] = A_gap
-    results_series[B_HIGH_INDEX] = B_high_avg
-    results_series[B_LOW_INDEX] = B_low_index
-
-    results_series.to_csv(str(p),
-                          float_format="%.6f",
-                          sep=" ")
+   
+    results.to_csv(str(p),
+                   float_format="%.6f",
+                   sep=" ",
+                   index=False)
     
 
 def write_magnetic_profile_file():
@@ -170,7 +142,7 @@ def run_comsol_mode():
 
     print(comsol_cmd_process.stdout,end='')
 
-    write_main_results_file()
+    process_main_results_file()
     write_magnetic_profile_file()
     
     sys.exit(comsol_cmd_process.returncode)
