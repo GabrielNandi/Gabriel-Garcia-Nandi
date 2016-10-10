@@ -65,24 +65,15 @@ def get_comsol_parameters_series():
 
 
 def read_comsol_data_file(filename):
-    """Read and parse 'filename' as exported by COMSOL. Assume
-    the header rows are preceded by '%'. Export the numerical data as a
-    numpy array containing only the numerical data; the first two columns
-    are x and y values. All values are in SI.
+    """Read and parse 'filename' as exported by COMSOL.
+    Export the numerical data as a numpy array containing only the numerical
+    data; the first two columns are x and y values. All values are in SI.
     
     Keyword Arguments:
     filename -- str
     """
     
-def calculate_area_average(data):
-    """For a 'data' array, assuming the first two columns are x and y values
-    and the third column is a scalar field over that domain, return the area
-    average of that field over that domain
-    
-    Keyword Arguments:
-    data -- array
-    """
-    
+
     
 
 def process_main_results_file():
@@ -119,7 +110,27 @@ def write_magnetic_profile_file():
     """
     
     p = Path('.') / MAGNETIC_PROFILE_FILENAME
-    p.touch()
+    column_names = ["phi[deg]","B[T]"]
+    column_header = " ".join(column_names)
+
+    # load data from the high and low field regions
+
+    # calcualte vector of angles for the first quadrant
+    
+    # calcualte the points (x,y) distributed along
+    # radial lines
+
+    # take the average along each radial chord
+
+    # combine the angle and field data
+
+    # extrapolate data to the full circle
+    
+    # np.savetxt(str(p),
+    #            profile_data,
+    #            fmt=("%.2f","%.5f"),
+    #            delimiter=" ",
+    #            header=column_header)
     
     
 
