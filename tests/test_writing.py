@@ -38,12 +38,11 @@ def test_results_file_has_correct_fields(teslamax_comsol_mode_params):
               "B_high[T]",
               "B_low[T]"]
 
-    results_series = pd.read_table(results_file,
-                                   sep=" ",
-                                   squeeze=True)
+    results = pd.read_table(results_file,
+                            sep=" ")
 
     for field in fields:
-        assert result_series[field]
+        assert results[field].all()
 
     
 

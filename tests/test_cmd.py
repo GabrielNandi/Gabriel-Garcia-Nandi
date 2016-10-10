@@ -29,7 +29,4 @@ def test_run_command_with_no_flag_return_success(teslamax_comsol_mode_params):
     # (hence the split and the -1 index) of the return message
     assert success_string in return_message.strip().split("\n")[-1]
 
-# finish writing the tests!
-def test_finish_tests():
-    assert 0, "Finish the functional tests!"
 

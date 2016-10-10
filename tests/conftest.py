@@ -84,27 +84,28 @@ def teslamax_comsol_mode_params():
     temporary directory is deleted.
     """
     # copy a sample parameter file to work_dir
-    param_file_content = """R_i 0.015
-    R_o 0.050
-    h_gap 0.020
-    R_s 0.140
-    h_fc 0.020
-    R_e 2
-    n_II 3
-    n_IV 3
-    alpha_rem_II_1 30
-    alpha_rem_II_2 15
-    alpha_rem_II_3 -15
-    alpha_rem_IV_1 -15
-    alpha_rem_IV_2 15
-    alpha_rem_IV_3 45
-    R_g 0.070
-    phi_S_II 45
-    phi_S_IV 45
-    delta_phi_S_II 15
-    delta_phi_S_IV 15
-    B_rem 1.47
-    R_c 0.160"""
+    param_file_content = "\n".join(["R_i 0.015",
+                                    "R_o 0.050",
+                                    "h_gap 0.020",
+                                    "R_s 0.140",
+                                    "h_fc 0.020",
+                                    "R_e 2",
+                                    "n_II 3",
+                                    "n_IV 3",
+                                    "alpha_rem_II_1 30",
+                                    "alpha_rem_II_2 15",
+                                    "alpha_rem_II_3 -15",
+                                    "alpha_rem_IV_1 -15",
+                                    "alpha_rem_IV_2 15",
+                                    "alpha_rem_IV_3 45",
+                                    "R_g 0.070",
+                                    "phi_S_II 45",
+                                    "phi_S_IV 45",
+                                    "delta_phi_S_II 15",
+                                    "delta_phi_S_IV 15",
+                                    "B_rem 1.47",
+                                    "R_c 0.160"])
+    print(param_file_content)
 
     with tempfile.TemporaryDirectory() as td:
 
