@@ -620,7 +620,7 @@ public class TeslaMax {
 	ProbeFeature airGapAreaProbe = modelProbes.create("prb3","Domain");
 	airGapAreaProbe.model(COMPONENT_NAME);
 	airGapAreaProbe.selection().named(AIR_GAP_SELECTION_TAG);
-	airGapAreaProbe.set("expr","1");
+	airGapAreaProbe.set("expr","2");
 	airGapAreaProbe.set("unit","m^2");
 	airGapAreaProbe.set("type","integral");
 	airGapAreaProbe.set("table",RESULTS_TABLE_TAG);
@@ -630,12 +630,13 @@ public class TeslaMax {
 	ProbeFeature magnetAreaProbe = modelProbes.create("prb4","Domain");
 	magnetAreaProbe.model(COMPONENT_NAME);
 	magnetAreaProbe.selection().named(MAGNETS_SELECTION_TAG);
-	magnetAreaProbe.set("expr","1");
+	magnetAreaProbe.set("expr","2");
 	magnetAreaProbe.set("unit","m^2");
 	magnetAreaProbe.set("type","integral");
 	magnetAreaProbe.set("table",RESULTS_TABLE_TAG);
 	magnetAreaProbe.label("Magnets Area");
 	magnetAreaProbe.genResult(null);
+
     }
 
     private static void configureAirMaterial(Material mat){
@@ -1082,6 +1083,14 @@ public class TeslaMax {
 	airGapHighDataExport.set("filename","B_low.txt");
 	airGapHighDataExport.set("expr","mfnc.normB");
 	airGapHighDataExport.run();
+
+	// save the probe data
+	ExportFeature probesDataExport = modelExportList.create("export3","Table");
+	probesDataExport.set("filename","COMSOL Main Results.txt");
+	probesDataExport.set("table",RESULTS_TABLE_TAG);
+	probesDataExport.set("header","on");
+	probesDataExport.run();
+	
 	}
     
     public static Model run() {
