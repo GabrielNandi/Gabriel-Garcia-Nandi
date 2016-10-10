@@ -1,5 +1,6 @@
 import os.path
 import pytest
+import numpy as np
 import pandas as pd
 
 # with a correct parameters file, two files, 'B_high.txt' and 'B_low.txt'
@@ -58,3 +59,32 @@ def test_profile_is_written_in_comsol_mode(teslamax_comsol_mode_params):
     for B_file in B_files:
         assert os.path.exists(os.path.join(work_dir,B_file))
        
+
+# the parameter file has two columns, "phi[deg]" and "B[T]"
+def test_profile_has_correct_columns_in_comsol_mode(teslamax_comsol_mode_params):
+    
+    work_dir = teslamax_comsol_mode_params.cwd
+    profile_file_path = os.path.join(work_dir,"COMSOL Magnetic Profile.txt")
+    
+    with open(profile_file_path) as f:
+        profile_header = f.readline().strip().split()
+        
+    assert profile_header == ["phi[deg]","B[T]"]
+
+def test_profile_has_correct_shape_in_comsol_mode(teslamax_comsol_mode_params):
+    
+    work_dir = teslamax_comsol_mode_params.cwd
+    profile_file_path = os.path.join(work_dir,"COMSOL Magnetic Profile.txt")
+    
+    profile_data = np.loadtxt(profile_file_path,delimiter=" ",skiprows=1)
+    
+    assert profile_data.shape[1] == 2
+
+def test_profile_has_real_number_in_comsol_mode(teslamax_comsol_mode_params):
+
+    work_dir = teslamax_comsol_mode_params.cwd
+    profile_file_path = os.path.join(work_dir,"COMSOL Magnetic Profile.txt")
+    
+    profile_data = np.loadtxt(profile_file_path,delimiter=" ",skiprows=1)
+    
+    assert np.isreal(profile_data).all()
