@@ -1080,9 +1080,9 @@ public class TeslaMax {
 	airGapHighDataExport.run();
 
 	ExportFeature airGapLowDataExport = modelExportList.create("export2",airGapLowDataSet.tag(),"Data");
-	airGapHighDataExport.set("filename","B_low.txt");
-	airGapHighDataExport.set("expr","mfnc.normB");
-	airGapHighDataExport.run();
+	airGapLowDataExport.set("filename","B_low.txt");
+	airGapLowDataExport.set("expr","mfnc.normB");
+	airGapLowDataExport.run();
 
 	// save the probe data
 	ExportFeature probesDataExport = modelExportList.create("export3","Table");
