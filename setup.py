@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 package = 'teslamax'
-version = '0.1'
+version = '0.6'
 
 setup(name=package,
       version=version,

@@ -30,5 +30,18 @@ The TeslaMax model will output a list of files to the current directory. All fil
 
 * `B_high.txt`: values of the magnetic flux density at the high field region of the magnetic gap (first quadrant). Columns: $x$, $y$, $B$;
 * `B_low.txt`: values of the magnetic flux density at the low field region of the magnetic gap (first quadrant). Columns: $x$, $y$, $B$;
+* `COMSOL Main Results.txt`: values of global results for the simulation, in a table-like fashion
+
+## Python interface
+
+The best way to interact with TeslaMax is via the Python interface.
+
+Clone the repository and compile the Java file. Then run
+
+	pip install .
+
+Now you can run a `teslamax` command in any directory with a correct `params.txt` and the `comsolbatch` command will be automatically called. The Python program is also responsible for creating another set of files:
+
+* `COMSOL Magnetic Profile.txt`, values of the average magnetic induction at a given angular position over the air gap. Columns: $\phi$[degress], $B$.
 
 

@@ -13,8 +13,10 @@ import os.path
 import sys
 from pathlib import Path
 import numpy as np
+from scipy.interpolate import NearestNDInterpolator
 import pandas as pd
 from docopt import docopt
+
 
 B_HIGH_FILENAME = "B_high.txt"
 B_LOW_FILENAME = "B_low.txt"
@@ -29,6 +31,8 @@ A_MAGNET_INDEX = "A_magnet[m2]"
 A_GAP_INDEX = "A_gap[m2]"
 B_HIGH_INDEX = "B_high[T]"
 B_LOW_INDEX = "B_low[T]"
+
+N_PROFILE_POINTS = 100
 
 __all__ = ['get_teslamax_class_file_path',
            'get_comsol_parameters_series']
@@ -75,7 +79,8 @@ def read_comsol_data_file(filename):
     Keyword Arguments:
     filename -- str
     """
-    
+
+    return np.loadtxt(filename,skiprows=9)
 
     
 
@@ -115,25 +120,73 @@ def write_magnetic_profile_file():
     p = Path('.') / MAGNETIC_PROFILE_FILENAME
     column_names = ["phi[deg]","B[T]"]
     column_header = " ".join(column_names)
-
+    
     # load data from the high and low field regions
-
+    B_h = read_comsol_data_file(B_HIGH_FILENAME)
+    B_l = read_comsol_data_file(B_LOW_FILENAME)
+    
+    B_1q = np.concatenate((B_h,B_l),axis=0)
+    
     # calcualte vector of angles for the first quadrant
+    case_series = get_comsol_parameters_series()
+    
+    n_phi_points = 100
+    
+    R_g = case_series['R_g']
+    R_o = case_series['R_o']
+    
+    
+    # create ranges for phi and r
+    phi_min = 0.0
+    phi_max = np.pi/2
+    
+    phi_vector_1q = np.linspace(phi_min,phi_max,N_PROFILE_POINTS)
+    
+    # slightly offset the boundaries to avoid numerical problems at the interfaces
+    r_min = 1.001*R_o 
+    r_max = 0.999*R_g
+    n_r_points = 5
+    
+    r_vector = np.linspace(r_min,r_max,n_r_points)
+    
+    r_grid, phi_grid = np.meshgrid(r_vector,phi_vector_1q)
     
     # calcualte the points (x,y) distributed along
     # radial lines
+    x_grid = r_grid * np.cos(phi_grid)
+    y_grid = r_grid * np.sin(phi_grid)
+    
+    # create a interpolation function over the 1st quadrant grid
+    # we use the nearest interpolation to avoid negative values
+    # when fitting a spline near points where B = 0
+    
+    fB = NearestNDInterpolator(x=B_1q[:,0:2],y=B_1q[:,2])
 
-    # take the average along each radial chord
-
-    # combine the angle and field data
+    # because both x_grid and y_grid have shape (n_r_points, N_PROFILE_POINTS),
+    # when we apply the above created function we will get an array with the
+    # same shape. We then take the average value along each row,
+    # resuting in an array (N_PROFILE_POINTS)
+    B_profile_1q = np.mean(fB(x_grid,y_grid),axis=1)
 
     # extrapolate data to the full circle
+    phi_vector = np.concatenate((phi_vector_1q,
+                                 phi_vector_1q+np.pi/2,
+                                 phi_vector_1q+np.pi,
+                                 phi_vector_1q+(3/2)*np.pi))
+
+    B_profile = np.concatenate((B_profile_1q,
+                                B_profile_1q[::-1],
+                                B_profile_1q,
+                                B_profile_1q[::-1]))
+
+    profile_data = np.array((np.rad2deg(phi_vector),B_profile)).T
     
-    # np.savetxt(str(p),
-    #            profile_data,
-    #            fmt=("%.2f","%.5f"),
-    #            delimiter=" ",
-    #            header=column_header)
+    np.savetxt(str(p),
+               profile_data,
+               fmt=("%.2f","%.5f"),
+               delimiter=" ",
+               header=column_header,
+               comments='')
     
     
 
