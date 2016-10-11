@@ -21,12 +21,12 @@ def test_run_command_with_no_flag_return_success(teslamax_comsol_mode_params):
 
     return_message = teslamax_comsol_mode_params.return_message
 
-    # based on some experimentation, a string "Total time: ..." is the last
-    # string to be printed if the COMSOL model is ran successfully
-    success_string = "Total time: "
+    # based on some experimentation, there is a string to be printed
+    # if the COMSOL model is ran successfully
+    success_string = "Current Progress: 100 % - Done"
 
     # make sure that the success string is contained in the last line
     # (hence the split and the -1 index) of the return message
-    assert success_string in return_message.strip().split("\n")[-1]
+    assert success_string in return_message.strip().split("\n")[-2]
 
 
