@@ -30,6 +30,9 @@ A_GAP_INDEX = "A_gap[m2]"
 B_HIGH_INDEX = "B_high[T]"
 B_LOW_INDEX = "B_low[T]"
 
+__all__ = ['get_teslamax_class_file_path',
+           'get_comsol_parameters_series']
+
 def get_teslamax_class_file_path():
     """Return the path string to the main TeslaMax java class file.
     
