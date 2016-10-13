@@ -34,11 +34,13 @@ The TeslaMax model will output a list of files to the current directory. All fil
 
 ## Python interface
 
-The best way to interact with TeslaMax is via the Python interface.
+An alternative way to interact with TeslaMax is via the Python interface.
 
 Clone the repository and compile the Java file. Then run
 
-	pip install .
+	pip install -e .
+
+The `-e` swith installs the package in develop mode, without copying all files to the system PATH. Because the Python script must call the Java class, I haven't figured out a way to make this finding process independent of the actual path, so the normal installation mode does not work (as the Java file is not copied). This "develop" mode should work, though (just be aware that any changes to the package will be instantaneously applied to the `teslamax` script and to the package, as the `-e` flag creates a link for this directory in the Python path).
 
 Now you can run a `teslamax` command in any directory with a correct `params.txt` and the `comsolbatch` command will be automatically called. The Python program is also responsible for creating another set of files:
 
