@@ -1021,6 +1021,9 @@ public class TeslaMax {
 	
 	DatasetFeature magnetsDataSet = configureDataSet("Magnets", MAGNETS_SELECTION_TAG);
 
+	DatasetFeature magnetII1QDataSet = configureDataSet("Magnet II 1Q", MAGNETS_II_1Q_SELECTION_TAG);
+	DatasetFeature magnetIV1QDataSet = configureDataSet("Magnet IV 1Q", MAGNETS_IV_1Q_SELECTION_TAG);
+
 	DatasetFeature airGapHighDataSet = configureDataSet("Air Gap High Field Region", AIR_GAP_HIGH_SELECTION_TAG);
 	DatasetFeature airGapLowDataSet = configureDataSet("Air Gap Low Field Region", AIR_GAP_LOW_SELECTION_TAG);
 	
@@ -1107,6 +1110,16 @@ public class TeslaMax {
 	airGapLowDataExport.set("filename","B_low.txt");
 	airGapLowDataExport.set("expr","mfnc.normB");
 	airGapLowDataExport.run();
+
+	ExportFeature magnetII1QDataExport = modelExportList.create("export4",magnetII1QDataSet.tag(),"Data");
+	magnetII1QDataExport.set("filename","H_II_1Q.txt");
+	magnetII1QDataExport.set("expr",new String[]{"mfnc.Hx","mfnc.Hy","mfnc.Brx","mfnc.Bry"});
+	magnetII1QDataExport.run();
+
+	ExportFeature magnetIV1QDataExport = modelExportList.create("export5",magnetIV1QDataSet.tag(),"Data");
+	magnetII1QDataExport.set("filename","H_IV_1Q.txt");
+	magnetII1QDataExport.set("expr",new String[]{"mfnc.Hx","mfnc.Hy","mfnc.Brx","mfnc.Bry"});
+	magnetII1QDataExport.run();
 
 	// save the probe data
 	ExportFeature probesDataExport = modelExportList.create("export3","Table");
