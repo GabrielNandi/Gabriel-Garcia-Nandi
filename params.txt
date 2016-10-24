@@ -17,5 +17,8 @@ phi_S_II 45
 phi_S_IV 45
 delta_phi_S_II 15
 delta_phi_S_IV 15
-B_rem 1.47
+B_rem_II 1.47
+B_rem_IV 1.47
+mu_r_II 1.05
+mu_r_IV 1.05
 R_c 0.160

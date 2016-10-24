@@ -800,9 +800,7 @@ public class TeslaMax {
 
 	
 	mat.label("Nd-Fe-B");
-	mat.propertyGroup("def")
-	    .set("relpermeability", new String[]{"1.05", "0", "0", "0", "1.05", "0", "0", "0", "1.05"});
-	}
+    }
 
     private static void configureMaterials() {
 
@@ -858,9 +856,16 @@ public class TeslaMax {
 
 	String label = String.format("Magnetic Flux Conservation - Magnet %s %d - %s", magnet,index+1,quadrant);
 
+	String B_rem_x_expr = "";
+	String B_rem_y_expr = "";
+	String mu_r_expr = "";
+	
+
 	if (magnet.equals("II")) {
 
-	    
+	    B_rem_x_expr = String.format("B_rem_II*cos(%f[deg])",angle);
+	    B_rem_y_expr = String.format("B_rem_II*sin(%f[deg])",angle);
+	    mu_r_expr = "mu_r_II";
 
 	    if (quadrant.equals("1Q")) {
 
@@ -871,8 +876,14 @@ public class TeslaMax {
 		
 		feature.selection().set(getDomainEntities(magnetII2QBlockTags[index]));
 	    }
+
+	    
 	    
 	} else if (magnet.equals("IV")){
+
+	    B_rem_x_expr = String.format("B_rem_IV*cos(%f[deg])",angle);
+	    B_rem_y_expr = String.format("B_rem_IV*sin(%f[deg])",angle);
+	    mu_r_expr = "mu_r_IV";
 
 	    if (quadrant.equals("1Q")) {
 
@@ -890,8 +901,9 @@ public class TeslaMax {
 	feature.set("materialType", "from_mat");
 	feature.label(label);
 
-	String B_rem_x_expr = String.format("B_rem*cos(%f[deg])",angle);
-	String B_rem_y_expr = String.format("B_rem*sin(%f[deg])",angle);
+	feature.set("mur_mat","userdef");
+	feature.set("mur", new String[][]{{mu_r_expr}, {"0"}, {"0"}, {"0"}, {mu_r_expr}, {"0"}, {"0"}, {"0"}, {mu_r_expr}});
+	
 	String B_rem_z_expr = "0";
 	feature.set("Br", new String[][]{{B_rem_x_expr}, {B_rem_y_expr}, {B_rem_z_expr}});
 
