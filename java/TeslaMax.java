@@ -33,6 +33,8 @@ public class TeslaMax {
 
     private static final String SHAFT_SELECTION_TAG = "shaft_selection";
     private static final String MAGNETS_SELECTION_TAG = "magnets_selection";
+    private static final String MAGNETS_II_1Q_SELECTION_TAG = "magnets_ii_1q_selection";
+    private static final String MAGNETS_IV_1Q_SELECTION_TAG = "magnets_iv_1q_selection";
     private static final String IRON_SELECTION_TAG = "iron_selection";
     private static final String AIR_GAP_SELECTION_TAG = "air_gap_selection";
     private static final String AIR_GAP_HIGH_SELECTION_TAG = "air_gap_high_selection";
@@ -535,10 +537,19 @@ public class TeslaMax {
 	environmentBoundarySelection.set("entitydim",1);
 	environmentBoundarySelection.set("input",new String[]{"environment_sel_right","environment_sel_left"});
 
-	model.selection().create(MAGNETS_SELECTION_TAG, "Explicit");
+	model.selection().create(MAGNETS_SELECTION_TAG, "Explicit");	
 	model.selection(MAGNETS_SELECTION_TAG).label("Magnets region");
+	
+	model.selection().create(MAGNETS_II_1Q_SELECTION_TAG, "Explicit");
+	model.selection(MAGNETS_II_1Q_SELECTION_TAG).label("Magnet II 1Q region");
+	
+	model.selection().create(MAGNETS_IV_1Q_SELECTION_TAG, "Explicit");
+	model.selection(MAGNETS_IV_1Q_SELECTION_TAG).label("Magnet IV 1Q region");
+	
+
 	for (String ftag : magnetII1QBlockTags) {
 	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
+	    model.selection(MAGNETS_II_1Q_SELECTION_TAG).add(getDomainEntities(ftag));
 	}
 
 	for (String ftag : magnetII2QBlockTags) {
@@ -547,6 +558,7 @@ public class TeslaMax {
 
 	for (String ftag : magnetIV1QBlockTags) {
 	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
+	    model.selection(MAGNETS_IV_1Q_SELECTION_TAG).add(getDomainEntities(ftag));
 	}
 
 	for (String ftag : magnetIV2QBlockTags) {
