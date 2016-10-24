@@ -649,6 +649,26 @@ public class TeslaMax {
 	magnetAreaProbe.label("Magnets Area");
 	magnetAreaProbe.genResult(null);
 
+	ProbeFeature magnetsHMaxIIProbe = modelProbes.create("prb5","Domain");
+	magnetsHMaxIIProbe.model(COMPONENT_NAME);
+	magnetsHMaxIIProbe.selection().named(MAGNETS_II_1Q_SELECTION_TAG);
+	magnetsHMaxIIProbe.set("expr","-( (mfnc.Hx * mfnc.Brx) + (mfnc.Hy * mfnc.Bry) )/mfnc.normBr");
+	magnetsHMaxIIProbe.set("unit","A/m");
+	magnetsHMaxIIProbe.set("type","maximum");
+	magnetsHMaxIIProbe.set("table",RESULTS_TABLE_TAG);
+	magnetsHMaxIIProbe.label("Magnet II H . B_rem Max");
+	magnetsHMaxIIProbe.genResult(null);
+
+	ProbeFeature magnetsHMaxIVProbe = modelProbes.create("prb6","Domain");
+	magnetsHMaxIVProbe.model(COMPONENT_NAME);
+	magnetsHMaxIVProbe.selection().named(MAGNETS_IV_1Q_SELECTION_TAG);
+	magnetsHMaxIVProbe.set("expr","-( (mfnc.Hx * mfnc.Brx) + (mfnc.Hy * mfnc.Bry) )/mfnc.normBr");
+	magnetsHMaxIVProbe.set("unit","A/m");
+	magnetsHMaxIVProbe.set("type","maximum");
+	magnetsHMaxIVProbe.set("table",RESULTS_TABLE_TAG);
+	magnetsHMaxIVProbe.label("Magnet IV H . B_rem Max");
+	magnetsHMaxIVProbe.genResult(null);
+
     }
 
     private static void configureAirMaterial(Material mat){
