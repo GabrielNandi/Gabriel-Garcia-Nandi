@@ -1137,9 +1137,9 @@ public class TeslaMax {
 	magnetII1QDataExport.run();
 
 	ExportFeature magnetIV1QDataExport = modelExportList.create("export5",magnetIV1QDataSet.tag(),"Data");
-	magnetII1QDataExport.set("filename","H_IV_1Q.txt");
-	magnetII1QDataExport.set("expr",new String[]{"mfnc.Bx","mfnc.By","mfnc.Hx","mfnc.Hy","mfnc.Brx","mfnc.Bry"});
-	magnetII1QDataExport.run();
+	magnetIV1QDataExport.set("filename","H_IV_1Q.txt");
+	magnetIV1QDataExport.set("expr",new String[]{"mfnc.Bx","mfnc.By","mfnc.Hx","mfnc.Hy","mfnc.Brx","mfnc.Bry"});
+	magnetIV1QDataExport.run();
 
 	// save the probe data
 	ExportFeature probesDataExport = modelExportList.create("export3","Table");
