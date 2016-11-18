@@ -16,8 +16,7 @@ public class TeslaMax {
     public static final String CYLINDER_BLOCK_PART_NAME = "cylinder_block";
     public static final String CYLINDER_SHELL_PART_NAME = "cylinder_shell";
 
-    private static final String MAGNET_II_1Q_BLOCK_TAG = "magnet_ii_1q";
-    private static final String MAGNET_II_2Q_BLOCK_TAG = "magnet_ii_2q";
+
     private static final String MAGNET_IV_1Q_BLOCK_TAG = "magnet_iv_1q";
     private static final String MAGNET_IV_2Q_BLOCK_TAG = "magnet_iv_2q";
 
@@ -33,7 +32,6 @@ public class TeslaMax {
 
     private static final String SHAFT_SELECTION_TAG = "shaft_selection";
     private static final String MAGNETS_SELECTION_TAG = "magnets_selection";
-    private static final String MAGNETS_II_1Q_SELECTION_TAG = "magnets_ii_1q_selection";
     private static final String MAGNETS_IV_1Q_SELECTION_TAG = "magnets_iv_1q_selection";
     private static final String IRON_SELECTION_TAG = "iron_selection";
     private static final String AIR_GAP_SELECTION_TAG = "air_gap_selection";
@@ -57,8 +55,6 @@ public class TeslaMax {
     private static GeomSequence geometry;
     private static GeomFeatureList geomFeatures;
 
-    private static String[] magnetII1QBlockTags;
-    private static String[] magnetII2QBlockTags;
     private static String[] magnetIV1QBlockTags;
     private static String[] magnetIV2QBlockTags;
     private static String ironIIBlockTag;
@@ -71,8 +67,6 @@ public class TeslaMax {
     private static String fluxConcentratorTag;
     private static String environmentTag;
 
-    private static GeomFeature[] magnetII1QBlockFeatures;
-    private static GeomFeature[] magnetII2QBlockFeatures;
     private static GeomFeature[] magnetIV1QBlockFeatures;
     private static GeomFeature[] magnetIV2QBlockFeatures;
     private static GeomFeature ironIIBlockFeature;
@@ -177,20 +171,39 @@ public class TeslaMax {
 	
     }
 
+    private static GeomFeature buildCylinderShell(String tag, String label, String[] inputExpression) {
+
+	GeomFeature cylinderShell;
+
+	cylinderShell = geomFeatures.create(tag,"PartInstance");
+	cylinderShell.set("part",CYLINDER_SHELL_PART_NAME);
+	cylinderShell.label(label);
+	cylinderShell.set("inputexpr",inputExpression);
+	cylinderShell.set("selkeepnoncontr", false);
+
+	String selTag = tag + "_" + SELECTION_DOMAIN_SUFFIX;
+	cylinderShell.setEntry("selkeepdom",selTag,"on");
+
+	return cylinderShell;
+	
+    }
+
     private static GeomFeature buildIronBlock(String magnetRegion) {
 
 	String tag = "";
 	String label = "";
 	String[] expression = null;
 
-	GeomFeature block;
+	GeomFeature block = null;
 
 	if (magnetRegion.equals("II")) {
 	    
 	    tag = geomFeatures.uniquetag(IRON_II_BLOCK_TAG);
 	    ironIIBlockTag = tag;
-	    label = "Cylinder Block - Iron II";
-	    expression = new String[]{"R_i", "R_o", "phi_S_II", "180[deg] - phi_S_II"};
+	    label = "Iron Core II";
+	    expression = new String[]{"R_i", "R_o",  "180[deg]"};
+
+	    block = buildCylinderShell(tag,label,expression);
 	    
 	} else if (magnetRegion.equals("IV")) {
 
@@ -198,9 +211,11 @@ public class TeslaMax {
 	    ironIVBlockTag = tag;
 	    label = "Cylinder Block - Iron IV";
 	    expression = new String[]{"R_g", "R_s", "phi_S_IV", "180[deg] - phi_S_IV"};
+
+	    block = buildCylinderBlock(tag,label,expression);
 	}
 
-	block = buildCylinderBlock(tag,label,expression);
+	
 	return block;
 
 
@@ -215,33 +230,7 @@ public class TeslaMax {
 	String outerAngleExpr = "";
 	String[] expression = null;
 
-	if (magnetRegion.equals("II")) {
-
-	    if (quadrant.equals("1Q")) {
-
-		tag = geomFeatures.uniquetag(MAGNET_II_1Q_BLOCK_TAG);
-		label = "Cylinder Block " + (index+1) + " - Magnet II - 1Q";
-		magnetII1QBlockTags[index] = tag;
-
-		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
-		innerAngleExpr = String.format("%d * delta_phi_S_II",index);
-		outerAngleExpr = String.format("%d * delta_phi_S_II",index+1);
-		expression = new String[]{"R_i", "R_o", innerAngleExpr, outerAngleExpr};
-	    
-	    } else if (quadrant.equals("2Q")) {
-
-		tag = geomFeatures.uniquetag(MAGNET_II_2Q_BLOCK_TAG);
-		label = "Cylinder Block " + (index+1) + " - Magnet II - 2Q";
-		magnetII2QBlockTags[index] = tag;
-
-		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
-		innerAngleExpr = String.format("180[deg] - %d * delta_phi_S_II",index+1);
-		outerAngleExpr = String.format("180[deg] - %d * delta_phi_S_II",index);
-		expression = new String[]{"R_i", "R_o", innerAngleExpr, outerAngleExpr};
-		
-	    }
-
-	} else if (magnetRegion.equals("IV")) {
+	if (magnetRegion.equals("IV")) {
 	    
 	    if (quadrant.equals("1Q")) {
 		
@@ -291,22 +280,7 @@ public class TeslaMax {
 	return feature;
     }
 
-    private static GeomFeature buildCylinderShell(String tag, String label, String[] inputExpression) {
 
-	GeomFeature cylinderShell;
-
-	cylinderShell = geomFeatures.create(tag,"PartInstance");
-	cylinderShell.set("part",CYLINDER_SHELL_PART_NAME);
-	cylinderShell.label(label);
-	cylinderShell.set("inputexpr",inputExpression);
-	cylinderShell.set("selkeepnoncontr", false);
-
-	String selTag = tag + "_" + SELECTION_DOMAIN_SUFFIX;
-	cylinderShell.setEntry("selkeepdom",selTag,"on");
-
-	return cylinderShell;
-	
-    }
 
     private static GeomFeature buildAirGapBlock(String region, String quadrant) {
 
@@ -397,22 +371,7 @@ public class TeslaMax {
 
 	geomFeatures = geometry.feature();
 
-	// loop to build the magnet II blocks
-
-	magnetII1QBlockTags = new String[nII];
-	magnetII1QBlockFeatures = new GeomFeature[nII];
-
-	magnetII2QBlockTags = new String[nII];
-	magnetII2QBlockFeatures = new GeomFeature[nII];
-
-	for (int i = 0; i < nII; i++) {
-	    
-	    magnetII1QBlockFeatures[i] = buildMagnetBlock(i,"II","1Q");
-	    magnetII2QBlockFeatures[i] = buildMagnetBlock(i,"II","2Q");
-	    
-	}
-
-	// build the iron block in region II
+	// build the iron block in region II (iron core)
 	ironIIBlockFeature = buildIronBlock("II");
 
 	// loop to build magnet blocks for region IV
@@ -540,21 +499,9 @@ public class TeslaMax {
 	model.selection().create(MAGNETS_SELECTION_TAG, "Explicit");	
 	model.selection(MAGNETS_SELECTION_TAG).label("Magnets region");
 	
-	model.selection().create(MAGNETS_II_1Q_SELECTION_TAG, "Explicit");
-	model.selection(MAGNETS_II_1Q_SELECTION_TAG).label("Magnet II 1Q region");
-	
 	model.selection().create(MAGNETS_IV_1Q_SELECTION_TAG, "Explicit");
 	model.selection(MAGNETS_IV_1Q_SELECTION_TAG).label("Magnet IV 1Q region");
 	
-
-	for (String ftag : magnetII1QBlockTags) {
-	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
-	    model.selection(MAGNETS_II_1Q_SELECTION_TAG).add(getDomainEntities(ftag));
-	}
-
-	for (String ftag : magnetII2QBlockTags) {
-	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
-	}
 
 	for (String ftag : magnetIV1QBlockTags) {
 	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
@@ -582,13 +529,7 @@ public class TeslaMax {
 	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).label("Magnetic circuit regions (except environment)");
 	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(shaftTag));
 	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(model.selection(AIR_GAP_SELECTION_TAG).entities(2));
-	for (String ftag : magnetII1QBlockTags) {
-	    model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(ftag));
-	}
 
-	for (String ftag : magnetII2QBlockTags) {
-	    model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(ftag));
-	}
 
 	for (String ftag : magnetIV1QBlockTags) {
 	    model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(getDomainEntities(ftag));
@@ -649,15 +590,6 @@ public class TeslaMax {
 	magnetAreaProbe.label("Magnets Area");
 	magnetAreaProbe.genResult(null);
 
-	ProbeFeature magnetsHMaxIIProbe = modelProbes.create("prb5","Domain");
-	magnetsHMaxIIProbe.model(COMPONENT_NAME);
-	magnetsHMaxIIProbe.selection().named(MAGNETS_II_1Q_SELECTION_TAG);
-	magnetsHMaxIIProbe.set("expr","-( (mfnc.Hx * mfnc.Brx) + (mfnc.Hy * mfnc.Bry) )/mfnc.normBr");
-	magnetsHMaxIIProbe.set("unit","A/m");
-	magnetsHMaxIIProbe.set("type","maximum");
-	magnetsHMaxIIProbe.set("table",RESULTS_TABLE_TAG);
-	magnetsHMaxIIProbe.label("Magnet II H . B_rem Max");
-	magnetsHMaxIIProbe.genResult(null);
 
 	ProbeFeature magnetsHMaxIVProbe = modelProbes.create("prb6","Domain");
 	magnetsHMaxIVProbe.model(COMPONENT_NAME);
@@ -893,25 +825,7 @@ public class TeslaMax {
 	String mu_r_expr = "";
 	
 
-	if (magnet.equals("II")) {
-
-	    B_rem_x_expr = String.format("B_rem_II*cos(%f[deg])",angle);
-	    B_rem_y_expr = String.format("B_rem_II*sin(%f[deg])",angle);
-	    mu_r_expr = "mu_r_II";
-
-	    if (quadrant.equals("1Q")) {
-
-		feature.selection().set(getDomainEntities(magnetII1QBlockTags[index]));
-		 		
-	    }
-	    else if (quadrant.equals("2Q")) {
-		
-		feature.selection().set(getDomainEntities(magnetII2QBlockTags[index]));
-	    }
-
-	    
-	    
-	} else if (magnet.equals("IV")){
+	if (magnet.equals("IV")){
 
 	    B_rem_x_expr = String.format("B_rem_IV*cos(%f[deg])",angle);
 	    B_rem_y_expr = String.format("B_rem_IV*sin(%f[deg])",angle);
@@ -955,11 +869,6 @@ public class TeslaMax {
 	ironFluxConservation.label("Magnetic Flux Conservation - Iron regions");
 
 	
-	for (int i = 0; i < nII; i++) {
-	    
-	    configureMagnetFluxConservation(i,"II","1Q");
-	    configureMagnetFluxConservation(i,"II","2Q");
-	}
 
 	for (int i = 0; i < nIV; i++) {
 	    configureMagnetFluxConservation(i,"IV","1Q");
@@ -1041,7 +950,6 @@ public class TeslaMax {
 	
 	DatasetFeature magnetsDataSet = configureDataSet("Magnets", MAGNETS_SELECTION_TAG);
 
-	DatasetFeature magnetII1QDataSet = configureDataSet("Magnet II 1Q", MAGNETS_II_1Q_SELECTION_TAG);
 	DatasetFeature magnetIV1QDataSet = configureDataSet("Magnet IV 1Q", MAGNETS_IV_1Q_SELECTION_TAG);
 
 	DatasetFeature airGapHighDataSet = configureDataSet("Air Gap High Field Region", AIR_GAP_HIGH_SELECTION_TAG);
@@ -1131,10 +1039,6 @@ public class TeslaMax {
 	airGapLowDataExport.set("expr","mfnc.normB");
 	airGapLowDataExport.run();
 
-	ExportFeature magnetII1QDataExport = modelExportList.create("export4",magnetII1QDataSet.tag(),"Data");
-	magnetII1QDataExport.set("filename","H_II_1Q.txt");
-	magnetII1QDataExport.set("expr",new String[]{"mfnc.Bx","mfnc.By","mfnc.Hx","mfnc.Hy","mfnc.Brx","mfnc.Bry"});
-	magnetII1QDataExport.run();
 
 	ExportFeature magnetIV1QDataExport = modelExportList.create("export5",magnetIV1QDataSet.tag(),"Data");
 	magnetIV1QDataExport.set("filename","H_IV_1Q.txt");
@@ -1157,7 +1061,6 @@ public class TeslaMax {
 
 	params.loadFile(PARAMETER_FILE_NAME);
 
-	nII = Integer.parseInt(params.get("n_II"));
 	nIV = Integer.parseInt(params.get("n_IV"));
 	
 	modelNodes = model.modelNode();
