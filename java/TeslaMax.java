@@ -286,9 +286,8 @@ public class TeslaMax {
 
 	String label = "Air Gap Cylinder Block " + region + " Field  " + quadrant;
 
-	// by convention, the high field region will be delimited by the
-	// mean angle between phi_S_II and phi_S_IV
-	String angle = String.format("(0.5*(%s + %s))",params.get("phi_S_II"),params.get("phi_S_IV"));
+
+	String angle = params.get("phi_S_IV");
 	String angle_start_expr = "";
 	String angle_end_expr = "";
 	String tag = "";
