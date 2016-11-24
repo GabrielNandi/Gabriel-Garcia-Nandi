@@ -422,12 +422,14 @@ public class TeslaMax {
 	
 	// loop to build the magnet II blocks
 
-	magnetII1QBlockTags = new String[nII];
-	magnetII1QBlockFeatures = new GeomFeature[nII];
+	if (nII > 0) {
+	    magnetII1QBlockTags = new String[nII];
+	    magnetII1QBlockFeatures = new GeomFeature[nII];
 
-	magnetII2QBlockTags = new String[nII];
-	magnetII2QBlockFeatures = new GeomFeature[nII];
+	    magnetII2QBlockTags = new String[nII];
+	    magnetII2QBlockFeatures = new GeomFeature[nII];
 
+	}
 	for (int i = 0; i < nII; i++) {
 	    
 	    magnetII1QBlockFeatures[i] = buildMagnetBlock(i,"II","1Q");
@@ -440,12 +442,14 @@ public class TeslaMax {
 
 	// loop to build magnet blocks for region IV
 	// see previous loop for explanations
-	
-	magnetIV1QBlockTags = new String[nIV];
-	magnetIV1QBlockFeatures = new GeomFeature[nIV];
 
-	magnetIV2QBlockTags = new String[nIV];
-	magnetIV2QBlockFeatures = new GeomFeature[nIV];
+	if (nIV > 0){
+	    magnetIV1QBlockTags = new String[nIV];
+	    magnetIV1QBlockFeatures = new GeomFeature[nIV];
+
+	    magnetIV2QBlockTags = new String[nIV];
+	    magnetIV2QBlockFeatures = new GeomFeature[nIV];
+	}
 	
 	for (int i = 0; i < nIV; i++) {
 
