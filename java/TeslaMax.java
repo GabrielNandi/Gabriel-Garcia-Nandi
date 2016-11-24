@@ -1027,6 +1027,7 @@ public class TeslaMax {
 
 	
 	model.sol("sol1").attach("std1");
+	model.sol("sol1").feature("s1").feature("i1").set("linsolver", "fgmres");
 	model.sol("sol1").runAll();
 
 	}
