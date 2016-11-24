@@ -415,8 +415,6 @@ public class TeslaMax {
 	geomFeatures = geometry.feature();
 
 	// check if we have to build the inner iron wedge
-	ironIIWedge1QFeature = null;
-	ironIIWedge2QFeature = null;
 	if (params.evaluate("phi_C_II") > 0.0) {
 	    ironIIWedge1QFeature = buildIronBlock("IIw1Q");
 	    ironIIWedge2QFeature = buildIronBlock("IIw2Q");
