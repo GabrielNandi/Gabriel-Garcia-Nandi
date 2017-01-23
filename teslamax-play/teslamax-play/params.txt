@@ -1,0 +1,16 @@
+n_IV 3
+alpha_rem_IV_2 45.0
+mu_r_IV 1.05
+h_gap 0.03
+delta_phi_S_IV 15.0
+phi_S_IV 45
+R_o 0.09
+alpha_rem_IV_1 15.0
+B_rem_IV 1.4
+h_fc 0.02
+R_s 0.2
+alpha_rem_IV_3 75.0
+R_c 0.22
+R_i 0.015
+R_e 2
+R_g 0.12
