@@ -97,6 +97,8 @@ public class TeslaMax {
 
     private static int nII;
     private static int nIV;
+    
+    private static boolean ironLinearQ;
 
     private static MeshSequence modelMesh;
 
@@ -741,8 +743,20 @@ public class TeslaMax {
 	mat.propertyGroup("RefractiveIndex")
 	    .set("ki", new String[]{"0", "0", "0", "0", "0", "0", "0", "0", "0"});
 	}
+    
+    private static void configureIronMaterialLinear(Material mat){
+    	
+    	mat.label("Linear Iron");
+    	mat.set("family", "iron");
 
-    private static void configureIronMaterial(Material mat){
+
+    	mat.propertyGroup("def")
+    	    .set("relpermeability", new String[]{"mu_r_iron", "0", "0", "0", "mu_r_iron", "0", "0", "0", "mu_r_iron"});
+    
+    	
+    }
+
+    private static void configureIronMaterialNonLinear(Material mat){
 
 	mat.label("Soft Iron (with losses)");
 	mat.set("family", "iron");
@@ -842,6 +856,15 @@ public class TeslaMax {
 
 	}
 
+    private static void configureIronMaterial(Material mat){
+    	
+    	if (ironLinearQ) {
+    		configureIronMaterialLinear(mat);
+    	} else {
+    		configureIronMaterialNonLinear(mat);
+    	}
+    }
+    
     private static void configureMagnetMaterial(Material mat){
 
 	
@@ -964,7 +987,13 @@ public class TeslaMax {
 	
 	PhysicsFeature ironFluxConservation = model.physics("mfnc").create("mfc2", "MagneticFluxConservation", 2);
 	ironFluxConservation.selection().named(IRON_SELECTION_TAG);
-	ironFluxConservation.set("ConstitutiveRelationH", "BHCurve");
+
+	if (!ironLinearQ){
+	    ironFluxConservation.set("ConstitutiveRelationH", "BHCurve");
+	}
+
+
+
 	ironFluxConservation.set("materialType", "from_mat");
 	ironFluxConservation.label("Magnetic Flux Conservation - Iron regions");
 
@@ -1174,6 +1203,9 @@ public class TeslaMax {
 
 	nII = Integer.parseInt(params.get("n_II"));
 	nIV = Integer.parseInt(params.get("n_IV"));
+	
+	ironLinearQ = (Integer.parseInt(params.get("linear_iron")) == 1);
+	
 	
 	modelNodes = model.modelNode();
 
