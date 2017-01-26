@@ -1056,7 +1056,16 @@ public class TeslaMax {
 
 	
 	model.sol("sol1").attach("std1");
-	model.sol("sol1").feature("s1").feature("i1").set("linsolver", "bicgstab");
+
+	// the "gmres" solver is much faster
+	String solver = "gmres";
+
+	// for non-linear problems, the above solver may fail to converge
+	if (!ironLinearQ){
+	    solver = "bicgstab";
+	    }
+	
+	model.sol("sol1").feature("s1").feature("i1").set("linsolver", solver);
 	model.sol("sol1").runAll();
 
 	}
