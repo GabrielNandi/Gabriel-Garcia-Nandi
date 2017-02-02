@@ -1194,6 +1194,11 @@ public class TeslaMax {
 	magnetIV1QDataExport.set("expr",new String[]{"mfnc.Bx","mfnc.By","mfnc.Hx","mfnc.Hy","mfnc.Brx","mfnc.Bry"});
 	magnetIV1QDataExport.run();
 
+	ExportFeature airGapDataExport = modelExportList.create("export6",airGapDataSet.tag(),"Data");
+	airGapDataExport.set("filename","B_III.txt");
+	airGapDataExport.set("expr",new String[]{"mfnc.Bx","mfnc.By","mfnc.Hx","mfnc.Hy",});
+	airGapDataExport.run();
+
 	// save the probe data
 	ExportFeature probesDataExport = modelExportList.create("export3","Table");
 	probesDataExport.set("filename","COMSOL Main Results.txt");
