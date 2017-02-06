@@ -894,6 +894,7 @@ public class TeslaMax {
 	model.coordSystem("ie1").label("External environment");
 	model.coordSystem("ie1").set("ScalingType", "Cylindrical");
     }
+    
 
     private static double calculateRemanenceAngle(int index,String magnet, String quadrant){
 
@@ -913,6 +914,19 @@ public class TeslaMax {
 	
 	
     }
+
+    private static double calculateRemanenceMagnitude(int index,String magnet, String quadrant){
+
+	// in the parameter file, the remanences are specified like this: B_rem_II_2_1Q
+	String param = String.format("B_rem_%s_%d_%s", magnet, index+1,quadrant);
+	double remanence = 0.0;
+
+	remanence = params.evaluate(param);
+
+	return remanence;
+	
+	
+    }
     
 
     private static void configureMagnetFluxConservation(int index, String magnet, String quadrant){
@@ -920,7 +934,8 @@ public class TeslaMax {
 
 	String physicsFeatureTag = mfncPhysics.feature().uniquetag("mfc");
 	PhysicsFeature feature = mfncPhysics.create(physicsFeatureTag,"MagneticFluxConservation",2);
-	
+
+	Double remanence = calculateRemanenceMagnitude(index,magnet,quadrant);
 	Double angle = calculateRemanenceAngle(index,magnet,quadrant);
 
 	String label = String.format("Magnetic Flux Conservation - Magnet %s %d - %s", magnet,index+1,quadrant);
@@ -932,8 +947,8 @@ public class TeslaMax {
 
 	if (magnet.equals("II")) {
 
-	    B_rem_x_expr = String.format("B_rem_II*cos(%f[deg])",angle);
-	    B_rem_y_expr = String.format("B_rem_II*sin(%f[deg])",angle);
+	    B_rem_x_expr = String.format("%f*cos(%f[deg])",remanence,angle);
+	    B_rem_y_expr = String.format("%f*sin(%f[deg])",remanence,angle);
 	    mu_r_expr = "mu_r_II";
 
 	    if (quadrant.equals("1Q")) {
@@ -950,8 +965,8 @@ public class TeslaMax {
 	    
 	} else if (magnet.equals("IV")){
 
-	    B_rem_x_expr = String.format("B_rem_IV*cos(%f[deg])",angle);
-	    B_rem_y_expr = String.format("B_rem_IV*sin(%f[deg])",angle);
+	    B_rem_x_expr = String.format("%f*cos(%f[deg])",remanence,angle);
+	    B_rem_y_expr = String.format("%f*sin(%f[deg])",remanence,angle);
 	    mu_r_expr = "mu_r_IV";
 
 	    if (quadrant.equals("1Q")) {
@@ -1058,8 +1073,9 @@ public class TeslaMax {
 	model.sol("sol1").attach("std1");
 
 	// the "gmres" solver is much faster
-	String solver = "gmres";
-
+	//String solver = "gmres";
+	String solver = "bicgstab";
+	
 	// for non-linear problems, the above solver may fail to converge
 	if (!ironLinearQ){
 	    solver = "bicgstab";
