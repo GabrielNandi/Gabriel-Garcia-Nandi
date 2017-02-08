@@ -915,10 +915,10 @@ public class TeslaMax {
 	
     }
 
-    private static double calculateRemanenceMagnitude(int index,String magnet, String quadrant){
+    private static double calculateRemanenceMagnitude(int index,String magnet){
 
-	// in the parameter file, the remanences are specified like this: B_rem_II_2_1Q
-	String param = String.format("B_rem_%s_%d_%s", magnet, index+1,quadrant);
+	// in the parameter file, the remanences are specified like this: B_rem_II_2
+	String param = String.format("B_rem_%s_%d", magnet, index+1);
 	double remanence = 0.0;
 
 	remanence = params.evaluate(param);
@@ -935,7 +935,7 @@ public class TeslaMax {
 	String physicsFeatureTag = mfncPhysics.feature().uniquetag("mfc");
 	PhysicsFeature feature = mfncPhysics.create(physicsFeatureTag,"MagneticFluxConservation",2);
 
-	Double remanence = calculateRemanenceMagnitude(index,magnet,quadrant);
+	Double remanence = calculateRemanenceMagnitude(index,magnet);
 	Double angle = calculateRemanenceAngle(index,magnet,quadrant);
 
 	String label = String.format("Magnetic Flux Conservation - Magnet %s %d - %s", magnet,index+1,quadrant);
