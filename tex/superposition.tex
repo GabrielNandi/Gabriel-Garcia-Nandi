@@ -25,11 +25,12 @@
 
 \newcommand{\teslamax}{TeslaMax{ }}
 \newcommand{\murm}{\mu_{\mathrm{r},m}}
-\newcommand{\indexremmk}{\mathrm{rem},m,k}
-\newcommand{\nvbremmk}{\nvb_{\indexremmk}}
-\newcommand{\bremmk}{B_{\indexremmk}}
-\newcommand{\alpharemmk}{\alpha_{\indexremmk}}
-
+\newcommand{\indexremmk}[2]{\mathrm{rem},{#1},{#2}}
+\newcommand{\nvbremmk}[2]{\nvb_{\indexremmk{#1}{#2}}}
+\newcommand{\bremmk}[2]{B_{\indexremmk{#1}{#2}}}
+\newcommand{\alpharemmk}[2]{\alpha_{\indexremmk{#1}{#2}}}
+\newcommand{\nvfremmk}[2]{\nvector{F}^B_{\indexremmk{#1}{#2}}}
+\newcommand{\nvbiii}{\nvb\ped{III}}
 
 % ----
 % Início do documento
@@ -70,7 +71,7 @@ A fundamental feature of \teslamax is that it is composed of an inner and an out
 All magnet segments are characterized by a relative permeability $\murm$, uniform for magnet $m$; for instance, all blocks in magnet II have permeability $\mu\ped{r,II}$. Each block is uniformily magnetized in a direction:
 \begin{equation}
   \label{eq:1}
-\nvbremmk = \bremmk \left( \cos\left( \alpharemmk \right) \unitvector{x} + \sin\left( \alpharemmk \right) \unitvector{y} \right)
+\nvbremmk{m}{k} = \bremmk{m}{k} \left( \cos\left( \alpharemmk{m}{k}  \right) \unitvector{x} + \sin\left( \alpharemmk{m}{k}  \right) \unitvector{y} \right)
 \end{equation}
 
 \noindent where $m$ represents the magnet and $k$ the segment in that magnet.
@@ -87,7 +88,7 @@ Only the first quadrant is represented for simplicity; it can be shown that, to 
 
   \begin{equation}
     \label{eq:2}
-    \left( \alpharemmk \right)\ped{1Q} = -\left( \alpharemmk \right)\ped{2Q}
+    \left( \alpharemmk{m}{k}  \right)\ped{1Q} = -\left( \alpharemmk{m}{k}  \right)\ped{2Q}
   \end{equation}
 \item The top half-circle (first and second quadrant) has mirror symmetry with the bottom one; this \emph{magnetic insulation} condition is equivalent to specifying:
 
@@ -121,7 +122,31 @@ Each region (the air gap, each magnet segment, each iron block) is governed by t
 
 It can be seen that, assuming the permeability is constant, all equations are linear. This is fundamental because it allows the application of the Principle of Superposition.
 
+\section{Effect of a single magnet block}
+\label{sec:effect-single-magnet}
 
+The magnetic flux density vector field in the air gap is denoted $\nvbiii (\rvec)$.
+
+Now imagine that only one of the blocks is magnetized (in the first quadrant; the symmetry conditions will still apply). We denote $\nvfremmk{m}{k}  (\nvbremmk{m}{k} )$ the contribution of segment $k$ in magnet $m$ to the vector field $\nvbiii$; that is, is the calculated air gap field when only this segment has its remanence $\nvbremmk{m}{k}$, with all other remanences being null.
+
+Because of the Principle of Superposition, the vector field $\nvbiii$ can be expressed as:
+
+\begin{equation}
+  \label{eq:7}
+  \nvbiii = \sum_{p=1}^{n\ped{II}} \nvfremmk{\mathrm{II}}{p} \left(\nvbremmk{\mathrm{II}}{p}\right) + \sum_{q=1}^{n\ped{IV}} \nvfremmk{\mathrm{IV}}{q} \left(\nvbremmk{\mathrm{IV}}{q}\right)
+\end{equation}
+
+Also because of the linearity, \autoref{eq:1} can be inserted into \autoref{eq:7} to give:
+
+\begin{equation}
+\begin{split}
+    \nvbiii = &\sum_{p=1}^{n\ped{II}} \bremmk{\mathrm{II}}{p} \left( \cos(\alpharemmk{\mathrm{II}}{p}) \nvfremmk{\mathrm{II}}{p} \left(\unitvector{x}\right) + \sin(\alpharemmk{\mathrm{II}}{p}) \nvfremmk{\mathrm{II}}{p} \left(\unitvector{y}\right) \right) + \\ 
+&\sum_{q=1}^{n\ped{IV}} \bremmk{\mathrm{IV}}{q} \left( \cos(\alpharemmk{\mathrm{IV}}{q}) \nvfremmk{\mathrm{IV}}{q} \left(\unitvector{x}\right) + \sin(\alpharemmk{\mathrm{IV}}{q}) \nvfremmk{\mathrm{IV}}{q} \left(\unitvector{y}\right) \right) 
+\end{split}
+  \label{eq:8}
+\end{equation}
+
+It is important to notice that each $\nvfremmk{m}{p}(\nvbremmk{m}{p})$ is the result of one FEM simulation.
 
 % ----------------------------------------------------------
 % ELEMENTOS PÓS-TEXTUAIS
