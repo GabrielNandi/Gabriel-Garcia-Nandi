@@ -97,6 +97,32 @@ Only the first quadrant is represented for simplicity; it can be shown that, to 
   \end{equation}
 \end{enumerate}
 
+\section{Linearity of the \teslamax model}
+\label{sec:line-tesl-model}
+
+Each region (the air gap, each magnet segment, each iron block) is governed by the following equations:
+
+\begin{equation}
+  \label{eq:4}
+  \divergent{\nvb} = 0
+\end{equation}
+
+\begin{equation}
+  \label{eq:5}
+  \curl{\nvh} = 0
+\end{equation}
+
+\noindent and the materials follow the constitutive relation
+
+\begin{equation}
+  \label{eq:6}
+  \nvb = \mur \mu_0 \nvh + \nvbrem
+\end{equation}
+
+It can be seen that, assuming the permeability is constant, all equations are linear. This is fundamental because it allows the application of the Principle of Superposition.
+
+
+
 % ----------------------------------------------------------
 % ELEMENTOS PÓS-TEXTUAIS
 % ----------------------------------------------------------
