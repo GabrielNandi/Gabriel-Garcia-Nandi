@@ -43,6 +43,11 @@ N_PROFILE_POINTS = 100
 
 N_POINTS_PER_AXIS = 400
 
+FIGSIZE_CM = 20
+FIGSIZE_INCHES = FIGSIZE_CM / 2.54
+
+FONTSIZE = 20
+
 def get_comsol_parameters_series():
     """Parse the COMSOL parameters file in the current directory and
     return a pandas Series from it.
@@ -354,18 +359,16 @@ def remove_units_from_dict_keys(dictionary):
     return new_dictionary
 
 
-# In[18]:
-
-def write_parameter_file_from_dict(param_dict):
-    """From a basic 'param_dict', calculate the necessary other parameters 
-    (e.g. magnet segment size from total size and number of segments) and write
-    the correct parameters file.
-    
-    If 'param_dict' contains units in the names, they are removed.
+def expand_parameter_dictionary(param_simple):
     """
-    
-    param_dict = remove_units_from_dict_keys(param_dict)
-    
+    Return a new dictionary, calculating derivative parameters from
+    'param_simple', which is usually passed to COMSOL.
+
+    If the input dictionary contain units, they are removed. The returned
+    dict does not contain units
+    """
+    param_dict = remove_units_from_dict_keys(param_simple)
+
     # cast the number of segments to int, if necessary
     param_dict["n_IV"] = int(param_dict["n_IV"])
     
@@ -385,6 +388,21 @@ def write_parameter_file_from_dict(param_dict):
     if param_dict["n_IV"] > 0:
         param_dict["delta_phi_S_IV"] = (param_dict["phi_S_IV"] /
                                         param_dict["n_IV"])
+
+    return param_dict
+    
+
+def write_parameter_file_from_dict(param_dict):
+    """From a basic 'param_dict', calculate the necessary other parameters 
+    (e.g. magnet segment size from total size and number of segments) and write
+    the correct parameters file.
+    
+    If 'param_dict' contains units in the names, they are removed.
+    """
+    
+    
+    param_dict = expand_parameter_dictionary(param_dict)
+    
     
     # write the dictionary file in the appropriate format that COMSOL can parse
     parameters_file_path = Path(".") / COMSOL_PARAMETER_FILENAME
@@ -443,13 +461,13 @@ def create_quater_circle_figure_template(r_lim,params):
     axes.set_ylim(0,1e3*r_lim)
     axes.set_xlim(0,1e3*r_lim)
 
-    axes.set_ylabel(r'$r\ [\si{\mm}$]')
-    axes.set_xlabel(r'$r\ [\si{\mm}$]')
+    axes.set_ylabel(r'$y\ [\si{\mm}$]')
+    axes.set_xlabel(r'$x\ [\si{\mm}$]')
     
-    R_o = params['R_o[m]']
-    R_i = params['R_i[m]']
-    R_s = params['R_s[m]']
-    R_g = params['R_g[m]']
+    R_o = params['R_o']
+    R_i = params['R_i']
+    R_s = params['R_s']
+    R_g = params.get('R_g', params['R_o'] + params['h_gap'])
     
     magnet_II_outer=plt.Circle((0,0),1e3*R_o,color='k',fill=False)
     magnet_II_inner=plt.Circle((0,0),1e3*R_i,color='k',fill=False)
@@ -495,22 +513,22 @@ def create_magnet_IV_figure_template(params):
     fig = plt.figure(figsize=(FIGSIZE_INCHES,FIGSIZE_INCHES))
     axes = fig.add_subplot(111,aspect='equal')
     
-    R_o = params['R_o[m]']
-    R_i = params['R_i[m]']
-    R_s = params['R_s[m]']
-    R_g = params['R_g[m]']
-    R_c = params['R_c[m]']
+    R_o = params['R_o']
+    R_i = params['R_i']
+    R_s = params['R_s']
+    R_g = params.get('R_g', params['R_o'] + params['h_gap'])
+    R_c = params.get('R_c', params['R_s'] + params['h_fc'])
     r_lim = R_c
     
     axes.set_ylim(0,1e3*r_lim)
     axes.set_xlim(0,1e3*r_lim)
 
-    axes.set_ylabel(r'$r\ [\si{\mm}$]')
-    axes.set_xlabel(r'$r\ [\si{\mm}$]')
+    axes.set_ylabel(r'$y\ [\si{\mm}$]')
+    axes.set_xlabel(r'$x\ [\si{\mm}$]')
     
     width_IV = R_s - R_g
     n_IV = int(params['n_IV'])
-    delta_phi_S_IV = params['delta_phi_S_IV[deg]']
+    delta_phi_S_IV = params['delta_phi_S_IV']
     for i in range(0,n_IV):
         theta_0 = i*delta_phi_S_IV
         theta_1 = (i+1)*delta_phi_S_IV
@@ -535,22 +553,22 @@ def create_magnets_figure_template(params):
     fig = plt.figure(figsize=(FIGSIZE_INCHES,FIGSIZE_INCHES))
     axes = fig.add_subplot(111,aspect='equal')
     
-    R_o = params['R_o[m]']
-    R_i = params['R_i[m]']
-    R_s = params['R_s[m]']
-    R_g = params['R_g[m]']
-    R_c = params['R_c[m]']
+    R_o = params['R_o']
+    R_i = params['R_i']
+    R_s = params['R_s']
+    R_g = params.get('R_g', params['R_o'] + params['h_gap'])
+    R_c = params.get('R_c', params['R_s'] + params['h_fc'])
     r_lim = R_c
     
     axes.set_ylim(0,1e3*r_lim)
     axes.set_xlim(0,1e3*r_lim)
 
-    axes.set_ylabel(r'$r\ [\si{\mm}$]')
-    axes.set_xlabel(r'$r\ [\si{\mm}$]')
+    axes.set_ylabel(r'$y\ [\si{\mm}$]')
+    axes.set_xlabel(r'$x\ [\si{\mm}$]')
     
     width_II = R_o - R_i
     n_II = int(params['n_II'])
-    delta_phi_S_II = params['delta_phi_S_II[deg]']
+    delta_phi_S_II = params['delta_phi_S_II']
     for i in range(0,n_II):
         theta_0 = i*delta_phi_S_II
         theta_1 = (i+1)*delta_phi_S_II
@@ -565,7 +583,7 @@ def create_magnets_figure_template(params):
         
     width_IV = R_s - R_g
     n_IV = int(params['n_IV'])
-    delta_phi_S_IV = params['delta_phi_S_IV[deg]']
+    delta_phi_S_IV = params['delta_phi_S_IV']
     for j in range(0,n_IV):
         theta_0 = j*delta_phi_S_IV
         theta_1 = (j+1)*delta_phi_S_IV
@@ -579,6 +597,7 @@ def create_magnets_figure_template(params):
         axes.add_artist(magnet_segment)
         
     return fig, axes
+
 class TeslaMaxModel():
     """
     Class representing the TeslaMax model.
