@@ -775,6 +775,8 @@ def calculate_B_III_from_single_block(point, segment, magnet, magnitude, angle, 
     
     Other parameters are taken from 'params'.
     """
+
+    params_single = params.copy()
     
     if magnet == 'II':
         n = params['n_II']
@@ -786,12 +788,12 @@ def calculate_B_III_from_single_block(point, segment, magnet, magnitude, angle, 
             
             for s in range(0,n):
                 
-                params["B_rem_%s_%d" %(m,s+1)] = 0.0
+                params_single["B_rem_%s_%d" %(m,s+1)] = 0.0
                 
     # set the desired elements
-    params["B_rem_%s_%d" %(magnet,segment)] = magnitude
-    params["alpha_rem_%s_%d" %(magnet,segment)] = angle
+    params_single["B_rem_%s_%d" %(magnet,segment)] = magnitude
+    params_single["alpha_rem_%s_%d" %(magnet,segment)] = angle
     
-    tmm = TeslaMaxModel(params,'teslamax-play-functional')
+    tmm = TeslaMaxModel(params_single,'teslamax-play-functional')
     tmm.run(verbose=False)
     return tmm.calculate_B_III_from_position(point)
