@@ -158,9 +158,11 @@ def calculate_magnetic_profile(B_data, params):
     """
     
     n_phi_points = 200
+
+    params = expand_parameter_dictionary(params)
     
-    R_g = params['R_g[m]']
-    R_o = params['R_o[m]']
+    R_g = params['R_g']
+    R_o = params['R_o']
     
     
     # create ranges for phi and r
@@ -711,72 +713,6 @@ def expand_parameters_from_remanence_array(alpha_B_rem, params):
     return params_expanded
     
 
-def calculate_functional_from_remanence_array(alpha_B_rem, params):
-    """
-    Returns the (scalar) objective functional  for the TeslaMax optimization.
-    The optimization variables are the remanence angles for the magnet segments, 
-    specified in the array 'alpha_B_rem' (the first n_II elements refer to the inner magnet, and
-    the remaining n_IV elements refer to the outer one).
-    The other parameters are included in the dictionary 'params'.
-    
-    All simulation files are placed in a directory 'teslamax-optimization' in the current directory
-    """
-    
-    
-    path_functional = "teslamax-optimization"
-
-    param_dict = expand_parameters_from_remanence_array(alpha_B_rem, params)
-    
-    teslamax_model = TeslaMaxModel(param_dict,path_functional)
-    teslamax_model.run(verbose=False)
-    
-    return -1*calculate_average_high_field(teslamax_model.get_profile_data())
-    
-
-def calculate_derivative_functional_to_remanence(i,alpha_B_rem,params):
-    """
-    Return the derivative of the objective functional with respect to the 'i'-th element of the
-    remanence angle array 'alpha_B_rem' (where the first n_II elements refer to the inner magnet, 
-    and the remaining n_IV to the outer one).
-    Other parameters are taken from 'params'
-    """
-    
-    delta_alpha = 1e-6
-
-    n_II = params['n_II']
-    n_IV = params['n_IV']
-    
-    F_II_x = np.empty(n_II)
-    F_II_y = np.empty(n_II)
-    
-    F_IV_x = np.empty(n_IV)
-    F_IV_y = np.empty(n_IV)
-    
-    R_o = params["R_o"]
-    R_g = params["R_o"] + params["h_gap"]
-    points_air_gap = generate_sector_mesh_points(R_o,R_g,0.0,np.pi)
-    
-    for i in range(0,n_II):
-        F_II_x[i] = calculate_B_III_from_single_block(point=points_air_gap, 
-                                                   segment=i+1, 
-                                                   quadrant='1Q', 
-                                                   magnet='II', 
-                                                   magnitude=params["B_rem_II_%d_1Q" %(i+1)], 
-                                                    angle=0.0, 
-                                                    params=params)
-        
-        
-        F_II_y_[i] = calculate_B_III_from_single_block(point=points_air_gap, 
-                                                   segment=i+1, 
-                                                   quadrant='1Q', 
-                                                   magnet='II', 
-                                                   magnitude=params["B_rem_II_%d_1Q" %(i+1)], 
-                                                    angle=90.0, 
-                                                    params=params)
-        
-
-        
-        
 def calculate_B_III_from_single_block(point,
                                       segment,
                                       magnet,
