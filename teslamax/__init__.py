@@ -757,7 +757,7 @@ def calculate_derivative_functional_to_remanence(i,alpha_B_rem,params):
     points_air_gap = generate_sector_mesh_points(R_o,R_g,0.0,np.pi)
     
     for i in range(0,n_II):
-        F_II_x = calculate_B_III_from_single_block(point=points_air_gap, 
+        F_II_x[i] = calculate_B_III_from_single_block(point=points_air_gap, 
                                                    segment=i+1, 
                                                    quadrant='1Q', 
                                                    magnet='II', 
@@ -766,9 +766,7 @@ def calculate_derivative_functional_to_remanence(i,alpha_B_rem,params):
                                                     params=params)
         
         
-        F_II_x[i] = F_II_x_1Q + F_II_x_2Q
-        
-        F_II_y_1Q = calculate_B_III_from_single_block(point=points_air_gap, 
+        F_II_y_[i] = calculate_B_III_from_single_block(point=points_air_gap, 
                                                    segment=i+1, 
                                                    quadrant='1Q', 
                                                    magnet='II', 
@@ -776,38 +774,33 @@ def calculate_derivative_functional_to_remanence(i,alpha_B_rem,params):
                                                     angle=90.0, 
                                                     params=params)
         
-        F_II_y_2Q = calculate_B_III_from_single_block(point=points_air_gap, 
-                                                   segment=i+1, 
-                                                   quadrant='2Q', 
-                                                   magnet='II', 
-                                                   magnitude=params["B_rem_II_%d_2Q" %(i+1)], 
-                                                    angle=90.0, 
-                                                    params=params)
-        
-        F_II_y[i] = F_II_y_1Q + F_II_y_2Q
+
         
         
-def calculate_B_III_from_single_block(point, segment, magnet, magnitude, angle, params):
+def calculate_B_III_from_single_block(point,
+                                      segment,
+                                      magnet,
+                                      magnitude,
+                                      angle,
+                                      params):
     """
-    Return B_III(point) when 'segment' (1, 2, 3, ...)  of 'magnet' (either 'II' or 'IV') 
-    has a remanence of 'magnitude' and 'angle', and all other segments have null remanence. 
+    Return B_III(point) when 'segment' (1, 2, 3, ...)  of 'magnet'
+    (either 'II' or 'IV') has a remanence of 'magnitude' and 'angle',
+    and all other segments have null remanence. 
     
     Other parameters are taken from 'params'.
     """
 
     params_single = params.copy()
     
-    if magnet == 'II':
-        n = params['n_II']
-    elif magnet == 'IV':
-        n = params['n_IV']
-    
     # first nullify all remanences
     for m in ['II', 'IV']:
+
+        n = params["n_%s" %(m)]
+        
+        for s in range(0,n):
             
-            for s in range(0,n):
-                
-                params_single["B_rem_%s_%d" %(m,s+1)] = 0.0
+            params_single["B_rem_%s_%d" %(m,s+1)] = 0.0
                 
     # set the desired elements
     params_single["B_rem_%s_%d" %(magnet,segment)] = magnitude
