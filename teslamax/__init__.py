@@ -155,47 +155,46 @@ def calculate_magnetic_profile(B_data, params):
     The grid for 'B_data' is supposed to span the interval 0 <= phi <= pi
     (the top half-circle); this function mirrors this interval and return phi
     in the interval [0, 2 pi].
-    """
     
+    """
+
     n_phi_points = 200
 
     params = expand_parameter_dictionary(params)
     
     R_g = params['R_g']
     R_o = params['R_o']
-    
-    
+
+
     # create ranges for phi and r
     phi_min = 0.0
     phi_max = np.pi
-    
+
     phi_vector_top = np.linspace(phi_min,phi_max,N_PROFILE_POINTS)
-    
+
     # slightly offset the boundaries to avoid numerical problems at the interfaces
     r_min = 1.001*R_o 
     r_max = 0.999*R_g
     n_r_points = 5
-    
+
     r_vector = np.linspace(r_min,r_max,n_r_points)
-    
+
     r_grid, phi_grid = np.meshgrid(r_vector,phi_vector_top)
-    
-    # calcualte the points (x,y) distributed along
+
+    # calculate the points (x,y) distributed along
     # radial lines
     x_grid = r_grid * np.cos(phi_grid)
     y_grid = r_grid * np.sin(phi_grid)
     
-    # create a interpolation function over the 1st quadrant grid
-    # we use the nearest interpolation to avoid negative values
-    # when fitting a spline near points where B = 0
-    
-    fB = CloughTocher2DInterpolator(B_data[:,0:2],B_data[:,2])
+    fB = NearestNDInterpolator(B_data[:,0:2],B_data[:,2])
+    B_data_final = fB(x_grid,y_grid)
+
 
     # because both x_grid and y_grid have shape (n_r_points, N_PROFILE_POINTS),
     # when we apply the above created function we will get an array with the
     # same shape. We then take the average value along each row,
     # resuting in an array (N_PROFILE_POINTS)
-    B_profile_top = np.mean(fB(x_grid,y_grid),axis=1)
+    B_profile_top = np.mean(B_data_final,axis=1)
 
     # extrapolate data to the full circle
     phi_vector = np.concatenate((phi_vector_top,
