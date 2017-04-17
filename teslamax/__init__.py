@@ -5,6 +5,7 @@ import os
 import subprocess
 import shutil
 import math
+import tempfile
 from pandas import Series, DataFrame
 import pandas as pd
 import numpy as np
@@ -740,7 +741,12 @@ def calculate_B_III_from_single_block(point,
     # set the desired elements
     params_single["B_rem_%s_%d" %(magnet,segment)] = magnitude
     params_single["alpha_rem_%s_%d" %(magnet,segment)] = angle
-    
-    tmm = TeslaMaxModel(params_single,'teslamax-play-functional')
-    tmm.run(verbose=False)
-    return tmm.calculate_B_III_from_position(point)
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        tmm = TeslaMaxModel(params_single,tempdir)
+        tmm.run(verbose=False)
+
+        result = tmm.calculate_B_III_from_position(point)
+
+    return result
+
