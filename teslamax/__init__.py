@@ -600,6 +600,62 @@ def create_magnets_figure_template(params):
         
     return fig, axes
 
+class TeslaMaxGeometry():
+    """
+    Class representing the physical geometry of the TeslaMax system,
+    with all radii and angles.
+
+    To instantiante, pass a dictionary (or similar object) with all geometric
+    parameters in SI units (except for the angles, which must be provided in
+    degrees). The names for the keys follow the standard convention, without
+    the units in the names. E.g.
+
+    >>> params = {'R_i': 0.015, 'phi_C_II': 15, ...} # provide other parameters
+    >>> tmg = TeslaMaxGeometry(params)
+
+    The parameters 'R_o', 'h_gap' and 'R_g' are not independent. If two are
+    provided, the class automatically calculates the other one. If you provide
+    all three, it's your responsibility to provide three consistent values.
+    
+    Currently, the only possible calculations are volume-related.
+    """
+
+    def __init__(self, params):
+        """
+        Keyword Arguments:
+        params -- dict-like
+        """
+
+        self.geometric_parameters = params
+        self._complete_geometric_parameters()
+
+    def _complete_geometric_parameters(self):
+        """
+        For two of the parameters 'R_o', 'R_g', 'h_gap', calculate the
+        third one and populate the 'geometric_parameters' field.
+
+        If all three parameters are provided, nothing happens
+        """
+
+        gp = self.geometric_parameters
+
+        if ('R_o' in gp) and ('R_g' in gp) and ('h_gap' in gp):
+            pass
+        else:        
+            if ('R_o' in gp) and ('R_g' in gp):
+
+                gp['h_gap'] = gp['R_g'] - gp['R_o']
+
+            elif ('R_o' in gp ) and ('h_gap' in gp):
+
+                gp['R_g'] = gp['R_o'] + gp['h_gap']
+
+            elif ('R_g' in gp) and ('h_gap' in gp):
+
+                gp['R_o'] = gp['R_g'] - gp['h_gap']
+
+
+
 class TeslaMaxModel():
     """
     Class representing the TeslaMax model.
