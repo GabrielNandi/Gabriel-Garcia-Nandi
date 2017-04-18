@@ -626,7 +626,7 @@ class TeslaMaxGeometry():
         params -- dict-like
         """
 
-        self.geometric_parameters = params
+        self.geometric_parameters = params.copy()
         self._complete_geometric_parameters()
 
     def _complete_geometric_parameters(self):
@@ -696,20 +696,23 @@ class TeslaMaxPreDesign():
                  mu_r_iron=None,
                  linear_iron=None):
 
-        self.geometry_material_parameters = params
+        self.geometry_material_parameters = params.copy()
         self.geometry = TeslaMaxGeometry(self.geometry_material_parameters)
 
-        if mu_r_II:
+        if mu_r_II is not None:
             self.geometry_material_parameters['mu_r_II'] = mu_r_II
 
-        if mu_r_IV:
+        if mu_r_IV is not None:
             self.geometry_material_parameters['mu_r_IV'] = mu_r_IV
 
-        if mu_r_iron:
+        if mu_r_iron is not None:
             self.geometry_material_parameters['mu_r_iron'] = mu_r_iron
 
-        if B_rem_vector:
-            self.geometry_material_parameters = expand_parameters_from_remanence_array(B_rem_vector.
+        if linear_iron is not None:
+            self.geometry_material_parameters['linear_iron'] = linear_iron
+
+        if B_rem_vector is not None:
+            self.geometry_material_parameters = expand_parameters_from_remanence_array(B_rem_vector,
                                                                                        self.geometry_material_parameters,
                                                                                        'B_rem')
 
@@ -718,8 +721,7 @@ class TeslaMaxPreDesign():
                                           segment,
                                           magnet,
                                           magnitude,
-                                          angle,
-                                          params):
+                                          angle):
         """
         Return B_III(point) when 'segment' (1, 2, 3, ...)  of 'magnet'
         (either 'II' or 'IV') has a remanence of 'magnitude' and 'angle',
@@ -727,23 +729,27 @@ class TeslaMaxPreDesign():
 
         """
 
-        params_single = params.copy()
+        n_II = self.geometry_material_parameters["n_II"]
+        n_IV = self.geometry_material_parameters["n_IV"]
+        n_total = n_II + n_IV
+        
+        B_rem_vector = np.zeros(n_total)
+        alpha_B_rem_vector = np.zeros(n_total)
+        
+        if magnet == "II":
+            element = segment - 1
 
-        # first nullify all remanences
-        for m in ['II', 'IV']:
+        else:
+            element  = n_II + (segment -1)
+            
+        B_rem_vector[element] = magnitude
+        alpha_B_rem_vector[element] = angle
 
-            n = params["n_%s" %(m)]
-
-            for s in range(0,n):
-
-                params_single["B_rem_%s_%d" %(m,s+1)] = 0.0
-
-        # set the desired elements
-        params_single["B_rem_%s_%d" %(magnet,segment)] = magnitude
-        params_single["alpha_rem_%s_%d" %(magnet,segment)] = angle
+        tmpd = TeslaMaxPreDesign(self.geometry_material_parameters,
+                                 B_rem_vector=B_rem_vector)
 
         with tempfile.TemporaryDirectory() as tempdir:
-            tmm = TeslaMaxModel(params_single,tempdir)
+            tmm = TeslaMaxModel(tmpd,alpha_B_rem_vector,tempdir)
             tmm.run(verbose=False)
 
             result = tmm.calculate_B_III_from_position(point)
@@ -771,36 +777,32 @@ class TeslaMaxPreDesign():
         F_IV_y = []
 
         for k in range(0,n_II):
-            F_II_x.append(calculate_B_III_from_single_block(point=points, 
+            F_II_x.append(self.calculate_B_III_from_single_block(point=points, 
                                                        segment=k+1, 
                                                        magnet='II', 
                                                        magnitude=1.0, 
-                                                        angle=0.0, 
-                                                        params=params))
+                                                        angle=0.0))
 
 
-            F_II_y.append(calculate_B_III_from_single_block(point=points, 
+            F_II_y.append(self.calculate_B_III_from_single_block(point=points, 
                                                        segment=k+1,
                                                        magnet='II', 
                                                        magnitude=1.0, 
-                                                        angle=90.0, 
-                                                        params=params))
+                                                        angle=90.0))
 
         for j in range(0,n_IV):
-            F_IV_x.append(calculate_B_III_from_single_block(point=points, 
+            F_IV_x.append(self.calculate_B_III_from_single_block(point=points, 
                                                        segment=j+1, 
                                                        magnet='IV', 
                                                        magnitude=1.0, 
-                                                        angle=0.0, 
-                                                        params=params))
+                                                        angle=0.0))
 
 
-            F_IV_y.append(calculate_B_III_from_single_block(point=points, 
+            F_IV_y.append(self.calculate_B_III_from_single_block(point=points, 
                                                        segment=j+1,
                                                        magnet='IV', 
                                                        magnitude=1.0, 
-                                                        angle=90.0, 
-                                                        params=params))
+                                                        angle=90.0))
 
         return (F_II_x, F_II_y, F_IV_x, F_IV_y)
         
@@ -829,8 +831,13 @@ class TeslaMaxModel():
     
     """
     
-    def __init__(self,params,path,clean=True):
-        self.params = params
+    def __init__(self,teslamax_predesign,alpha_vector,path,clean=True):
+        
+        self.pre_design = teslamax_predesign
+
+        self.params = expand_parameters_from_remanence_array(alpha_vector,
+                                                             self.pre_design.geometry_material_parameters,
+                                                             "alpha_rem")
         
         self.path = Path(path)
         if (self.path.exists() ) and (self.path.is_dir()) and clean:
