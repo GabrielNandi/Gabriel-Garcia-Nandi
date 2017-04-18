@@ -49,6 +49,8 @@ FIGSIZE_INCHES = FIGSIZE_CM / 2.54
 
 FONTSIZE = 20
 
+TARGET_PROFILE = 1.2
+
 def get_comsol_parameters_series():
     """Parse the COMSOL parameters file in the current directory and
     return a pandas Series from it.
@@ -681,11 +683,50 @@ def expand_parameters_from_remanence_array(magnet_parameters, params, prefix):
         
     return params_expanded
 
+def calculate_instantaneous_profile(phi, B_high):
+    """
+    Calculate the value of the two-pole instantaneous magnetic profile at
+    angular position 'phi' (in degrees), where the profile oscillates from
+    0 to 'B_high'
+    
+    """
+    
+    high_region = (phi <= 45)
+    high_region = np.logical_or(high_region,
+                                np.logical_and((phi >= 135),
+                                               (phi <= 225)))
+    high_region = np.logical_or(high_region, (phi >= 315))
+                 
+    return np.where(high_region,B_high,0.0)
+
 class TeslaMaxPreDesign():
     """
     Class representing a fixed-geometry pre-design of the TeslaMax system,
     with all geometric and material parameters, but without the direction of
     magnetization for the magnet segments.
+
+    To instantiate, you have to pass a dictionary with the parameters:
+    >>> tmpd = TeslaMaxPreDesign({'R_i': 0.015, 'mu_r_II': 1.05, ...})
+
+    This dictionary should at least contain all geometric parameters,
+    with which a TeslaMaxGeometry object will be created. The material
+    properties can be added  directly in the constructor;
+    the remanences magnitudes for each segment in this case are specified
+    as a vector:
+    
+    >>> geom_params = {'R_i': 0.015, 'n_II': 2, ...}
+    >>> tmpd = TeslaMaxPreDesign(geom_params,
+                                 mu_r_II=1.05,
+                                 mu_r_IV=1.10,
+                                 mu_r_iron=5e5,
+                                 linear_iron=1,
+                                 B_rem_vector=np.array([1.4,1.4,1.2,1.2])
+
+    The parameters dictionary may contain some of the material properties;
+    if you provide a parameter in the dictionary and via the constructor,
+    it is the latter value that will be used to build the object. In the
+    dictionary, the remanences must be provided in the usual form
+    (e.g. 'B_rem_II_1')
     """
 
     def __init__(self,
@@ -696,8 +737,9 @@ class TeslaMaxPreDesign():
                  mu_r_iron=None,
                  linear_iron=None):
 
-        self.geometry_material_parameters = params.copy()
-        self.geometry = TeslaMaxGeometry(self.geometry_material_parameters)
+        
+        self.geometry = TeslaMaxGeometry(params)
+        self.geometry_material_parameters = self.geometry.geometric_parameters
 
         if mu_r_II is not None:
             self.geometry_material_parameters['mu_r_II'] = mu_r_II
@@ -715,6 +757,9 @@ class TeslaMaxPreDesign():
             self.geometry_material_parameters = expand_parameters_from_remanence_array(B_rem_vector,
                                                                                        self.geometry_material_parameters,
                                                                                        'B_rem')
+
+        self.points_F_operators = None
+        self.F_operators = None
 
     def calculate_B_III_from_single_block(self,
                                           point,
@@ -757,19 +802,28 @@ class TeslaMaxPreDesign():
         return result
 
 
-    def calculate_F_operators(self,points):
+    def calculate_F_operators(self):
         """
         Return (F_II_x, F_II_y, F_IV_x, F_IV_y), where each element is a list
-        of the F-operators vector fields calculated at 'points'.
+        of the F-operators vector fields calculated at a uniform mesh
+        in the air gap.
 
         For instance, F_II_x[0] is an array of (B_x, B_y), calculated when
         only the first segment of magnet II is magnetized in the x-direction,
         with unit remanence
         """
 
-        n_II = self.geometry.geometric_parameters['n_II']
-        n_IV = self.geometry.geometric_parameters['n_IV']
+        n_II = self.geometry_material_parameters['n_II']
+        n_IV = self.geometry_material_parameters['n_IV']
 
+        R_o = self.geometry_material_parameters["R_o"]
+        R_g = self.geometry_material_parameters["R_g"] 
+        points = generate_sector_mesh_points(1.001*R_o,
+                                                      0.999*R_g,
+                                                      0.0,
+                                                      np.pi)
+        self.points_F_operators = points
+        
         F_II_x = []
         F_II_y = []
 
@@ -804,10 +858,137 @@ class TeslaMaxPreDesign():
                                                        magnitude=1.0, 
                                                         angle=90.0))
 
-        return (F_II_x, F_II_y, F_IV_x, F_IV_y)
-        
-        
+        self.F_operators =  (F_II_x, F_II_y, F_IV_x, F_IV_y)
 
+    def get_points_F_operators(self):
+        if self.points_F_operators is None:
+            self.calculate_F_operators()
+            
+        return self.points_F_operators
+    
+    def get_F_operators(self):
+
+        if self.F_operators is None:
+            self.calculate_F_operators()
+            
+        return self.F_operators
+
+    def superposition_B_III(self, alpha_B_rem):
+        """
+        Return (x, y, B_x, B_y) based on a  vector of remanence angles.
+
+        - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
+        first n_II elements represent magnet II and the remaining elements
+        represent magnet IV
+
+        """
+
+        B_III = 0
+
+        points = self.get_points_F_operators()
+        F_II_x, F_II_y, F_IV_x, F_IV_y = self.get_F_operators()
+
+        params = self.geometry_material_parameters
+        
+        n_II = params["n_II"]
+        for k in range(0,n_II):
+            B_rem = params["B_rem_II_%d" %(k+1)]
+            alpha = np.deg2rad(alpha_B_rem[k])
+
+            B = B_rem * (np.cos(alpha) * F_II_x[k] + np.sin(alpha) * F_II_y[k])
+
+            B_III = B_III + B
+
+        n_IV = params["n_IV"]
+        for j in range(0,n_IV):
+            B_rem = params["B_rem_IV_%d" %(j+1)]
+            alpha = np.deg2rad(alpha_B_rem[n_II + j])
+
+            B = B_rem * (np.cos(alpha) * F_IV_x[j] + np.sin(alpha) * F_IV_y[j])
+
+            B_III = B_III + B
+
+        B_III_grid = np.concatenate((points, B_III), axis=1)
+
+        return B_III_grid
+
+    def calculate_functional_average(self,alpha_B_rem):
+        """
+        Return the objective functional based on  a vector of remanence angles.
+        The objective functional is defined as the average high field.
+    
+        - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
+        first n_II elements represent magnet II and the remaining elements
+        represent magnet IV
+        """
+
+        B_III_data = self.superposition_B_III(alpha_B)
+
+        # the above statement will return [x,y,B_x,B_y]. We have to calculate the magnitude to pass it
+        # to the magnetic profile data
+        B_III_data = calculate_magnitude(B_III_data)
+
+        B_profile_data = calculate_magnetic_profile(B_III_data,
+                                                             self.geometry_material_parameters).T
+
+        S = calculate_average_high_field(B_profile_data)
+        return S
+
+    def calculate_functional_instantaneous(self,alpha_B_rem):
+        """
+        Return the objective functional based on  a vector of remanence angles.
+        The objective functional is defined as the difference between the
+        resulting profile and an instantaneous profile of TARGET_PROFILE
+        as the high level.
+        
+        - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
+        first n_II elements represent magnet II and the remaining elements
+        represent magnet IV
+        """
+
+        B_III_data = self.superposition_B_III(alpha_B_rem)
+
+        # the above statement will return [x,y,B_x,B_y]. We have to calculate the magnitude to pass it
+        # to the magnetic profile data
+        B_III_data = calculate_magnitude(B_III_data)
+
+        phi_vector, B_profile = calculate_magnetic_profile(B_III_data,
+                                                                    self.geometry_material_parameters).T
+
+        B_inst_profile = calculate_instantaneous_profile(phi_vector,TARGET_PROFILE)
+
+        # use a "least squares" approach
+        B_lsq = (B_inst_profile - B_profile)**2
+        S = 1.0/np.trapz(B_lsq,phi_vector)
+
+        return S
+
+    def calculate_functional(self,alpha_B_rem):
+        return self.calculate_functional_instantaneous(alpha_B_rem)
+
+    def calculate_functional_derivative(self,alpha_B_rem, i):
+        """
+        Return the derivative of the functional in respect to the i-th element
+        of the remanence angles vector.
+        
+        - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
+        first n_II elements represent magnet II and the remaining elements
+        represent magnet IV
+        - 'i' is the element (0-based) in respect to which the derivative
+        is being evaluated
+        """
+
+        S = self.calculate_functional( alpha_B_rem )
+
+        alpha_B_rem_plus = alpha_B_rem.copy()
+        delta = 1e-6
+        alpha_B_rem_plus[i]  = alpha_B_rem_plus[i] + delta
+
+        S_plus = self.calculate_functional(alpha_B_rem_plus)
+
+        dS = (S_plus - S)/delta
+
+        return dS
 
 
 class TeslaMaxModel():
