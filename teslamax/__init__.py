@@ -990,6 +990,65 @@ class TeslaMaxPreDesign():
 
         return dS
 
+    def calculate_funcional_derivative_second_order(self, alpha_B_rem, i, j):
+        """
+        Return the second-order derivative of the functional in respect
+        to the (i,j) elements (e.g. d/dalpha_i (dfunctional/dalpha_j))
+        """
+
+        dS_j = self.calculate_functional_derivative(alpha_B_rem,j)
+
+        alpha_B_rem_plus = alpha_B_rem.copy()
+        delta = 1e-6
+        alpha_B_rem_plus[i]  = alpha_B_rem_plus[i] + delta
+
+        dS_j_plus = self.calculate_functional_derivative(alpha_B_rem_plus, j)
+
+        ddS = (dS_j_plus - dS_j)/delta
+
+        return ddS
+
+
+    def calculate_functional_gradient(self, alpha_B_rem):
+        """
+        Return the gradient of the functional evaluated at point 'alpha_B_rem'.
+        
+        Keyword Arguments:
+        alpha_B_rem -- array, vector of (n_II + n_IV) remanences, where the
+        gradient is to be evaluated
+        """
+
+        n = len(alpha_B_rem)
+
+        grad = np.array([self.calculate_functional_derivative(alpha_B_rem,
+                                                              i)
+                         for i in range(0,n)])
+
+        return grad
+
+    def calculate_functional_hessian(self, alpha_B_rem):
+        """
+        Return the Hessian matrix of the functional evaluated at
+        point 'alpha_B_rem'.
+
+        Keyword Argumets:
+        alpha_B_rem -- array, vector of (n_II + n_IV) remanences, where the
+        gradient is to be evaluated
+        """
+
+        n = len(alpha_B_rem)
+
+        hess = np.array([
+            [self.calculate_funcional_derivative_second_order(alpha_B_rem,
+                                                              i,
+                                                              j)
+             for j in range(0,n)]
+            for i in range(0,n)])
+
+        return hess
+
+        
+
 
 class TeslaMaxModel():
     """
