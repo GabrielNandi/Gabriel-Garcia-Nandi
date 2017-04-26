@@ -915,7 +915,8 @@ class TeslaMaxPreDesign():
     def calculate_functional_average(self,alpha_B_rem):
         """
         Return the objective functional based on  a vector of remanence angles.
-        The objective functional is defined as the average high field.
+        The objective functional is defined as the reciprocal of the
+        average high field, to be minimized.
     
         - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
         first n_II elements represent magnet II and the remaining elements
@@ -931,7 +932,7 @@ class TeslaMaxPreDesign():
         B_profile_data = calculate_magnetic_profile(B_III_data,
                                                              self.geometry_material_parameters).T
 
-        S = calculate_average_high_field(B_profile_data)
+        S = -calculate_average_high_field(B_profile_data)
         return S
 
     def calculate_functional_instantaneous(self,alpha_B_rem):
@@ -939,7 +940,7 @@ class TeslaMaxPreDesign():
         Return the objective functional based on  a vector of remanence angles.
         The objective functional is defined as the difference between the
         resulting profile and an instantaneous profile of TARGET_PROFILE
-        as the high level.
+        as the high level, and is to be minimized.
         
         - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
         first n_II elements represent magnet II and the remaining elements
@@ -959,7 +960,7 @@ class TeslaMaxPreDesign():
 
         # use a "least squares" approach
         B_lsq = (B_inst_profile - B_profile)**2
-        S = 1.0/np.trapz(B_lsq,phi_vector)
+        S = np.trapz(B_lsq,phi_vector)
 
         return S
 
