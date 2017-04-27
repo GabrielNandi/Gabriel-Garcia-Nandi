@@ -49,7 +49,7 @@ FIGSIZE_INCHES = FIGSIZE_CM / 2.54
 
 FONTSIZE = 20
 
-TARGET_PROFILE = 1.2
+TARGET_PROFILE = 1.3
 
 def get_comsol_parameters_series():
     """Parse the COMSOL parameters file in the current directory and
