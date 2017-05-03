@@ -796,7 +796,6 @@ class TeslaMaxPreDesign():
         with tempfile.TemporaryDirectory() as tempdir:
             tmm = TeslaMaxModel(tmpd,alpha_B_rem_vector,tempdir)
             tmm.run(verbose=False)
-
             result = tmm.calculate_B_III_from_position(point)
 
         return result
