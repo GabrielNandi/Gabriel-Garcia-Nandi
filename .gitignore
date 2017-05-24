@@ -11,7 +11,7 @@ COMSOL*.txt
 
 .ipynb_checkpoints
 
-*.class
+*.class*
 *status
 *.mph*
 
