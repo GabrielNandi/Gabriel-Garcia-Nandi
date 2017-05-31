@@ -51,6 +51,8 @@ FONTSIZE = 20
 
 TARGET_PROFILE = 1.3
 
+DEBUG = True
+
 def get_comsol_parameters_series():
     """Parse the COMSOL parameters file in the current directory and
     return a pandas Series from it.
@@ -793,10 +795,17 @@ class TeslaMaxPreDesign():
         tmpd = TeslaMaxPreDesign(self.geometry_material_parameters,
                                  B_rem_vector=B_rem_vector)
 
-        with tempfile.TemporaryDirectory() as tempdir:
-            tmm = TeslaMaxModel(tmpd,alpha_B_rem_vector,tempdir)
-            tmm.run(verbose=False)
-            result = tmm.calculate_B_III_from_position(point)
+        # SETUP WITH TEMPORARY DIRECTORY
+        # with tempfile.TemporaryDirectory() as tempdir:
+        #     tmm = TeslaMaxModel(tmpd,alpha_B_rem_vector,tempdir)
+        #     tmm.run(verbose=DEBUG)
+        #     result = tmm.calculate_B_III_from_position(point)
+
+        # SETUP WITH A PLAYGROUND DIRECTORY FROM THE CURRENT DIR
+        auxdir = str(Path('.') / 'teslamax-optimization')
+        tmm = TeslaMaxModel(tmpd,alpha_B_rem_vector,auxdir)
+        tmm.run(verbose=DEBUG)
+        result = tmm.calculate_B_III_from_position(point)
 
         return result
 
