@@ -773,9 +773,9 @@ class TeslaMaxPreDesign():
         Return B_III(point) when 'segment' (1, 2, 3, ...)  of 'magnet'
         (either 'II' or 'IV') has a remanence of 'magnitude' and 'angle',
         and all other segments have null remanence. 
-
+        
         """
-
+        
         n_II = self.geometry_material_parameters["n_II"]
         n_IV = self.geometry_material_parameters["n_IV"]
         n_total = n_II + n_IV
@@ -785,28 +785,23 @@ class TeslaMaxPreDesign():
         
         if magnet == "II":
             element = segment - 1
-
+            
         else:
             element  = n_II + (segment -1)
             
         B_rem_vector[element] = magnitude
         alpha_B_rem_vector[element] = angle
-
+        
         tmpd = TeslaMaxPreDesign(self.geometry_material_parameters,
                                  B_rem_vector=B_rem_vector)
-
-        # SETUP WITH TEMPORARY DIRECTORY
-        # with tempfile.TemporaryDirectory() as tempdir:
-        #     tmm = TeslaMaxModel(tmpd,alpha_B_rem_vector,tempdir)
-        #     tmm.run(verbose=DEBUG)
-        #     result = tmm.calculate_B_III_from_position(point)
-
-        # SETUP WITH A PLAYGROUND DIRECTORY FROM THE CURRENT DIR
-        auxdir = str(Path('.') / 'teslamax-optimization')
-        tmm = TeslaMaxModel(tmpd,alpha_B_rem_vector,auxdir)
+        
+        # the results of these intermediate calculations are stored in this dir
+        auxdir = Path('.') / 'teslamax-optimization'
+        auxdir.mkdir(exist_ok=True)
+        tmm = TeslaMaxModel(tmpd,alpha_B_rem_vector,str(auxdir))
         tmm.run(verbose=DEBUG)
         result = tmm.calculate_B_III_from_position(point)
-
+        
         return result
 
 
