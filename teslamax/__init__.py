@@ -51,7 +51,7 @@ FONTSIZE = 20
 
 TARGET_PROFILE = 1.3
 
-DEBUG = True
+DEBUG = False
 
 def get_comsol_parameters_series():
     """Parse the COMSOL parameters file in the current directory and
