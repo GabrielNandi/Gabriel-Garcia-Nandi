@@ -41,7 +41,7 @@ TESLAMAX_RESULTS_FILENAME = "TeslaMax Main Results.txt"
 TESLAMAX_RESULTS_RANDOM_FILENAME = "TeslaMax Main Results (Random).txt"
 
 N_PROFILE_POINTS = 181 #keep at this level to have in increments of 1 degree
-N_R_POINTS = 5
+N_R_POINTS = 20
 
 N_POINTS_PER_AXIS = 400
 
@@ -190,7 +190,8 @@ def calculate_magnetic_profile(B_data, params):
     x_grid = r_grid * np.cos(phi_grid)
     y_grid = r_grid * np.sin(phi_grid)
     
-    fB = NearestNDInterpolator(B_data[:,0:2],B_data[:,2])
+    #fB = NearestNDInterpolator(B_data[:,0:2],B_data[:,2])
+    fB = CloughTocher2DInterpolator(B_data[:,0:2],B_data[:,2])
     B_data_final = fB(x_grid,y_grid)
 
 
