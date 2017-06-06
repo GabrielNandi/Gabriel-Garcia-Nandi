@@ -40,7 +40,8 @@ COMSOL_PARAMETER_FILENAME = "params.txt"
 TESLAMAX_RESULTS_FILENAME = "TeslaMax Main Results.txt"
 TESLAMAX_RESULTS_RANDOM_FILENAME = "TeslaMax Main Results (Random).txt"
 
-N_PROFILE_POINTS = 100
+N_PROFILE_POINTS = 181 #keep at this level to have in increments of 1 degree
+N_R_POINTS = 5
 
 N_POINTS_PER_AXIS = 400
 
@@ -163,8 +164,6 @@ def calculate_magnetic_profile(B_data, params):
     
     """
 
-    n_phi_points = 200
-
     params = expand_parameter_dictionary(params)
     
     R_g = params['R_g']
@@ -180,9 +179,9 @@ def calculate_magnetic_profile(B_data, params):
     # slightly offset the boundaries to avoid numerical problems at the interfaces
     r_min = 1.001*R_o 
     r_max = 0.999*R_g
-    n_r_points = 5
+    
 
-    r_vector = np.linspace(r_min,r_max,n_r_points)
+    r_vector = np.linspace(r_min,r_max,N_R_POINTS)
 
     r_grid, phi_grid = np.meshgrid(r_vector,phi_vector_top)
 
