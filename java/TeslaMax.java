@@ -1033,7 +1033,7 @@ public class TeslaMax {
 	MeshFeature meshSizeConfiguration = modelMesh.feature("size");
 	meshSizeConfiguration.set("hauto", 3);
 	meshSizeConfiguration.set("custom", "on");
-	meshSizeConfiguration.set("hnarrow", "10");
+	meshSizeConfiguration.set("hnarrow", "7");
 	meshSizeConfiguration.set("hgrad","1.1");
 	
 	MeshFeature meshBoundaryDistributionConfiguration = modelMesh.create("dis1", "Distribution");
