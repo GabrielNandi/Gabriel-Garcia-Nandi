@@ -5,49 +5,45 @@
 import com.comsol.model.*;
 import com.comsol.model.util.*;
 
-/** Model exported on Jun 6 2017, 14:51 by COMSOL 5.2.1.152. */
+/** Model exported on Jan 26 2017, 10:36 by COMSOL 5.2.1.229. */
 public class TeslaMax_Model {
 
   public static Model run() {
     Model model = ModelUtil.create("Model");
 
-    model.modelPath("C:\\Users\\Fabio\\code\\TeslaMax\\java");
+    model.modelPath("C:\\Users\\fabiofortkamp\\code\\TeslaMax\\java");
 
     model.label("TeslaMax_Model.mph");
 
     model.comments("TeslaMax Model\n\n");
 
-    model.param().set("R_i", "0.015");
-    model.param().set("R_o", "0.07");
-    model.param().set("h_gap", "0.02");
-    model.param().set("R_s", "0.14");
-    model.param().set("h_fc", "0.01");
-    model.param().set("R_e", "2");
-    model.param().set("n_IV", "3");
-    model.param().set("phi_S_IV", "45");
-    model.param().set("n_II", "3");
     model.param().set("phi_C_II", "15");
     model.param().set("phi_S_II", "45");
-    model.param().set("B_rem_II_1", "1.4");
-    model.param().set("B_rem_II_2", "1.4");
-    model.param().set("B_rem_II_3", "1.4");
-    model.param().set("mu_r_II", "1.05");
-    model.param().set("B_rem_IV_1", "1.4");
-    model.param().set("B_rem_IV_2", "1.4");
-    model.param().set("B_rem_IV_3", "1.4");
-    model.param().set("mu_r_IV", "1.05");
-    model.param().set("linear_iron", "1");
+    model.param().set("alpha_rem_IV_2", "45");
+    model.param().set("n_IV", "3");
+    model.param().set("B_rem_II", "1.4");
+    model.param().set("B_rem_IV", "1.4");
     model.param().set("mu_r_iron", "5000.0");
-    model.param().set("R_g", "0.09000000000000001");
-    model.param().set("alpha_rem_II_1", "-3.67109344");
-    model.param().set("alpha_rem_II_2", "4.98966041");
-    model.param().set("alpha_rem_II_3", "-15.7967738");
-    model.param().set("alpha_rem_IV_1", "8.2380897");
-    model.param().set("alpha_rem_IV_2", "30.8698398");
-    model.param().set("alpha_rem_IV_3", "87.03318185");
+    model.param().set("linear_iron", "1");
+    model.param().set("delta_phi_S_IV", "15.0");
     model.param().set("R_c", "0.15000000000000002");
     model.param().set("delta_phi_S_II", "10.0");
-    model.param().set("delta_phi_S_IV", "15.0");
+    model.param().set("R_s", "0.14");
+    model.param().set("h_fc", "0.01");
+    model.param().set("R_o", "0.07");
+    model.param().set("alpha_rem_II_2", "30");
+    model.param().set("R_e", "2");
+    model.param().set("R_i", "0.015");
+    model.param().set("phi_S_IV", "45");
+    model.param().set("mu_r_II", "1.05");
+    model.param().set("alpha_rem_IV_1", "15");
+    model.param().set("h_gap", "0.02");
+    model.param().set("alpha_rem_II_3", "45");
+    model.param().set("n_II", "3");
+    model.param().set("alpha_rem_II_1", "15");
+    model.param().set("alpha_rem_IV_3", "135");
+    model.param().set("mu_r_IV", "1.05");
+    model.param().set("R_g", "0.09000000000000001");
 
     model.modelNode().create("nhalbach_system");
 
@@ -329,14 +325,9 @@ public class TeslaMax_Model {
 
     model.mesh("mesh1").create("dis1", "Distribution");
     model.mesh("mesh1").create("ftri1", "FreeTri");
-    model.mesh("mesh1").create("ftri2", "FreeTri");
     model.mesh("mesh1").create("map1", "Map");
     model.mesh("mesh1").feature("dis1").selection().named("environment_horization_boundary_selection");
-    model.mesh("mesh1").feature("ftri1").selection().geom("nhalbach_geometry", 2);
-    model.mesh("mesh1").feature("ftri1").selection()
-         .set(new int[]{2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14, 16, 17, 18, 19, 21, 22, 23});
-    model.mesh("mesh1").feature("ftri2").selection().named("air_gap_selection");
-    model.mesh("mesh1").feature("ftri2").create("size1", "Size");
+    model.mesh("mesh1").feature("ftri1").selection().named("magnetic_circuit_regions_seletion");
     model.mesh("mesh1").feature("map1").selection().named("environment_selection");
 
     model.result().table().create("results_table", "Table");
@@ -360,16 +351,16 @@ public class TeslaMax_Model {
     model.probe("prb6").model("nhalbach_system");
     model.probe("prb6").selection().named("magnets_iv_1q_selection");
 
-    model.view("view1").axis().set("abstractviewrratio", "-0.48795655369758606");
-    model.view("view1").axis().set("abstractviewlratio", "0.48028185963630676");
-    model.view("view1").axis().set("abstractviewxscale", "1.8905717297457159E-4");
-    model.view("view1").axis().set("abstractviewbratio", "0.016194824129343033");
-    model.view("view1").axis().set("xmax", "0.04817384481430054");
-    model.view("view1").axis().set("xmin", "-0.07887262105941772");
-    model.view("view1").axis().set("abstractviewyscale", "1.8905718752648681E-4");
-    model.view("view1").axis().set("ymax", "0.14658021926879883");
-    model.view("view1").axis().set("ymin", "0.032389648258686066");
-    model.view("view1").axis().set("abstractviewtratio", "-0.9267098903656006");
+    model.view("view1").axis().set("abstractviewrratio", "0.050000011920928955");
+    model.view("view1").axis().set("abstractviewlratio", "-0.050000011920928955");
+    model.view("view1").axis().set("abstractviewxscale", "0.004646251443773508");
+    model.view("view1").axis().set("abstractviewbratio", "-0.1713833212852478");
+    model.view("view1").axis().set("xmax", "2.200000047683716");
+    model.view("view1").axis().set("xmin", "-2.200000047683716");
+    model.view("view1").axis().set("abstractviewyscale", "0.004646251909434795");
+    model.view("view1").axis().set("ymax", "2.342766523361206");
+    model.view("view1").axis().set("ymin", "-0.34276652336120605");
+    model.view("view1").axis().set("abstractviewtratio", "0.17138338088989258");
 
     model.material("mat1").label("Air");
     model.material("mat1").set("family", "air");
@@ -431,89 +422,89 @@ public class TeslaMax_Model {
     model.physics("mfnc").feature("mfc2").label("Magnetic Flux Conservation - Iron regions");
     model.physics("mfnc").feature("mfc3").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc3")
-         .set("Br", new String[][]{{"1.400000*cos(-3.671093[deg])"}, {"1.400000*sin(-3.671093[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_II*cos(15.000000[deg])"}, {"B_rem_II*sin(15.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc3")
          .set("mur", new String[][]{{"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}});
     model.physics("mfnc").feature("mfc3").set("materialType", "from_mat");
     model.physics("mfnc").feature("mfc3").label("Magnetic Flux Conservation - Magnet II 1 - 1Q");
     model.physics("mfnc").feature("mfc4").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc4")
-         .set("Br", new String[][]{{"1.400000*cos(3.671093[deg])"}, {"1.400000*sin(3.671093[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_II*cos(-15.000000[deg])"}, {"B_rem_II*sin(-15.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc4")
          .set("mur", new String[][]{{"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}});
     model.physics("mfnc").feature("mfc4").set("materialType", "from_mat");
     model.physics("mfnc").feature("mfc4").label("Magnetic Flux Conservation - Magnet II 1 - 2Q");
     model.physics("mfnc").feature("mfc5").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc5")
-         .set("Br", new String[][]{{"1.400000*cos(4.989660[deg])"}, {"1.400000*sin(4.989660[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_II*cos(30.000000[deg])"}, {"B_rem_II*sin(30.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc5")
          .set("mur", new String[][]{{"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}});
     model.physics("mfnc").feature("mfc5").set("materialType", "from_mat");
     model.physics("mfnc").feature("mfc5").label("Magnetic Flux Conservation - Magnet II 2 - 1Q");
+    model.physics("mfnc").feature("mfc6").set("ConstitutiveRelationH", "RemanentFluxDensity");
+    model.physics("mfnc").feature("mfc6")
+         .set("Br", new String[][]{{"B_rem_II*cos(-30.000000[deg])"}, {"B_rem_II*sin(-30.000000[deg])"}, {"0"}});
+    model.physics("mfnc").feature("mfc6")
+         .set("mur", new String[][]{{"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}});
+    model.physics("mfnc").feature("mfc6").set("materialType", "from_mat");
+    model.physics("mfnc").feature("mfc6").label("Magnetic Flux Conservation - Magnet II 2 - 2Q");
 
     return model;
   }
 
   public static Model run2(Model model) {
-    model.physics("mfnc").feature("mfc6").set("ConstitutiveRelationH", "RemanentFluxDensity");
-    model.physics("mfnc").feature("mfc6")
-         .set("Br", new String[][]{{"1.400000*cos(-4.989660[deg])"}, {"1.400000*sin(-4.989660[deg])"}, {"0"}});
-    model.physics("mfnc").feature("mfc6")
-         .set("mur", new String[][]{{"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}});
-    model.physics("mfnc").feature("mfc6").set("materialType", "from_mat");
-    model.physics("mfnc").feature("mfc6").label("Magnetic Flux Conservation - Magnet II 2 - 2Q");
     model.physics("mfnc").feature("mfc7").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc7")
-         .set("Br", new String[][]{{"1.400000*cos(-15.796774[deg])"}, {"1.400000*sin(-15.796774[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_II*cos(45.000000[deg])"}, {"B_rem_II*sin(45.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc7")
          .set("mur", new String[][]{{"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}});
     model.physics("mfnc").feature("mfc7").set("materialType", "from_mat");
     model.physics("mfnc").feature("mfc7").label("Magnetic Flux Conservation - Magnet II 3 - 1Q");
     model.physics("mfnc").feature("mfc8").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc8")
-         .set("Br", new String[][]{{"1.400000*cos(15.796774[deg])"}, {"1.400000*sin(15.796774[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_II*cos(-45.000000[deg])"}, {"B_rem_II*sin(-45.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc8")
          .set("mur", new String[][]{{"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}});
     model.physics("mfnc").feature("mfc8").set("materialType", "from_mat");
     model.physics("mfnc").feature("mfc8").label("Magnetic Flux Conservation - Magnet II 3 - 2Q");
     model.physics("mfnc").feature("mfc9").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc9")
-         .set("Br", new String[][]{{"1.400000*cos(8.238090[deg])"}, {"1.400000*sin(8.238090[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_IV*cos(15.000000[deg])"}, {"B_rem_IV*sin(15.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc9")
          .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
     model.physics("mfnc").feature("mfc9").set("materialType", "from_mat");
     model.physics("mfnc").feature("mfc9").label("Magnetic Flux Conservation - Magnet IV 1 - 1Q");
     model.physics("mfnc").feature("mfc10").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc10")
-         .set("Br", new String[][]{{"1.400000*cos(-8.238090[deg])"}, {"1.400000*sin(-8.238090[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_IV*cos(-15.000000[deg])"}, {"B_rem_IV*sin(-15.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc10")
          .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
     model.physics("mfnc").feature("mfc10").set("materialType", "from_mat");
     model.physics("mfnc").feature("mfc10").label("Magnetic Flux Conservation - Magnet IV 1 - 2Q");
     model.physics("mfnc").feature("mfc11").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc11")
-         .set("Br", new String[][]{{"1.400000*cos(30.869840[deg])"}, {"1.400000*sin(30.869840[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_IV*cos(45.000000[deg])"}, {"B_rem_IV*sin(45.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc11")
          .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
     model.physics("mfnc").feature("mfc11").set("materialType", "from_mat");
     model.physics("mfnc").feature("mfc11").label("Magnetic Flux Conservation - Magnet IV 2 - 1Q");
     model.physics("mfnc").feature("mfc12").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc12")
-         .set("Br", new String[][]{{"1.400000*cos(-30.869840[deg])"}, {"1.400000*sin(-30.869840[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_IV*cos(-45.000000[deg])"}, {"B_rem_IV*sin(-45.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc12")
          .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
     model.physics("mfnc").feature("mfc12").set("materialType", "from_mat");
     model.physics("mfnc").feature("mfc12").label("Magnetic Flux Conservation - Magnet IV 2 - 2Q");
     model.physics("mfnc").feature("mfc13").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc13")
-         .set("Br", new String[][]{{"1.400000*cos(87.033182[deg])"}, {"1.400000*sin(87.033182[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_IV*cos(135.000000[deg])"}, {"B_rem_IV*sin(135.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc13")
          .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
     model.physics("mfnc").feature("mfc13").set("materialType", "from_mat");
     model.physics("mfnc").feature("mfc13").label("Magnetic Flux Conservation - Magnet IV 3 - 1Q");
     model.physics("mfnc").feature("mfc14").set("ConstitutiveRelationH", "RemanentFluxDensity");
     model.physics("mfnc").feature("mfc14")
-         .set("Br", new String[][]{{"1.400000*cos(-87.033182[deg])"}, {"1.400000*sin(-87.033182[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"B_rem_IV*cos(-135.000000[deg])"}, {"B_rem_IV*sin(-135.000000[deg])"}, {"0"}});
     model.physics("mfnc").feature("mfc14")
          .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
     model.physics("mfnc").feature("mfc14").set("materialType", "from_mat");
@@ -522,16 +513,7 @@ public class TeslaMax_Model {
     model.mesh("mesh1").feature("size").set("hauto", 3);
     model.mesh("mesh1").feature("size").set("custom", "on");
     model.mesh("mesh1").feature("size").set("hnarrow", "5");
-    model.mesh("mesh1").feature("size").set("hgrad", "1.1");
-    model.mesh("mesh1").feature("size").set("hmax", "1");
     model.mesh("mesh1").feature("dis1").set("type", "predefined");
-    model.mesh("mesh1").feature("ftri2").feature("size1").set("custom", "on");
-    model.mesh("mesh1").feature("ftri2").feature("size1").set("hmaxactive", true);
-    model.mesh("mesh1").feature("ftri2").feature("size1").set("hnarrow", "50");
-    model.mesh("mesh1").feature("ftri2").feature("size1").set("hgrad", "1.1");
-    model.mesh("mesh1").feature("ftri2").feature("size1").set("hnarrowactive", true);
-    model.mesh("mesh1").feature("ftri2").feature("size1").set("hmax", "0.005");
-    model.mesh("mesh1").feature("ftri2").feature("size1").set("hgradactive", true);
     model.mesh("mesh1").feature("map1").set("adjustedgdistr", true);
     model.mesh("mesh1").run();
 
@@ -611,13 +593,6 @@ public class TeslaMax_Model {
     model.result().dataset().create("max1", "Maximum");
     model.result().dataset().create("max2", "Maximum");
     model.result().dataset().create("dset2", "Solution");
-    model.result().dataset().create("dset3", "Solution");
-    model.result().dataset().create("dset4", "Solution");
-    model.result().dataset().create("dset5", "Solution");
-    model.result().dataset().create("dset6", "Solution");
-    model.result().dataset().create("dset7", "Solution");
-    model.result().dataset().create("dset8", "Solution");
-    model.result().dataset().create("pc1", "ParCurve2D");
     model.result().dataset("dset1").set("probetag", "prb6");
     model.result().dataset("avh1").set("probetag", "prb1");
     model.result().dataset("avh1").selection().geom("nhalbach_geometry", 2);
@@ -637,18 +612,6 @@ public class TeslaMax_Model {
     model.result().dataset("max2").set("probetag", "prb6");
     model.result().dataset("max2").selection().geom("nhalbach_geometry", 2);
     model.result().dataset("max2").selection().set(new int[]{21, 22, 23});
-    model.result().dataset("dset3").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset3").selection().set(new int[]{7, 10, 15, 20});
-    model.result().dataset("dset4").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset4").selection().set(new int[]{3, 4, 5, 9, 11, 12, 16, 17, 18, 21, 22, 23});
-    model.result().dataset("dset5").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset5").selection().set(new int[]{16, 17, 18});
-    model.result().dataset("dset6").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset6").selection().set(new int[]{21, 22, 23});
-    model.result().dataset("dset7").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset7").selection().set(new int[]{20});
-    model.result().dataset("dset8").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset8").selection().set(new int[]{15});
     model.result().numerical().create("pev1", "EvalPoint");
     model.result().numerical().create("pev2", "EvalPoint");
     model.result().numerical().create("pev3", "EvalPoint");
@@ -662,25 +625,9 @@ public class TeslaMax_Model {
     model.result().numerical("pev5").set("probetag", "prb5");
     model.result().numerical("pev6").set("probetag", "prb6");
     model.result().create("pg1", "PlotGroup1D");
-    model.result().create("pg2", "PlotGroup2D");
-    model.result().create("pg3", "PlotGroup2D");
-    model.result().create("pg4", "PlotGroup1D");
     model.result("pg1").set("probetag", "window1_default");
     model.result("pg1").create("tblp1", "Table");
     model.result("pg1").feature("tblp1").set("probetag", "prb1,prb2,prb3,prb4,prb5,prb6");
-    model.result("pg2").set("data", "dset3");
-    model.result("pg2").create("surf1", "Surface");
-    model.result("pg3").set("data", "dset4");
-    model.result("pg3").create("arws1", "ArrowSurface");
-    model.result("pg3").create("surf1", "Surface");
-    model.result("pg3").create("arws2", "ArrowSurface");
-    model.result("pg4").create("lngr1", "LineGraph");
-    model.result().export().create("export1", "Data");
-    model.result().export().create("export2", "Data");
-    model.result().export().create("export4", "Data");
-    model.result().export().create("export5", "Data");
-    model.result().export().create("export6", "Data");
-    model.result().export().create("export3", "Table");
 
     model.probe("prb1").genResult(null);
     model.probe("prb2").genResult(null);
@@ -690,20 +637,9 @@ public class TeslaMax_Model {
     model.probe("prb6").genResult(null);
 
     model.sol("sol1").attach("std1");
-    model.sol("sol1").feature("s1").feature("i1").set("linsolver", "bicgstab");
     model.sol("sol1").runAll();
 
     model.result().dataset("dset1").label("Probe Solution 1");
-    model.result().dataset("dset3").label("Air gap");
-    model.result().dataset("dset4").label("Magnets");
-    model.result().dataset("dset5").label("Magnet II 1Q");
-    model.result().dataset("dset6").label("Magnet IV 1Q");
-    model.result().dataset("dset7").label("Air Gap High Field Region");
-    model.result().dataset("dset8").label("Air Gap Low Field Region");
-    model.result().dataset("pc1").label("Air gap central line");
-    model.result().dataset("pc1").set("parmax1", "pi");
-    model.result().dataset("pc1").set("exprx", "(R_o+h_gap/2)*cos(s)");
-    model.result().dataset("pc1").set("expry", "(R_o+h_gap/2)*sin(s)");
     model.result().numerical("pev1").set("descr", new String[]{""});
     model.result().numerical("pev2").set("descr", new String[]{""});
     model.result().numerical("pev6").set("unit", new String[]{"A/m"});
@@ -716,83 +652,7 @@ public class TeslaMax_Model {
     model.result("pg1").label("Probe Plot Group 1");
     model.result("pg1").set("solrepresentation", "solnum");
     model.result("pg1").set("windowtitle", "Probe Plot 1");
-    model.result("pg1").set("xlabel", "mfnc.normB (T), Maximum Field");
-    model.result("pg1").set("xlabelactive", false);
     model.result("pg1").feature("tblp1").label("Probe Table Graph 1");
-    model.result("pg2").label("Air gap");
-    model.result("pg2").feature("surf1").label("B");
-    model.result("pg2").feature("surf1").set("unit", "T");
-    model.result("pg2").feature("surf1").set("expr", "mfnc.normB");
-    model.result("pg2").feature("surf1").set("descr", "Magnetic flux density norm");
-    model.result("pg2").feature("surf1").set("resolution", "normal");
-    model.result("pg3").label("Magnets");
-    model.result("pg3").feature("arws1").label("B_rem");
-    model.result("pg3").feature("arws1").set("scale", "0.0077221241233942925");
-    model.result("pg3").feature("arws1").set("arrowbase", "center");
-    model.result("pg3").feature("arws1").set("expr", new String[]{"mfnc.Brx", "mfnc.Bry"});
-    model.result("pg3").feature("arws1").set("descr", "Remanent flux density");
-    model.result("pg3").feature("arws1").set("scaleactive", false);
-    model.result("pg3").feature("surf1").label("Psi");
-    model.result("pg3").feature("surf1").set("unit", "kPa");
-    model.result("pg3").feature("surf1")
-         .set("expr", "abs((mfnc.Bx*mfnc.Brx+mfnc.By*mfnc.Bry)/mfnc.normBr)*abs((mfnc.Hx*mfnc.Brx+mfnc.Hy*mfnc.Bry)/mfnc.normBr)");
-    model.result("pg3").feature("surf1").set("rangedatamax", "409");
-    model.result("pg3").feature("surf1")
-         .set("descr", "abs((mfnc.Bx*mfnc.Brx+mfnc.By*mfnc.Bry)/mfnc.normBr)*abs((mfnc.Hx*mfnc.Brx+mfnc.Hy*mfnc.Bry)/mfnc.normBr)");
-    model.result("pg3").feature("surf1").set("rangecoloractive", "on");
-    model.result("pg3").feature("surf1").set("rangedataactive", "on");
-    model.result("pg3").feature("surf1").set("rangecolormax", "409");
-    model.result("pg3").feature("surf1").set("resolution", "normal");
-    model.result("pg3").feature("arws2").label("H");
-    model.result("pg3").feature("arws2").set("scale", "0.010592406010573617");
-    model.result("pg3").feature("arws2").set("descractive", true);
-    model.result("pg3").feature("arws2").set("arrowbase", "center");
-    model.result("pg3").feature("arws2").set("expr", new String[]{"mu0_const*mfnc.Hx", "mu0_const*mfnc.Hy"});
-    model.result("pg3").feature("arws2").set("descr", "mu0*H");
-    model.result("pg3").feature("arws2").set("color", "black");
-    model.result("pg3").feature("arws2").set("scaleactive", false);
-    model.result("pg4").label("Air gap central line");
-    model.result("pg4").set("data", "pc1");
-    model.result("pg4").set("ylabel", "Magnetic flux density norm (T)");
-    model.result("pg4").set("xlabel", "Arc length");
-    model.result("pg4").set("xlabelactive", false);
-    model.result("pg4").set("ylabelactive", false);
-    model.result("pg4").feature("lngr1").label("Magnetic Profile");
-    model.result("pg4").feature("lngr1").set("unit", "T");
-    model.result("pg4").feature("lngr1").set("descr", "Magnetic flux density norm");
-    model.result("pg4").feature("lngr1").set("expr", "mfnc.normB");
-    model.result("pg4").feature("lngr1").set("resolution", "normal");
-    model.result().export("export1").set("data", "dset7");
-    model.result().export("export1").set("unit", new String[]{"T"});
-    model.result().export("export1").set("descr", new String[]{"Magnetic flux density norm"});
-    model.result().export("export1").set("expr", new String[]{"mfnc.normB"});
-    model.result().export("export1").set("filename", "B_high.txt");
-    model.result().export("export2").set("data", "dset8");
-    model.result().export("export2").set("unit", new String[]{"T"});
-    model.result().export("export2").set("descr", new String[]{"Magnetic flux density norm"});
-    model.result().export("export2").set("expr", new String[]{"mfnc.normB"});
-    model.result().export("export2").set("filename", "B_low.txt");
-    model.result().export("export4").set("data", "dset5");
-    model.result().export("export4").set("unit", new String[]{"T", "T", "A/m", "A/m", "T", "T"});
-    model.result().export("export4")
-         .set("descr", new String[]{"Magnetic flux density, x component", "Magnetic flux density, y component", "Magnetic field, x component", "Magnetic field, y component", "Remanent flux density, x component", "Remanent flux density, y component"});
-    model.result().export("export4")
-         .set("expr", new String[]{"mfnc.Bx", "mfnc.By", "mfnc.Hx", "mfnc.Hy", "mfnc.Brx", "mfnc.Bry"});
-    model.result().export("export4").set("filename", "H_II_1Q.txt");
-    model.result().export("export5").set("data", "dset6");
-    model.result().export("export5").set("unit", new String[]{"T", "T", "A/m", "A/m", "T", "T"});
-    model.result().export("export5")
-         .set("descr", new String[]{"Magnetic flux density, x component", "Magnetic flux density, y component", "Magnetic field, x component", "Magnetic field, y component", "Remanent flux density, x component", "Remanent flux density, y component"});
-    model.result().export("export5")
-         .set("expr", new String[]{"mfnc.Bx", "mfnc.By", "mfnc.Hx", "mfnc.Hy", "mfnc.Brx", "mfnc.Bry"});
-    model.result().export("export5").set("filename", "H_IV_1Q.txt");
-    model.result().export("export6").set("data", "dset3");
-    model.result().export("export6").set("unit", new String[]{"T", "T", "A/m", "A/m"});
-    model.result().export("export6")
-         .set("descr", new String[]{"Magnetic flux density, x component", "Magnetic flux density, y component", "Magnetic field, x component", "Magnetic field, y component"});
-    model.result().export("export6").set("expr", new String[]{"mfnc.Bx", "mfnc.By", "mfnc.Hx", "mfnc.Hy"});
-    model.result().export("export6").set("filename", "B_III.txt");
-    model.result().export("export3").set("filename", "COMSOL Main Results.txt");
 
     return model;
   }
