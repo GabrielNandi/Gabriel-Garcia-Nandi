@@ -190,11 +190,11 @@ def calculate_magnetic_profile(B_data, params):
     x_grid = r_grid * np.cos(phi_grid)
     y_grid = r_grid * np.sin(phi_grid)
     
-    #fB = NearestNDInterpolator(B_data[:,0:2],B_data[:,2])
-    fB = CloughTocher2DInterpolator(B_data[:,0:2],B_data[:,2])
+    fB = NearestNDInterpolator(B_data[:,0:2],B_data[:,2])
+    
     B_data_final = fB(x_grid,y_grid)
-
-
+    
+    
     # because both x_grid and y_grid have shape (n_r_points, N_PROFILE_POINTS),
     # when we apply the above created function we will get an array with the
     # same shape. We then take the average value along each row,
