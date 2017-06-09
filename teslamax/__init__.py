@@ -50,7 +50,7 @@ FIGSIZE_INCHES = FIGSIZE_CM / 2.54
 
 FONTSIZE = 20
 
-TARGET_PROFILE = 1.3
+B_HIGH_LEVEL = 1.3
 
 DEBUG = False
 
@@ -938,16 +938,25 @@ class TeslaMaxPreDesign():
         S = -calculate_average_high_field(B_profile_data)
         return S
 
-    def calculate_functional_instantaneous(self,alpha_B_rem):
+    def calculate_functional_target(self,
+                                    alpha_B_rem,
+                                    target_profile_function,
+                                    target_profile_args):
         """
         Return the objective functional based on  a vector of remanence angles.
         The objective functional is defined as the difference between the
-        resulting profile and an instantaneous profile of TARGET_PROFILE
-        as the high level, and is to be minimized.
+        resulting profile and a target profile function,
+        and is to be minimized.
         
         - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
         first n_II elements represent magnet II and the remaining elements
         represent magnet IV
+        - 'target_profile_function' is a function with signature
+        'f(phi_vector, *args)' (the first argument is the vector of angular
+        positions where the profile is to be calculated, followed by
+        all other arguments
+        - 'target_profile_args' is a tuple with other arguments to pass to
+        'target_profile_function' (see above)
         """
 
         B_III_data = self.superposition_B_III(alpha_B_rem)
@@ -957,9 +966,9 @@ class TeslaMaxPreDesign():
         B_III_data = calculate_magnitude(B_III_data)
 
         phi_vector, B_profile = calculate_magnetic_profile(B_III_data,
-                                                                    self.geometry_material_parameters).T
+                                                           self.geometry_material_parameters).T
 
-        B_inst_profile = calculate_instantaneous_profile(phi_vector,TARGET_PROFILE)
+        B_inst_profile = target_profile_function(phi_vector,*target_profile_args)
 
         # use a "least squares" approach
         B_lsq = (B_inst_profile - B_profile)**2
@@ -967,10 +976,19 @@ class TeslaMaxPreDesign():
 
         return S
 
-    def calculate_functional(self,alpha_B_rem):
-        return self.calculate_functional_instantaneous(alpha_B_rem)
+    def calculate_functional(self,
+                             alpha_B_rem,
+                             functional_args=(calculate_instantaneous_profile,
+                                              (B_HIGH_LEVEL,))):
+        
+        return self.calculate_functional_target(alpha_B_rem,
+                                                functional_args[0],
+                                                functional_args[1])
 
-    def calculate_functional_derivative(self,alpha_B_rem, i):
+    def calculate_functional_derivative(self,
+                                        alpha_B_rem,
+                                        i,
+                                        functional_args):
         """
         Return the derivative of the functional in respect to the i-th element
         of the remanence angles vector.
@@ -980,64 +998,87 @@ class TeslaMaxPreDesign():
         represent magnet IV
         - 'i' is the element (0-based) in respect to which the derivative
         is being evaluated
+        - 'functional_args' is a tuple with other arguments that are passes to
+        the functional method
         """
 
-        S = self.calculate_functional( alpha_B_rem )
+        S = self.calculate_functional(alpha_B_rem,
+                                      functional_args)
 
         alpha_B_rem_plus = alpha_B_rem.copy()
         delta = 1e-6
         alpha_B_rem_plus[i]  = alpha_B_rem_plus[i] + delta
 
-        S_plus = self.calculate_functional(alpha_B_rem_plus)
+        S_plus = self.calculate_functional(alpha_B_rem_plus,
+                                           functional_args)
 
         dS = (S_plus - S)/delta
 
         return dS
 
-    def calculate_funcional_derivative_second_order(self, alpha_B_rem, i, j):
+    def calculate_funcional_derivative_second_order(self,
+                                                    alpha_B_rem,
+                                                    i,
+                                                    j,
+                                                    functional_args):
         """
         Return the second-order derivative of the functional in respect
         to the (i,j) elements (e.g. d/dalpha_i (dfunctional/dalpha_j))
         """
 
-        dS_j = self.calculate_functional_derivative(alpha_B_rem,j)
+        dS_j = self.calculate_functional_derivative(alpha_B_rem,
+                                                    j,
+                                                    functional_args)
 
         alpha_B_rem_plus = alpha_B_rem.copy()
         delta = 1e-6
         alpha_B_rem_plus[i]  = alpha_B_rem_plus[i] + delta
 
-        dS_j_plus = self.calculate_functional_derivative(alpha_B_rem_plus, j)
+        dS_j_plus = self.calculate_functional_derivative(alpha_B_rem_plus,
+                                                         j,
+                                                         functional_args)
 
         ddS = (dS_j_plus - dS_j)/delta
 
         return ddS
 
 
-    def calculate_functional_gradient(self, alpha_B_rem):
+    def calculate_functional_gradient(self,
+                                      alpha_B_rem,
+                                      functional_args=(calculate_instantaneous_profile,
+                                                       (B_HIGH_LEVEL,))):
         """
         Return the gradient of the functional evaluated at point 'alpha_B_rem'.
         
-        Keyword Arguments:
-        alpha_B_rem -- array, vector of (n_II + n_IV) remanences, where the
+        Arguments:
+        - alpha_B_rem is a vector of (n_II + n_IV) remanences, where the
         gradient is to be evaluated
+        - 'functional_args' is a tuple with other arguments that are passes to
+        the functional method
         """
 
         n = len(alpha_B_rem)
 
         grad = np.array([self.calculate_functional_derivative(alpha_B_rem,
-                                                              i)
+                                                              i,
+                                                              functional_args)
                          for i in range(0,n)])
 
         return grad
 
-    def calculate_functional_hessian(self, alpha_B_rem):
+    def calculate_functional_hessian(self,
+                                     alpha_B_rem,
+                                     functional_args=(calculate_instantaneous_profile,
+                                                      (B_HIGH_LEVEL,))):
         """
         Return the Hessian matrix of the functional evaluated at
         point 'alpha_B_rem'.
 
-        Keyword Argumets:
-        alpha_B_rem -- array, vector of (n_II + n_IV) remanences, where the
+        Argumets:
+        - alpha_B_rem is a vector of (n_II + n_IV) remanences, where the
         gradient is to be evaluated
+        - 'functional_args' is a tuple with other arguments that are passes to
+        the functional method
         """
 
         n = len(alpha_B_rem)
@@ -1045,8 +1086,9 @@ class TeslaMaxPreDesign():
         hess = np.array([
             [self.calculate_funcional_derivative_second_order(alpha_B_rem,
                                                               i,
-                                                              j)
-             for j in range(0,n)]
+                                                              j,
+                                                              functional_args)
+              for j in range(0,n)]
             for i in range(0,n)])
 
         return hess
