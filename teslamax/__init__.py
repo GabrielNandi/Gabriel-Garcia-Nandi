@@ -701,6 +701,36 @@ def calculate_instantaneous_profile(phi, B_high):
                  
     return np.where(high_region,B_high,0.0)
 
+def calculate_ramp_profile(phi, B_high, B_low, field_fraction):
+    """
+    Calculate the value of the two-pole instantaneous magnetic profile at
+    angular position 'phi' (in degrees), where the profile oscillates from
+    'B_low' to 'B_high' in a trapezoidal wave, with a duty cycle of 
+    'field_fraction'
+    
+    """
+    
+    # for two poles, we can replicate the results from 0 to 180
+    phi = np.mod(phi,180)
+    
+    angle_change = field_fraction * 45
+            
+    high_region = (phi < angle_change)
+    high_region = np.logical_or(high_region,(phi > (180 -angle_change )))
+    
+    descent_region = np.logical_and((phi >= angle_change ),(phi <= 90 - angle_change))
+    
+    ascent_region = np.logical_and((phi >= 90+angle_change ),(phi <= 180 - angle_change))
+
+                 
+    return np.where(high_region,
+                    B_high,
+                   np.where(descent_region,
+                           B_high + (B_low-B_high)*(phi-angle_change)/((1-field_fraction)*90),
+                           np.where(ascent_region,
+                                   B_low + (B_high-B_low)*(phi-(90+angle_change))/((1-field_fraction)*90),
+                                   B_low)))
+
 class TeslaMaxPreDesign():
     """
     Class representing a fixed-geometry pre-design of the TeslaMax system,
