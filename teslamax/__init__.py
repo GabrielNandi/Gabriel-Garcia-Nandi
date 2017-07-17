@@ -984,7 +984,7 @@ class TeslaMaxPreDesign():
         - 'target_profile_function' is a function with signature
         'f(phi_vector, *args)' (the first argument is the vector of angular
         positions where the profile is to be calculated, followed by
-        all other arguments
+        all other arguments)
         - 'target_profile_args' is a tuple with other arguments to pass to
         'target_profile_function' (see above)
         """
@@ -1010,6 +1010,24 @@ class TeslaMaxPreDesign():
                              alpha_B_rem,
                              functional_args=(calculate_instantaneous_profile,
                                               (B_HIGH_LEVEL,))):
+        """
+        Return the objective functional based on  a vector of remanence angles.
+        The objective functional is defined as the difference between the
+        resulting profile and a target profile function,
+        and is to be minimized.
+        
+        - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
+        first n_II elements represent magnet II and the remaining elements
+        represent magnet IV
+        - `functional_args' is a tuple in the form
+        (target_profile_function, target_profile_args), where:
+            - 'target_profile_function' is a function with signature
+        'f(phi_vector, *args)' (the first argument is the vector of angular
+        positions where the profile is to be calculated, followed by
+        all other arguments)
+            - 'target_profile_args' is a tuple with other arguments to pass to
+        'target_profile_function' (see above)
+        """
         
         return self.calculate_functional_target(alpha_B_rem,
                                                 functional_args[0],
@@ -1028,7 +1046,7 @@ class TeslaMaxPreDesign():
         represent magnet IV
         - 'i' is the element (0-based) in respect to which the derivative
         is being evaluated
-        - 'functional_args' is a tuple with other arguments that are passes to
+        - 'functional_args' is a tuple with other arguments that are passed to
         the functional method
         """
 
@@ -1083,7 +1101,7 @@ class TeslaMaxPreDesign():
         Arguments:
         - alpha_B_rem is a vector of (n_II + n_IV) remanences, where the
         gradient is to be evaluated
-        - 'functional_args' is a tuple with other arguments that are passes to
+        - 'functional_args' is a tuple with other arguments that are passed to
         the functional method
         """
 
@@ -1107,7 +1125,7 @@ class TeslaMaxPreDesign():
         Argumets:
         - alpha_B_rem is a vector of (n_II + n_IV) remanences, where the
         gradient is to be evaluated
-        - 'functional_args' is a tuple with other arguments that are passes to
+        - 'functional_args' is a tuple with other arguments that are passed to
         the functional method
         """
 

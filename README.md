@@ -4,17 +4,23 @@ Design and simulate nested Halbach cylinders with COMSOL
 
 The problem geometry is represented by the following figure:
 
-<img src="teslamax.png" alt=""  width="500" style="margin-left:auto;margin-right:auto;display:block;">
+<img src="figures/teslamax.png" alt=""  width="500" style="margin-left:auto;margin-right:auto;display:block;">
 
 This figure shows the first quadrant for simplicity, but TeslaMax simulates the half-circle (first and second quadrants); a mirror symmetry is assumed at the horizontal line between the top and bottom half-circles. The geometry (shapes of the segments) is also symmetric between the first and second quadrants, but the properties of magnet blocks may vary.
 
+## Installation
+
+Pre-requisites:
+
+1. Python 3.6
+2. COMSOL 5.2a (it doesn't seem to work with COMSOL 5.3!)
+3. Add the COMSOL executable directory to the PATH. This can be normally found at `C:\Program Files\COMSOL\COMSOL52a\Multiphysics\bin\win64` (notice the version number)
+
+Right now, this repository has to be cloned as `$HOME/code/teslamax`
+
 ## Compiling and running via the Java program
 
-The main Java file `java/TeslaMax.java` contains a description of a COMSOL model, from building the geometry to running the results. This file must be compiled with tools available in the COMSOL installation. The COMSOL command line executables (for Windows) are found on:
-
-	C:\Program Files\COMSOL\COMSOL52a\Multiphysics\bin\win64
-
-Add this directory to your PATH. Notice that `52a` must be replaced by your most current version.
+The main Java file `java/TeslaMax.java` contains a description of a COMSOL model, from building the geometry to running the results. This file must be compiled with tools available in the COMSOL installation, which must be found on your PATH (see **Installation notes** above).
 
 To compile the Java source file:
 
@@ -61,19 +67,88 @@ The TeslaMax model will output a list of files to the current directory. All fil
 * `H_IV_1Q.txt`: values of the magnetic fields in the segments of magnet IV in the first quadrant. Columns: $x$, $y$, $B_x$, $B_y$, $H_x$, $H_y$, $B_rem_x$, $B_rem_y$;
 * `COMSOL Main Results.txt`: values of global results for the simulation, in a table-like fashion
 
-## Jupyter notebook
+## Python interface and Jupyter notebooks
 
-The Jupyter notebook `teslamax.ipynb` contain a "Python interface" to the TeslaMax model. In the first cells there are constants and variables that you can customize depending on your installation paths.
+A very simple and amateur Python library `teslamax` is used as an interface to the Java model.
 
-This notebook is primarily meant for prototyping purposes. There are two mains to use this notebook:
+The various Jupyter notebooks can be explored to see ways of interacting with the TeslaMax model. Consult the notebooks and explore IPython's help system to inspect the functions and classes available:
+
+```python
+In [1]: import teslamax
+In [2]: teslamax.<TAB>
+```
+There are two main ways to use the Python interface and the Jupyter notebooks
 
 ### Command interface
 
-The main function defined in the notebook is `run_teslamax_from_params(params_dict,verbose)`. This function takes as arguments a dictionary, where the keys are the names of the parameters as decribed in the first column of the parameters file, and a boolean variable to indicate if the output from COMSOL is to be shown. After calling this function, the output files are created as described in the previous section.
+The main stand-alone function from the Python library is `run_teslamax_from_params(params_dict,verbose)`. This function takes as arguments a dictionary, where the keys are the names of the parameters as decribed in the first column of the parameters file, and a boolean variable to indicate if the output from COMSOL is to be shown. After calling this function, the output files are created as described in the previous section.
 
 ### Object interface
 
-There is a `TeslaMaxModel` class; its constructor is called as `TeslaMaxModel(params_dict, path)`, where the first argument is the same as in the command interface and the `path` string indicated where the input and output files are to be saved. This class is still under construction, so check its definition to see available fields and methods.
+There are two basic classes to represent the TeslaMax model.
 
+The `TeslaMaxPreDesign` class represents a fixed-geometry magnet model, but without any information about the remanence angles. To create an instance:
+
+```python
+
+import teslamax
+from teslamax import TeslamaxPreDesign, TeslaMaxModel
+
+params_optimization = {"R_i": 0.015,
+                "R_o": 0.060,
+                "h_gap": 0.030,
+                "R_s": 0.150,
+                "h_fc": 0.010,
+                "R_e": 2,
+                "n_IV": 4,
+                "phi_S_IV": 45,
+                "n_II": 3,
+                "phi_C_II": 15,
+                "phi_S_II": 45,
+                "mu_r_II": 1.05,
+                "mu_r_IV": 1.05,
+              "linear_iron": 1,
+              "mu_r_iron": 5e3,
+             }
+
+n_II = params_optimization["n_II"]
+n_IV = params_optimization["n_IV"]
+
+n = n_II + n_IV
+
+B_rem = 1.4
+
+# expand parameters to include remanence magnitudes for each segment
+params_optimization = teslamax.expand_parameters_from_remanence_array(B_rem*np.ones(n), 
+                                                                      params_optimization, 
+                                                                      "B_rem")
+
+tmpd = TeslaMaxPreDesign(params_optimization)
+```
+
+Remember that all units are in SI.
+
+Notice the use of the function `teslamax.expand_parameters_from_remanence_array(array, dictionary,preffix)`. We want to enforce the same remanence magnitude for all segments, but instead of manually creating fields like `B_rem_II_1`, `B_rem_II_2` etc, we use this function to expand a given array into a given dictionary, adding a preffix. The first element of the array will be assigned to the key `<preffix>_II_1`, the second to `<preffix>_II_2` and so on, first filling up for the magnet II segments, and then for the magnet IV. There is no check for the right number of elements.
+
+The class instance is created passing this dictionary to the constructor.
+
+Notice that this class cannot be "simulated", but there are a lot of quantities that can be calculated. Type `tmpd.<TAB>` to inspect the available methods. As an example, type `tmpd.calculate_functional?`.
+
+To actually realize the model, you have to instatiate the `TeslaMaxModel` class, passing an array of remanence angles (one element for each magnet block, starting the counting at the first segment of magnet II) and a path where to store all simulation files (as explained above):
+
+```python
+from pathlib import Path
+alpha_B_rem = np.zeros(n)
+
+tmm = TeslaMaxModel(tmpd,
+                      alpha_B_rem,
+                      path=str(Path.home() / "Desktop" / "teslamax-play" )
+tmm.run()
+phi_vector, B_vector = tmm.get_profile_data().T
+```
+
+The `tmm.run()` method will call the `comsolbatch` command described earlier and generate the output files. And the resulting object will store the relevant information about where the files are and how to parse them, so you can get the magnetic profile data as illustrated above.
+
+This work is still under construction. Check the `teslamax` package for more information.
 
 
