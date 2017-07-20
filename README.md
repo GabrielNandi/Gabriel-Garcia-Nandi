@@ -12,9 +12,11 @@ This figure shows the first quadrant for simplicity, but TeslaMax simulates the 
 
 Pre-requisites:
 
-1. Python 3.6
-2. COMSOL 5.2a (it doesn't seem to work with COMSOL 5.3!)
-3. Add the COMSOL executable directory to the PATH. This can be normally found at `C:\Program Files\COMSOL\COMSOL52a\Multiphysics\bin\win64` (notice the version number)
+1. Anaconda Python 3.6
+2. JDK > 8 (it should work with version 6 and up)
+3. COMSOL 5.2a (it doesn't seem to work with COMSOL 5.3!)
+
+Add the COMSOL executable directory to the PATH. This can be normally found at `C:\Program Files\COMSOL\COMSOL52a\Multiphysics\bin\win64` (notice the version number)
 
 Right now, this repository has to be cloned as `$HOME/code/teslamax`
 
