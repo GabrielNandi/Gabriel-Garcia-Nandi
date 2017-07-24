@@ -16,6 +16,7 @@ from scipy.interpolate import  (NearestNDInterpolator, LinearNDInterpolator,
 CloughTocher2DInterpolator,griddata, interp1d)
 from scipy.integrate import trapz, simps, quad
 from scipy.constants import mu_0
+from scipy.optimize import minimize
 
 COMSOL_JAVA_DIR = Path.home() / 'code' / 'teslamax' / 'java'
 
@@ -797,6 +798,8 @@ class TeslaMaxPreDesign():
         self.points_F_operators = None
         self.F_operators = None
 
+        self.alpha_B_rem_optimal = None
+
     def calculate_B_III_from_single_block(self,
                                           point,
                                           segment,
@@ -995,14 +998,15 @@ class TeslaMaxPreDesign():
 
         B_III_data = self.superposition_B_III(alpha_B_rem)
 
-        # the above statement will return [x,y,B_x,B_y]. We have to calculate the magnitude to pass it
-        # to the magnetic profile data
+        # the above statement will return [x,y,B_x,B_y]. We have to calculate
+        # the magnitude to pass it to the magnetic profile data
         B_III_data = calculate_magnitude(B_III_data)
 
         phi_vector, B_profile = calculate_magnetic_profile(B_III_data,
-                                                           self.geometry_material_parameters).T
+                                        self.geometry_material_parameters).T
 
-        B_inst_profile = target_profile_function(phi_vector,*target_profile_args)
+        B_inst_profile = target_profile_function(phi_vector,
+                                                 *target_profile_args)
 
         # use a "least squares" approach
         B_lsq = (B_inst_profile - B_profile)**2
@@ -1126,7 +1130,7 @@ class TeslaMaxPreDesign():
         Return the Hessian matrix of the functional evaluated at
         point 'alpha_B_rem'.
 
-        Argumets:
+        Arguments:
         - alpha_B_rem is a vector of (n_II + n_IV) remanences, where the
         gradient is to be evaluated
         - 'functional_args' is a tuple with other arguments that are passed to
@@ -1145,9 +1149,84 @@ class TeslaMaxPreDesign():
 
         return hess
 
+    def _calculate_optimal_remanence_angles(self,
+                    target_profile_function=calculate_instantaneous_profile,
+                    target_profile_args=(B_HIGH_LEVEL,)):
+        
+        """
+        Calculate the optimal remanence angles that minimize the deviation
+        between the resulting profile and 'target_profile_function'.
+        
+        Arguments:
+        ----------
+        
+        - 'target_profile_function' is a function with signature
+        'f(phi_vector, *args)' (the first argument is the vector of angular
+        positions where the profile is to be calculated, followed by
+        all other arguments)
+        - 'target_profile_args' is a tuple with other arguments to pass to
+        'target_profile_function' (see above)
+
+        
+        -- 
+        """
+
+        n_II = self.geometry_material_parameters["n_II"]
+        n_IV = self.geometry_material_parameters["n_IV"]
+
+        n = n_II + n_IV
+
+        alpha_B_rem_0 = np.zeros(n)
+
+        # this function, to be used by the minimize function, has signature
+        # f(alpha_B_rem,args); i.e. it takes a candidate vector of
+        # remanence angles and a tuple of other arguments
+        objective_function = self.calculate_functional
+
+        # in the case of our functional formulation, the above function
+        # takes the name of the target profile and other parameters that are
+        # passed along
+        functional_args = (target_profile_function,target_profile_args)
+
+        bounds = [(0.0,360.0) for i in range(0,n)]
+
+        # the subscript _g in the following variable names stands for
+        # 'gradient-based' optimization methods
+        optres_g = minimize(objective_function, 
+                    alpha_B_rem_0, 
+                    args=(functional_args,), 
+                    bounds=bounds,
+                    options={'disp': False})
+
+        self.alpha_B_rem_optimal = optres_g.x
+
+    def get_optimal_remanence_angles(self,
+                    target_profile_function=calculate_instantaneous_profile,
+                    target_profile_args=(B_HIGH_LEVEL,)):
+        
+        """
+        Return the optimal remanence angles that minimize the deviation
+        between the resulting profile and 'target_profile_function'.
+        
+        Arguments:
+        ----------
+        
+        - 'target_profile_function' is a function with signature
+        'f(phi_vector, *args)' (the first argument is the vector of angular
+        positions where the profile is to be calculated, followed by
+        all other arguments)
+        - 'target_profile_args' is a tuple with other arguments to pass to
+        'target_profile_function' (see above)
+
+        """
+
+        if self.alpha_B_rem_optimal is None:
+            self._calculate_optimal_remanence_angles(target_profile_function,
+                                                     target_profile_args)
         
 
-
+        return self.alpha_B_rem_optimal
+        
 class TeslaMaxModel():
     """
     Class representing the full TeslaMax model.
