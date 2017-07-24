@@ -701,18 +701,22 @@ def calculate_instantaneous_profile(phi, B_high):
                  
     return np.where(high_region,B_high,0.0)
 
-def calculate_ramp_profile(phi, B_high, B_low, field_fraction):
+def calculate_ramp_profile(phi, B_high, B_low, high_field_fraction):
     """
     Calculate the value of the two-pole instantaneous magnetic profile at
     angular position 'phi' (in degrees), where the profile oscillates from
-    'B_low' to 'B_high' in a trapezoidal wave, with a duty cycle of 
-    'field_fraction'
+    'B_low' to 'B_high' in a trapezoidal wave, with each plateau occupying
+    'high_field_fraction' of the cycle.
     
     """
     
     # for two poles, we can replicate the results from 0 to 180
     phi = np.mod(phi,180)
-    
+
+    # the fraction of the cycle where the field is constant is the fraction
+    # where the field is at the high level, plus the fration where the field is
+    # at the low level, hence the factor of 2
+    field_fraction = 2*high_field_fraction
     angle_change = field_fraction * 45
             
     high_region = (phi < angle_change)
