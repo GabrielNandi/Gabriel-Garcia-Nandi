@@ -1010,7 +1010,7 @@ class TeslaMaxPreDesign():
 
         # use a "least squares" approach
         B_lsq = (B_inst_profile - B_profile)**2
-        S = np.trapz(B_lsq,phi_vector)
+        S = np.trapz(B_lsq,phi_vector) / (2*np.pi)
 
         return S
 
