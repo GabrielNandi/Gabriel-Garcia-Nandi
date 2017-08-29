@@ -97,6 +97,19 @@ def read_comsol_data_file(filename):
 
     return np.loadtxt(filename,skiprows=9)
 
+def read_comsol_profile_data(filename):
+    """
+    Read 'filename' as exported by TeslaMax and return an array of the
+    magnetic profile data, where the first column is the angle
+    in degrees [0,360] and the second is the average magnetic
+    flux density in tesla
+    """
+        
+    profile_data = np.loadtxt(filename,
+                         skiprows=1)
+        
+    return profile_data
+
 def process_main_results_file():
     """Take the file "COMSOL Main Results.txt" as exported by COMSOL and
     clean the header data.
@@ -1314,8 +1327,7 @@ class TeslaMaxModel():
         """
         
         profile_file_path = self.path / MAGNETIC_PROFILE_FILENAME
-        profile_data = np.loadtxt(str(profile_file_path),
-                         skiprows=1)
+        profile_data = read_comsol_profile_data(str(profile))
         
         return profile_data
     
