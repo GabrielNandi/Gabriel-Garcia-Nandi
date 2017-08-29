@@ -108,7 +108,7 @@ def read_comsol_profile_data(filename):
     profile_data = np.loadtxt(filename,
                          skiprows=1)
         
-    return profile_data
+    return profile_data.T
 
 def process_main_results_file():
     """Take the file "COMSOL Main Results.txt" as exported by COMSOL and
