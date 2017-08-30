@@ -17,9 +17,7 @@ public class TeslaMax {
     public static final String CYLINDER_SHELL_PART_NAME = "cylinder_shell";
 
     private static final String MAGNET_II_1Q_BLOCK_TAG = "magnet_ii_1q";
-    private static final String MAGNET_II_2Q_BLOCK_TAG = "magnet_ii_2q";
     private static final String MAGNET_IV_1Q_BLOCK_TAG = "magnet_iv_1q";
-    private static final String MAGNET_IV_2Q_BLOCK_TAG = "magnet_iv_2q";
 
     private static final String IRON_II_BLOCK_TAG = "iron_ii";
     private static final String IRON_IV_BLOCK_TAG = "iron_iv";
@@ -43,6 +41,7 @@ public class TeslaMax {
     private static final String ENVIRONMENT_HORIZONTAL_BOUNDARY_SELECTION_TAG = "environment_horization_boundary_selection";
     private static final String AIR_REGIONS_SELECTION_TAG = "air_regions_selection";
     private static final String CIRCUIT_REGIONS_SELECTION_TAG = "magnetic_circuit_regions_seletion";
+    private static final String ZERO_POTENTIAL_SELECTION_TAG = "zero_scalar_potential_selection";
 
     private static final String PARAMETER_FILE_NAME = "params.txt";
 
@@ -58,34 +57,24 @@ public class TeslaMax {
     private static GeomFeatureList geomFeatures;
 
     private static String[] magnetII1QBlockTags;
-    private static String[] magnetII2QBlockTags;
     private static String[] magnetIV1QBlockTags;
-    private static String[] magnetIV2QBlockTags;
     private static String ironIIBlockTag;
     private static String ironIIWedge1QTag;
-    private static String ironIIWedge2QTag;
     private static String ironIVBlockTag;
     private static String shaftTag;
     private static String airGapHigh1QTag;
-    private static String airGapHigh2QTag;
     private static String airGapLow1QTag;
-    private static String airGapLow2QTag;
     private static String fluxConcentratorTag;
     private static String environmentTag;
 
     private static GeomFeature[] magnetII1QBlockFeatures;
-    private static GeomFeature[] magnetII2QBlockFeatures;
     private static GeomFeature[] magnetIV1QBlockFeatures;
-    private static GeomFeature[] magnetIV2QBlockFeatures;
     private static GeomFeature ironIIBlockFeature;
     private static GeomFeature ironIIWedge1QFeature;
-    private static GeomFeature ironIIWedge2QFeature;
     private static GeomFeature ironIVBlockFeature;
     private static GeomFeature shaftFeature;
     private static GeomFeature airGapHigh1QFeature;
-    private static GeomFeature airGapHigh2QFeature;
     private static GeomFeature airGapLow1QFeature;
-    private static GeomFeature airGapLow2QFeature;
     private static GeomFeature fluxConcentratorFeature;
     private static GeomFeature environmentFeature;
 
@@ -196,14 +185,14 @@ public class TeslaMax {
 	    tag = geomFeatures.uniquetag(IRON_II_BLOCK_TAG);
 	    ironIIBlockTag = tag;
 	    label = "Cylinder Block - Iron II";
-	    expression = new String[]{"R_i", "R_o", "phi_S_II", "180[deg] - phi_S_II"};
+	    expression = new String[]{"R_i", "R_o", "phi_S_II", "90[deg]"};
 	    
 	} else if (magnetRegion.equals("IV")) {
 
 	    tag = geomFeatures.uniquetag(IRON_IV_BLOCK_TAG);
 	    ironIVBlockTag = tag;
 	    label = "Cylinder Block - Iron IV";
-	    expression = new String[]{"R_g", "R_s", "phi_S_IV", "180[deg] - phi_S_IV"};
+	    expression = new String[]{"R_g", "R_s", "phi_S_IV", "90[deg]"};
 	} else if (magnetRegion.equals("IIw1Q")) {
 
 	    tag = geomFeatures.uniquetag(IRON_II_BLOCK_TAG);
@@ -211,13 +200,7 @@ public class TeslaMax {
 	    label = "Cylinder Block - Iron II Wedge 1Q";
 	    expression = new String[]{"R_i", "R_o", "0.0[deg]", "phi_C_II"};
 	    
-	} else if (magnetRegion.equals("IIw2Q")) {
-
-	    tag = geomFeatures.uniquetag(IRON_II_BLOCK_TAG);
-	    ironIIWedge2QTag = tag;
-	    label = "Cylinder Block - Iron II Wedge 2Q";
-	    expression = new String[]{"R_i", "R_o", "180[deg] - phi_C_II", "180[deg]"};
-	}
+	} 
 
 	block = buildCylinderBlock(tag,label,expression);
 	return block;
@@ -247,18 +230,7 @@ public class TeslaMax {
 		outerAngleExpr = String.format("phi_C_II + %d * delta_phi_S_II",index+1);
 		expression = new String[]{"R_i", "R_o", innerAngleExpr, outerAngleExpr};
 	    
-	    } else if (quadrant.equals("2Q")) {
-
-		tag = geomFeatures.uniquetag(MAGNET_II_2Q_BLOCK_TAG);
-		label = "Cylinder Block " + (index+1) + " - Magnet II - 2Q";
-		magnetII2QBlockTags[index] = tag;
-
-		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
-		innerAngleExpr = String.format("(180[deg] - phi_C_II) - %d * delta_phi_S_II",index+1);
-		outerAngleExpr = String.format("(180[deg] - phi_C_II) - %d * delta_phi_S_II",index);
-		expression = new String[]{"R_i", "R_o", innerAngleExpr, outerAngleExpr};
-		
-	    }
+	    } 
 
 	} else if (magnetRegion.equals("IV")) {
 	    
@@ -273,20 +245,7 @@ public class TeslaMax {
 		outerAngleExpr = String.format("%d * delta_phi_S_IV",index+1);
 		expression = new String[]{"R_g", "R_s", innerAngleExpr, outerAngleExpr};
 	    
-	    } else if (quadrant.equals("2Q")) {
-
-		tag = geomFeatures.uniquetag(MAGNET_IV_2Q_BLOCK_TAG);
-		label = "Cylinder Block " + (index+1) + " - Magnet IV - 2Q";
-		magnetIV2QBlockTags[index] = tag;
-
-		// the cylinder block is builting sweeping phi from innerAngleExpr to outerAngleExpr
-		innerAngleExpr = String.format("180[deg] - %d * delta_phi_S_IV",index+1);
-		outerAngleExpr = String.format("180[deg] - %d * delta_phi_S_IV",index);
-		expression = new String[]{"R_g", "R_s", innerAngleExpr, outerAngleExpr};
-		
-	    }
-
-       
+	    } 
 	}
 
 	blockFeature = buildCylinderBlock(tag,label, expression);
@@ -304,7 +263,7 @@ public class TeslaMax {
 	feature = geomFeatures.create(shaftTag,"Circle");
 	feature.label(label);
 	feature.set("r","R_i");
-	feature.set("angle","180[deg]");
+	feature.set("angle","90[deg]");
 	feature.set("selresult","on");
 
 	return feature;
@@ -347,13 +306,7 @@ public class TeslaMax {
 		angle_end_expr = String.format("%s", angle);
 	    
 	    }
-	    else {
-
-		airGapHigh2QTag = geomFeatures.uniquetag(AIR_GAP_TAG);
-		tag = airGapHigh2QTag;
-		angle_start_expr = String.format("180[deg]-%s",angle);
-		angle_end_expr = "180[deg]";
-	    }
+	    
 	    
 	} else {
 	    
@@ -365,13 +318,7 @@ public class TeslaMax {
 		angle_end_expr = "90[deg]";
 	    
 	    }
-	    else {
-
-		airGapLow2QTag = geomFeatures.uniquetag(AIR_GAP_TAG);
-		tag = airGapLow2QTag;
-		angle_start_expr = "90[deg]";
-		angle_end_expr = String.format("180[deg]-%s",angle);
-	    }
+	   
 	}
 
 	
@@ -391,7 +338,7 @@ public class TeslaMax {
 	
 	fluxConcentratorTag = geomFeatures.uniquetag(FLUX_CONCENTRATOR_TAG);
 	String label = "Flux Concentrator Shell";
-	String[] expression = new String[]{"R_s","R_c","180[deg]"};
+	String[] expression = new String[]{"R_s","R_c","90[deg]"};
 
 	shell = buildCylinderShell(fluxConcentratorTag,label,expression);
 	return shell;
@@ -404,7 +351,7 @@ public class TeslaMax {
 	
 	environmentTag = geomFeatures.uniquetag(ENVIRONMENT_TAG);
 	String label = "Environment Cylinder Shell";
-	String[] expression = new String[]{"R_c","R_e","180[deg]"};
+	String[] expression = new String[]{"R_c","R_e","90[deg]"};
 
 	shell = buildCylinderShell(environmentTag,label,expression);
 	return shell;
@@ -418,22 +365,15 @@ public class TeslaMax {
 	// check if we have to build the inner iron wedge
 	if (params.evaluate("phi_C_II") > 0.0) {
 	    ironIIWedge1QFeature = buildIronBlock("IIw1Q");
-	    ironIIWedge2QFeature = buildIronBlock("IIw2Q");
-	    }
+	}
 	
 	// loop to build the magnet II blocks
 	magnetII1QBlockTags = new String[nII];
 	magnetII1QBlockFeatures = new GeomFeature[nII];
 
-	magnetII2QBlockTags = new String[nII];
-	magnetII2QBlockFeatures = new GeomFeature[nII];
-
-	
 	for (int i = 0; i < nII; i++) {
 	    
 	    magnetII1QBlockFeatures[i] = buildMagnetBlock(i,"II","1Q");
-	    magnetII2QBlockFeatures[i] = buildMagnetBlock(i,"II","2Q");
-	    
 	}
 
 	// build the iron block in region II
@@ -444,16 +384,10 @@ public class TeslaMax {
 
         magnetIV1QBlockTags = new String[nIV];
 	magnetIV1QBlockFeatures = new GeomFeature[nIV];
-	
-	magnetIV2QBlockTags = new String[nIV];
-	magnetIV2QBlockFeatures = new GeomFeature[nIV];
-	
-	
+		
 	for (int i = 0; i < nIV; i++) {
 
 	    magnetIV1QBlockFeatures[i] = buildMagnetBlock(i,"IV","1Q");
-	    magnetIV2QBlockFeatures[i] = buildMagnetBlock(i,"IV","2Q");
-
 	}
 
 	// build the iron block in region IV
@@ -466,9 +400,7 @@ public class TeslaMax {
 	// build the air gap region
 	airGapHigh1QFeature = buildAirGapBlock("High","1Q");
 	airGapLow1QFeature = buildAirGapBlock("Low","1Q");
-	airGapHigh2QFeature = buildAirGapBlock("High","2Q");
-	airGapLow2QFeature = buildAirGapBlock("Low","2Q");
-
+	
 	// build the flux concentrator region
 	fluxConcentratorFeature = buildFluxConcentratorShell();
 
@@ -525,9 +457,7 @@ public class TeslaMax {
 	model.selection().create(AIR_GAP_SELECTION_TAG, "Explicit");
 	model.selection(AIR_GAP_SELECTION_TAG).label("Air Gap");
 	model.selection(AIR_GAP_SELECTION_TAG).add(getDomainEntities(airGapHigh1QTag));
-	model.selection(AIR_GAP_SELECTION_TAG).add(getDomainEntities(airGapHigh2QTag));
 	model.selection(AIR_GAP_SELECTION_TAG).add(getDomainEntities(airGapLow1QTag));
-	model.selection(AIR_GAP_SELECTION_TAG).add(getDomainEntities(airGapLow2QTag));
 
 	model.selection().create(ENVIRONMENT_SELECTION_TAG, "Explicit");
 	model.selection(ENVIRONMENT_SELECTION_TAG).label("Environment");
@@ -577,17 +507,9 @@ public class TeslaMax {
 	    model.selection(MAGNETS_II_1Q_SELECTION_TAG).add(getDomainEntities(ftag));
 	}
 
-	for (String ftag : magnetII2QBlockTags) {
-	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
-	}
-
 	for (String ftag : magnetIV1QBlockTags) {
 	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
 	    model.selection(MAGNETS_IV_1Q_SELECTION_TAG).add(getDomainEntities(ftag));
-	}
-
-	for (String ftag : magnetIV2QBlockTags) {
-	    model.selection(MAGNETS_SELECTION_TAG).add(getDomainEntities(ftag));
 	}
 
 	model.selection().create(IRON_SELECTION_TAG,"Explicit");
@@ -596,9 +518,7 @@ public class TeslaMax {
 	if (ironIIWedge1QTag != null) {
 	    model.selection(IRON_SELECTION_TAG).add(getDomainEntities(ironIIWedge1QTag));
 	}
-	if (ironIIWedge2QTag != null) {
-	    model.selection(IRON_SELECTION_TAG).add(getDomainEntities(ironIIWedge2QTag));
-	}
+
 	model.selection(IRON_SELECTION_TAG).add(getDomainEntities(ironIVBlockTag));
 	model.selection(IRON_SELECTION_TAG).add(getDomainEntities(fluxConcentratorTag));
 
@@ -616,8 +536,17 @@ public class TeslaMax {
 	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(model.selection(MAGNETS_SELECTION_TAG).entities(2));
 	model.selection(CIRCUIT_REGIONS_SELECTION_TAG).add(model.selection(IRON_SELECTION_TAG).entities(2));
 
+	// to apply the zero magnetic scalar potential to the line x=0,
+	// we create a box that encompasses all relevant edges
+	model.selection().create(ZERO_POTENTIAL_SELECTION_TAG,"Box");
 
-
+	model.selection(ZERO_POTENTIAL_SELECTION_TAG).set("entitydim",1);
+	model.selection(ZERO_POTENTIAL_SELECTION_TAG).set("condition","inside");
+	model.selection(ZERO_POTENTIAL_SELECTION_TAG).set("xmin",-r);
+	model.selection(ZERO_POTENTIAL_SELECTION_TAG).set("xmax",0);
+	model.selection(ZERO_POTENTIAL_SELECTION_TAG).set("ymin",0);
+	model.selection(ZERO_POTENTIAL_SELECTION_TAG).set("ymax",R_e+r);
+	model.selection(ZERO_POTENTIAL_SELECTION_TAG).label("x = 0 line");
 
     }
 
@@ -956,10 +885,6 @@ public class TeslaMax {
 		feature.selection().set(getDomainEntities(magnetII1QBlockTags[index]));
 		 		
 	    }
-	    else if (quadrant.equals("2Q")) {
-		
-		feature.selection().set(getDomainEntities(magnetII2QBlockTags[index]));
-	    }
 
 	    
 	    
@@ -973,12 +898,7 @@ public class TeslaMax {
 
 		feature.selection().set(getDomainEntities(magnetIV1QBlockTags[index]));
 		
-	    } else if (quadrant.equals("2Q")) {
-
-		feature.selection().set(getDomainEntities(magnetIV2QBlockTags[index]));
-	    }
-
-	    
+	    } 
 	}
 
 	feature.set("ConstitutiveRelationH", "RemanentFluxDensity");
@@ -999,6 +919,9 @@ public class TeslaMax {
 	mfncPhysics.prop("MeshControl").set("EnableMeshControl", "1");
 
 	model.physics("mfnc").feature("mfc1").label("Magnetic Flux Conservation - Air regions");
+
+	PhysicsFeature zeroScalarPotential = model.physics("mfnc").create("zsp1","ZeroMagneticScalarPotential",1);
+	zeroScalarPotential.selection().named(ZERO_POTENTIAL_SELECTION_TAG);
 	
 	PhysicsFeature ironFluxConservation = model.physics("mfnc").create("mfc2", "MagneticFluxConservation", 2);
 	ironFluxConservation.selection().named(IRON_SELECTION_TAG);
@@ -1008,7 +931,6 @@ public class TeslaMax {
 	}
 
 
-
 	ironFluxConservation.set("materialType", "from_mat");
 	ironFluxConservation.label("Magnetic Flux Conservation - Iron regions");
 
@@ -1016,12 +938,10 @@ public class TeslaMax {
 	for (int i = 0; i < nII; i++) {
 	    
 	    configureMagnetFluxConservation(i,"II","1Q");
-	    configureMagnetFluxConservation(i,"II","2Q");
 	}
 
 	for (int i = 0; i < nIV; i++) {
 	    configureMagnetFluxConservation(i,"IV","1Q");
-	    configureMagnetFluxConservation(i,"IV","2Q");
 	}
 
     }
