@@ -986,22 +986,11 @@ public class TeslaMax {
 	model.sol("sol1").create("s1", "Stationary");
 
 	model.sol("sol1").feature("s1").create("fc1", "FullyCoupled");
-	model.sol("sol1").feature("s1").create("i1", "Iterative");
+
 	model.sol("sol1").feature("s1").feature().remove("fcDef");
 
-	
 	model.sol("sol1").attach("std1");
 
-	// the "gmres" solver is much faster
-	//String solver = "gmres";
-	String solver = "bicgstab";
-	
-	// for non-linear problems, the above solver may fail to converge
-	if (!ironLinearQ){
-	    solver = "bicgstab";
-	    }
-	
-	model.sol("sol1").feature("s1").feature("i1").set("linsolver", solver);
 	model.sol("sol1").runAll();
 
 	}

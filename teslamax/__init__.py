@@ -1327,7 +1327,7 @@ class TeslaMaxModel():
         """
         
         profile_file_path = self.path / MAGNETIC_PROFILE_FILENAME
-        profile_data = read_comsol_profile_data(str(profile))
+        profile_data = read_comsol_profile_data(str(profile_file_path))
         
         return profile_data
     
