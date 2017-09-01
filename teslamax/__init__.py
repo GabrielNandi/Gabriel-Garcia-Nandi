@@ -172,8 +172,8 @@ def calculate_magnetic_profile(B_data, params):
     Return the magnetic profile array [phi, B] based on data for the
     magnetic flux density [x, y, B] and a dictionary of parameters.
     
-    The grid for 'B_data' is supposed to span the interval 0 <= phi <= pi
-    (the top half-circle); this function mirrors this interval and return phi
+    The grid for 'B_data' is supposed to span the interval 0 <= phi <= pi/2
+    (the first quadrant); this function mirrors this interval and return phi
     in the interval [0, 2 pi].
     
     """
@@ -186,9 +186,9 @@ def calculate_magnetic_profile(B_data, params):
 
     # create ranges for phi and r
     phi_min = 0.0
-    phi_max = np.pi
+    phi_max = np.pi/2
 
-    phi_vector_top = np.linspace(phi_min,phi_max,N_PROFILE_POINTS)
+    phi_vector_1q = np.linspace(phi_min,phi_max,N_PROFILE_POINTS)
 
     # slightly offset the boundaries to avoid numerical problems at the interfaces
     r_min = 1.001*R_o 
@@ -197,7 +197,7 @@ def calculate_magnetic_profile(B_data, params):
 
     r_vector = np.linspace(r_min,r_max,N_R_POINTS)
 
-    r_grid, phi_grid = np.meshgrid(r_vector,phi_vector_top)
+    r_grid, phi_grid = np.meshgrid(r_vector,phi_vector_1q)
 
     # calculate the points (x,y) distributed along
     # radial lines
@@ -213,14 +213,19 @@ def calculate_magnetic_profile(B_data, params):
     # when we apply the above created function we will get an array with the
     # same shape. We then take the average value along each row,
     # resuting in an array (N_PROFILE_POINTS)
-    B_profile_top = np.mean(B_data_final,axis=1)
+    B_profile_1q = np.mean(B_data_final,axis=1)
 
     # extrapolate data to the full circle
-    phi_vector = np.concatenate((phi_vector_top,
-                                 phi_vector_top+np.pi,))
+    phi_vector = np.concatenate((phi_vector_1q,
+                                 phi_vector_1q+np.pi/2,
+                                 phi_vector_1q+np.pi,
+                                 phi_vector_1q+(3/2)*np.pi))
 
-    B_profile = np.concatenate((B_profile_top,
-                                B_profile_top[::-1],))
+    B_profile = np.concatenate((B_profile_1q,
+                                B_profile_1q[::-1],
+                                B_profile_1q,
+                                B_profile_1q[::-1]))
+
     
     profile_data = np.array((np.rad2deg(phi_vector),B_profile)).T
     return profile_data
@@ -239,11 +244,11 @@ def write_magnetic_profile_file():
     # load data from the B_III filename
     B_III_data = read_comsol_data_file(B_III_FILENAME)
     # get the columns corresponding to [x, y, B_x, B_y] and calculate [x, y, B]
-    B_top = calculate_magnitude(B_III_data[:,:4])
+    B_1q = calculate_magnitude(B_III_data[:,:4])
     
     case_series = get_comsol_parameters_series()
     
-    profile_data = calculate_magnetic_profile(B_top, case_series)
+    profile_data = calculate_magnetic_profile(B_1q, case_series)
     
     np.savetxt(str(p),
                profile_data,
@@ -812,6 +817,7 @@ class TeslaMaxPreDesign():
         self.F_operators = None
 
         self.alpha_B_rem_optimal = None
+        self.optimization_results = None
 
     def calculate_B_III_from_single_block(self,
                                           point,
@@ -874,7 +880,7 @@ class TeslaMaxPreDesign():
         points = generate_sector_mesh_points(1.001*R_o,
                                                       0.999*R_g,
                                                       0.0,
-                                                      np.pi)
+                                                      np.pi/2)
         self.points_F_operators = points
         
         F_II_x = []
@@ -1211,6 +1217,7 @@ class TeslaMaxPreDesign():
                     bounds=bounds,
                     options={'disp': False})
 
+        self.optimization_results = optres_g
         self.alpha_B_rem_optimal = optres_g.x
 
     def get_optimal_remanence_angles(self,

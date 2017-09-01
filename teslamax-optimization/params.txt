@@ -1,9 +1,9 @@
 R_i 0.015
 R_o 0.06
 h_gap 0.023
-R_s 0.15
+R_s 0.18
 h_fc 0.01
-R_e 2
+R_e 0.3
 n_IV 4
 phi_S_IV 45
 n_II 3
@@ -28,6 +28,6 @@ alpha_rem_IV_1 0.0
 alpha_rem_IV_2 0.0
 alpha_rem_IV_3 0.0
 alpha_rem_IV_4 90.0
-R_c 0.16
+R_c 0.19
 delta_phi_S_II 10.0
 delta_phi_S_IV 11.25
