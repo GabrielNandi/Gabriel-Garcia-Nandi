@@ -1323,7 +1323,8 @@ class TeslaMaxModel():
         
         return griddata(B_III_data[:,:2],
                        B_III_data[:,2:4],
-                       point_cartesian)
+                       point_cartesian,
+        method='nearest')
         
         
     def get_profile_data(self):
