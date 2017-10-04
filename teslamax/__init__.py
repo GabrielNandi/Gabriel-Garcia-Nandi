@@ -1012,7 +1012,8 @@ class TeslaMaxPreDesign():
         positions where the profile is to be calculated, followed by
         all other arguments)
         - 'target_profile_args' is a tuple with other arguments to pass to
-        'target_profile_function' (see above)
+        'target_profile_function' (see above). The first two elements
+        are some measure of the maximum and minimum field
         """
 
         B_III_data = self.superposition_B_III(alpha_B_rem)
@@ -1028,8 +1029,10 @@ class TeslaMaxPreDesign():
                                                  *target_profile_args)
 
         # use a "least squares" approach
-        B_lsq = (B_inst_profile - B_profile)**2
-        S = np.trapz(B_lsq,phi_vector) / (2*np.pi)
+        B_lsq = np.fabs(B_inst_profile - B_profile)
+        B_max = target_profile_args[0]
+        B_min = target_profile_args[1]
+        S = np.trapz(B_lsq,phi_vector) / (2*np.pi * (B_max - B_min))
 
         return S
 
