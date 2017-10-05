@@ -1,13 +1,13 @@
-"""Usage: run_teslamax_maps.py <B_h> <F_M>
+"""Usage: run_K_maps.py <B_h> <F_M>
 
 Generates various TeslaMax models and optimizes them for a ramp profile
 of high field 'B_h' (in T) and field fration 'F_M' (0  < F_M < 1).
 
-The results are saved in a file 'map_<B_h>_FM_<F_M>.txt', where the
+The results are saved in a file 'map_K_B_<B_h>_FM_<F_M>.txt', where the
 first argument is printed in mT and the second in integer percentage units. The
 first lines of this file are a string representation of the dictionary of
 common parameters for all simulations; the remainder rows form a table,
-with columns for the parameters; the last columns are the cost function and
+with columns for the parameters; the last columns are the cost function K and
 the remanence angles in order.
 """
 
@@ -53,7 +53,7 @@ field_fraction = float(args["<F_M>"])
 target_function = teslamax.calculate_ramp_profile
 target_args = (B_high,B_low,field_fraction)
 
-map_file_path = Path("map_B_%d_FM_%d.txt" %(
+map_file_path = Path("map_K_B_%d_FM_%d.txt" %(
     B_high*1000, field_fraction*100))
 
 # #### Generate the results file
