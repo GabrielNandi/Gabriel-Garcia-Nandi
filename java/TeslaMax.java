@@ -577,7 +577,7 @@ public class TeslaMax {
 	ProbeFeature airGapAreaProbe = modelProbes.create("prb3","Domain");
 	airGapAreaProbe.model(COMPONENT_NAME);
 	airGapAreaProbe.selection().named(AIR_GAP_SELECTION_TAG);
-	airGapAreaProbe.set("expr","2");
+	airGapAreaProbe.set("expr","4");
 	airGapAreaProbe.set("unit","m^2");
 	airGapAreaProbe.set("type","integral");
 	airGapAreaProbe.set("table",RESULTS_TABLE_TAG);
@@ -587,7 +587,7 @@ public class TeslaMax {
 	ProbeFeature magnetAreaProbe = modelProbes.create("prb4","Domain");
 	magnetAreaProbe.model(COMPONENT_NAME);
 	magnetAreaProbe.selection().named(MAGNETS_SELECTION_TAG);
-	magnetAreaProbe.set("expr","2");
+	magnetAreaProbe.set("expr","4");
 	magnetAreaProbe.set("unit","m^2");
 	magnetAreaProbe.set("type","integral");
 	magnetAreaProbe.set("table",RESULTS_TABLE_TAG);
