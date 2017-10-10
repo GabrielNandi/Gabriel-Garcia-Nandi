@@ -1,13 +1,13 @@
-"""Usage: run_Rs_maps.py
+"""Usage: run_Rs_maps.py <R_o>
 
-Generates various TeslaMax models, from common parameters,
+Generates various TeslaMax models, from common parameters and <R_o> (in mm),
 and calculates the minimum R_s that can be used to optimize the model for a
 ramp profile of high field 'B_h' (in T) and field fration 'F_M' (0  < F_M < 1).
 
-The results are saved in a file 'map_Rs.txt'. The first lines of this file are
-a string representation of the dictionary of common parameters for all
-simulations; the remainder rows form a table, with columns for the parameters;
-the last columns are the cost function K and the remanence angles in order.
+The results are saved in a file 'map_Rs_Ro_<R_o>.txt', with the argument printed in units of mm. 
+The first lines of this file are a string representation of the dictionary of common 
+parameters for all simulations; the remainder rows form a table, with columns for 
+the parameters; the last columns are the cost function K and the remanence angles in order.
 """
 
 # coding: utf-8
@@ -28,12 +28,14 @@ from teslamax import TeslaMaxGeometry, TeslaMaxPreDesign, TeslaMaxModel
 args = docopt(__doc__,help=True)
 print(args)
 
+R_o = float(args["<R_o>"])
+
 os.chdir(str(Path.home() / "code" / "TeslaMax"))
 
 params_optimization_ref = {"R_i": 0.015,
                 "h_gap": 0.025,
                 "h_fc": 0.010,
-                "R_o": 0.050,
+                "R_o": 1e-3*R_o,
                 "R_e": 0.3,
                 "n_II": 2,
                 "n_IV": 3,
@@ -60,20 +62,19 @@ B_min = 0.0
 
 target_function = teslamax.calculate_ramp_profile
 
-map_file_path = Path("map_Rs.txt")
+map_file_path = Path("map_Rs_Ro_%d.txt" %(R_o))
 
-# #### Generate the results file
-
-
-#params_header_str = str(params_optimization_ref).replace(',',',\n') + '\n\n'
-#print(params_header_str)
-#map_file_path.write_text(params_header_str)
+### Generate the results file
 
 
-# ### Update the results file
+params_header_str = str(params_optimization_ref).replace(',',',\n') + '\n\n'
+print(params_header_str)
+map_file_path.write_text(params_header_str)
 
-#B_max_values = np.array([1.2, 1.225, 1.25, 1.275, 1.3])
-B_max_values = np.array([1.225, 1.25, 1.275, 1.3])
+
+### Update the results file
+
+B_max_values = np.array([1.2, 1.225, 1.25, 1.275, 1.3])
 
 F_M_values = 1e-2*np.array([35,37.5,40,42.5,45])
 
@@ -96,8 +97,8 @@ COLUMNS_NAMES_STR = '\t'.join(['B_max[T]',
 
 
 print(COLUMNS_NAMES_STR)
-#with map_file_path.open(mode='a') as f:
-#    f.write(COLUMNS_NAMES_STR)
+with map_file_path.open(mode='a') as f:
+    f.write(COLUMNS_NAMES_STR)
 
 for B_max in B_max_values:
 
