@@ -82,7 +82,7 @@ R_s_min = 100e-3
 
 R_s_max = 150e-3
 
-dRs = 10e-3
+dRs = 5e-3
 
 K_max = 1.0
 
@@ -92,7 +92,7 @@ params = params_optimization_ref.copy()
 COLUMNS_NAMES_STR = '\t'.join(['B_max[T]',
                                'F_M[%]',
                                'R_s[mm]',
-                               'K[T^2]',
+                               'K[]',
                                'alpha\n'])
 
 
@@ -100,6 +100,7 @@ print(COLUMNS_NAMES_STR)
 with map_file_path.open(mode='a') as f:
     f.write(COLUMNS_NAMES_STR)
 
+results_str=""
 for B_max in B_max_values:
 
     for F_M in F_M_values:
