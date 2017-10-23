@@ -28,6 +28,8 @@ from pandas import Series, DataFrame
 import teslamax
 from teslamax import TeslaMaxGeometry, TeslaMaxPreDesign, TeslaMaxModel
 
+OVERWRITE = True
+
 args = docopt(__doc__,help=True)
 print(args)
 
@@ -61,7 +63,8 @@ map_file_path = Path("map_K_B_%d_FM_%d.txt" %(
 
 params_header_str = str(params_optimization_ref).replace(',',',\n') + '\n\n'
 print(params_header_str)
-map_file_path.write_text(params_header_str)
+if OVERWRITE:
+    map_file_path.write_text(params_header_str)
 
 
 # ### Update the results file
@@ -69,16 +72,15 @@ map_file_path.write_text(params_header_str)
 # We define a range of values for the external radius and the
 # iron-magnet separating angle and calculate the cost function.
 
-R_o_values = 1e-3*np.array([40,50,60,70,80])
+R_o_values = 1e-3*np.array([40,50,60])
 
-n_II_values = np.array([2,3,4,5])
+n_II_values = np.array([1,2,3])
 
-n_IV_values = np.array([2,3,4,5,6])
+n_IV_values = np.array([2,3,4])
 
-R_s_values = 1e-3*np.array([120,130,140,150])
+R_s_values = 1e-3*np.array([100,110,120,130])
 
 phi_S_values = np.array([35,45,55])
-
 
 params = params_optimization_ref.copy()
 
@@ -92,8 +94,9 @@ COLUMNS_NAMES_STR = '\t'.join(['R_o[mm]',
 
 
 print(COLUMNS_NAMES_STR)
-with map_file_path.open(mode='a') as f:
-    f.write(COLUMNS_NAMES_STR)
+if OVERWRITE:
+    with map_file_path.open(mode='a') as f:
+        f.write(COLUMNS_NAMES_STR)
 
 for R_o in R_o_values:
 
