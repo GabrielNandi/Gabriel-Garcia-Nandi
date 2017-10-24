@@ -28,7 +28,7 @@ from pandas import Series, DataFrame
 import teslamax
 from teslamax import TeslaMaxGeometry, TeslaMaxPreDesign, TeslaMaxModel
 
-OVERWRITE = True
+OVERWRITE = False
 
 args = docopt(__doc__,help=True)
 print(args)
@@ -72,15 +72,18 @@ if OVERWRITE:
 # We define a range of values for the external radius and the
 # iron-magnet separating angle and calculate the cost function.
 
-R_o_values = 1e-3*np.array([40,50,60])
+#R_o_values = 1e-3*np.array([40,50,60])
+R_o_values = 1e-3*np.array([40])
 
 n_II_values = np.array([1,2,3])
 
 n_IV_values = np.array([2,3,4])
 
-R_s_values = 1e-3*np.array([100,110,120,130])
+# R_s_values = 1e-3*np.array([100,110,120,130])
+R_s_values = 1e-3*np.array([120])
 
-phi_S_values = np.array([35,45,55])
+# phi_S_values = np.array([35,45,55])
+phi_S_values = np.array([45,55])
 
 params = params_optimization_ref.copy()
 
