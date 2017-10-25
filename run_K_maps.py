@@ -80,10 +80,10 @@ n_II_values = np.array([1,2,3])
 n_IV_values = np.array([2,3,4])
 
 # R_s_values = 1e-3*np.array([100,110,120,130])
-R_s_values = 1e-3*np.array([120])
+R_s_values = 1e-3*np.array([130])
 
-# phi_S_values = np.array([35,45,55])
-phi_S_values = np.array([45,55])
+phi_S_values = np.array([35,45,55])
+
 
 params = params_optimization_ref.copy()
 
