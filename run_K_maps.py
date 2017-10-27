@@ -73,14 +73,13 @@ if OVERWRITE:
 # iron-magnet separating angle and calculate the cost function.
 
 #R_o_values = 1e-3*np.array([40,50,60])
-R_o_values = 1e-3*np.array([40])
+R_o_values = 1e-3*np.array([50,60])
 
 n_II_values = np.array([1,2,3])
 
 n_IV_values = np.array([2,3,4])
 
-# R_s_values = 1e-3*np.array([100,110,120,130])
-R_s_values = 1e-3*np.array([130])
+R_s_values = 1e-3*np.array([100,110,120,130])
 
 phi_S_values = np.array([35,45,55])
 
