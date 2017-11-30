@@ -1,14 +1,11 @@
-"""Usage: run_K_maps.py <B_h> <F_M>
+"""Usage: run_K_maps.py
 
-Generates various TeslaMax models and optimizes them for a ramp profile
-of high field 'B_h' (in T) and field fration 'F_M' (0  < F_M < 1).
+Generates various TeslaMax models and optimizes them for a ramp profile.
 
-The results are saved in a file 'map_K_B_<B_h>_FM_<F_M>.txt', where the
-first argument is printed in mT and the second in integer percentage units. The
+The results are saved in a file 'map_K.txt'. The
 first lines of this file are a string representation of the dictionary of
 common parameters for all simulations; the remainder rows form a table,
-with columns for the parameters; the last columns are the cost function K and
-the remanence angles in order.
+with columns for the parameters; the last columns is the cost function K.
 """
 
 
@@ -28,7 +25,7 @@ from pandas import Series, DataFrame
 import teslamax
 from teslamax import TeslaMaxGeometry, TeslaMaxPreDesign, TeslaMaxModel
 
-OVERWRITE = False
+OVERWRITE = True
 
 args = docopt(__doc__,help=True)
 print(args)
@@ -36,27 +33,27 @@ print(args)
 os.chdir(str(Path.home() / "code" / "TeslaMax"))
 
 params_optimization_ref = {"R_i": 0.015,
-                "h_gap": 0.025,
-                "h_fc": 0.010,
-                "R_e": 0.3,
-                "phi_C_II": 15,
-                "mu_r_II": 1.05,
-                "mu_r_IV": 1.05,
-              "linear_iron": 1,
-              "mu_r_iron": 5e3,
-             }
+                           "h_fc": 0.005,
+                           "R_s": 120e-3,
+                           "R_o": 50e-3,
+                           "R_e": 0.3,
+                           "phi_C_II": 15,
+                           "mu_r_II": 1.05,
+                           "mu_r_IV": 1.05,
+                           "linear_iron": 1,
+                           "mu_r_iron": 5e3,
+}
 
 B_rem = 1.4
 
 B_low = 0.0
-B_high = float(args["<B_h>"])
-field_fraction = float(args["<F_M>"])
+field_fraction = 0.35
+params_optimization_ref["F_M[%]"] = field_fraction*100
 
 target_function = teslamax.calculate_ramp_profile
-target_args = (B_high,B_low,field_fraction)
 
-map_file_path = Path("map_K_B_%d_FM_%d.txt" %(
-    B_high*1000, field_fraction*100))
+
+map_file_path = Path("map_K.txt")
 
 # #### Generate the results file
 
@@ -72,27 +69,25 @@ if OVERWRITE:
 # We define a range of values for the external radius and the
 # iron-magnet separating angle and calculate the cost function.
 
-#R_o_values = 1e-3*np.array([40,50,60])
-R_o_values = 1e-3*np.array([50,60])
 
-n_II_values = np.array([1,2,3])
+n_II_values = np.array([2,3])
 
-n_IV_values = np.array([2,3,4])
+n_IV_values = np.array([3,4])
 
-R_s_values = 1e-3*np.array([100,110,120,130])
+phi_S_values = np.array([45])
 
-phi_S_values = np.array([35,45,55])
+B_high_values = np.array([1.10,1.12,1.14,1.16,1.18,1.20])
 
+h_gap_values = 1e-3*np.array([20,22,24,26,28,30])
 
 params = params_optimization_ref.copy()
 
-COLUMNS_NAMES_STR = '\t'.join(['R_o[mm]',
-                               'R_s[mm]',
-                               'phi_S[deg]',
+COLUMNS_NAMES_STR = '\t'.join(['phi_S[deg]',
                                'n_II[]',
                                'n_IV[]',
-                               'K[T^2]',
-                               'alpha\n'])
+                               'h_gap[mm]',
+                               'B_max[T]',
+                               'K[]\n'])
 
 
 print(COLUMNS_NAMES_STR)
@@ -100,13 +95,13 @@ if OVERWRITE:
     with map_file_path.open(mode='a') as f:
         f.write(COLUMNS_NAMES_STR)
 
-for R_o in R_o_values:
+for B_high in B_high_values:
 
-    params["R_o"] = R_o
+    target_args = (B_high,B_low,field_fraction)
 
-    for R_s in R_s_values:
+    for h_gap in h_gap_values:
 
-        params["R_s"] = R_s
+        params["h_gap"] = h_gap
 
         for phi_S in phi_S_values:
 
@@ -141,16 +136,14 @@ for R_o in R_o_values:
                                                             target_function,
                                                             target_args)
 
-                        results_str = "%.1f\t%.1f\t%.1f\t%d\t%d\t%.3f" %(
-                            R_o*1e3,
-                            R_s*1e3,
+                        results_str = "%.1f\t%d\t%d\t%d\t%.2f\t%.3f" %(
                             phi_S,
                             n_II,
                             n_IV,
+                            1e3*h_gap,
+                            B_high,
                             K)
 
-                        for a in alpha_B_rem_g:
-                            results_str = results_str + "\t%.3f" %(a,)
 
                         results_str = results_str + "\n"
 
