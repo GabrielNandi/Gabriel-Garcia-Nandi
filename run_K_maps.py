@@ -46,7 +46,7 @@ params_optimization_ref = {"R_i": 0.015,
 
 B_rem = 1.4
 
-B_low = 0.0
+B_min = 0.0
 field_fraction = 0.35
 params_optimization_ref["F_M[%]"] = field_fraction*100
 
@@ -74,11 +74,11 @@ n_II_values = np.array([2,3])
 
 n_IV_values = np.array([3,4])
 
-phi_S_values = np.array([45])
+phi_S_values = np.array([35,45,55])
 
-B_high_values = np.array([1.10,1.12,1.14,1.16,1.18,1.20])
+B_max_values =  np.linspace(1.10,1.3,41)
 
-h_gap_values = 1e-3*np.array([20,22,24,26,28,30])
+h_gap_values = 1e-3*np.linspace(15,25,41)
 
 params = params_optimization_ref.copy()
 
@@ -95,9 +95,9 @@ if OVERWRITE:
     with map_file_path.open(mode='a') as f:
         f.write(COLUMNS_NAMES_STR)
 
-for B_high in B_high_values:
+for B_max in B_max_values:
 
-    target_args = (B_high,B_low,field_fraction)
+    target_args = (B_max,B_min,field_fraction)
 
     for h_gap in h_gap_values:
 
@@ -136,12 +136,12 @@ for B_high in B_high_values:
                                                             target_function,
                                                             target_args)
 
-                        results_str = "%.1f\t%d\t%d\t%d\t%.2f\t%.3f" %(
+                        results_str = "%.1f\t%d\t%d\t%.1f\t%.3f\t%.3f" %(
                             phi_S,
                             n_II,
                             n_IV,
                             1e3*h_gap,
-                            B_high,
+                            B_max,
                             K)
 
 
