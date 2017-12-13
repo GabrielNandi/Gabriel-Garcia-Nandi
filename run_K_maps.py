@@ -136,7 +136,7 @@ for B_max in B_max_values:
                                                             target_function,
                                                             target_args)
 
-                        results_str = "%.1f\t%d\t%d\t%.1f\t%.3f\t%.3f" %(
+                        results_str = "%.1f\t%d\t%d\t%.3f\t%.3f\t%.3f" %(
                             phi_S,
                             n_II,
                             n_IV,
