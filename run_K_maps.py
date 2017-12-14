@@ -34,9 +34,11 @@ os.chdir(str(Path.home() / "code" / "TeslaMax"))
 
 params_optimization_ref = {"R_i": 0.015,
                            "h_fc": 0.005,
-                           "R_s": 120e-3,
+                           "R_s": 110e-3,
                            "R_o": 50e-3,
                            "R_e": 0.3,
+                           "n_II": 2,
+                           "n_IV": 3,
                            "phi_C_II": 15,
                            "mu_r_II": 1.05,
                            "mu_r_IV": 1.05,
@@ -45,6 +47,9 @@ params_optimization_ref = {"R_i": 0.015,
 }
 
 B_rem = 1.4
+
+
+
 
 B_min = 0.0
 field_fraction = 0.35
@@ -70,21 +75,23 @@ if OVERWRITE:
 # iron-magnet separating angle and calculate the cost function.
 
 
-n_II_values = np.array([2,3])
-
-n_IV_values = np.array([3,4])
-
 phi_S_values = np.array([35,45,55])
 
-B_max_values =  np.linspace(1.10,1.3,41)
+B_max_values =  np.linspace(1.10,1.2,11)
 
-h_gap_values = 1e-3*np.linspace(15,25,41)
+h_gap_values = 1e-3*np.linspace(15,25,11)
 
 params = params_optimization_ref.copy()
 
+n = params["n_II"] + params["n_IV"]
+
+params = teslamax.expand_parameters_from_remanence_array(
+    B_rem*np.ones(n), 
+    params, 
+    "B_rem")
+
+
 COLUMNS_NAMES_STR = '\t'.join(['phi_S[deg]',
-                               'n_II[]',
-                               'n_IV[]',
                                'h_gap[mm]',
                                'B_max[T]',
                                'K[]\n'])
@@ -108,50 +115,33 @@ for B_max in B_max_values:
             params["phi_S_II"] = phi_S
             params["phi_S_IV"] = phi_S
 
-            for n_II in n_II_values:
+            try:
 
-                params["n_II"] = n_II
-
-                for n_IV in n_IV_values:
-
-                    params["n_IV"] = n_IV
-
-                    n = n_II + n_IV
-
-                    params = teslamax.expand_parameters_from_remanence_array(
-                        B_rem*np.ones(n), 
-                        params, 
-                        "B_rem")
-
-                    try:
-
-                        tmpd = TeslaMaxPreDesign(params)
-
-
-                        alpha_B_rem_g = tmpd.get_optimal_remanence_angles(
-                            target_function,
-                            target_args)
-
-                        K = tmpd.calculate_functional_target(alpha_B_rem_g,
-                                                            target_function,
-                                                            target_args)
-
-                        results_str = "%.1f\t%d\t%d\t%.3f\t%.3f\t%.3f" %(
-                            phi_S,
-                            n_II,
-                            n_IV,
-                            1e3*h_gap,
-                            B_max,
-                            K)
-
-
-                        results_str = results_str + "\n"
-
-                        print(results_str)
-                        with map_file_path.open(mode='a',buffering=1) as f:
-                            f.write(results_str)
-                            f.flush()
-                            os.fsync(f.fileno()),
-                    except:
-                        continue
+                tmpd = TeslaMaxPreDesign(params)
+                
+                
+                alpha_B_rem_g = tmpd.get_optimal_remanence_angles(
+                    target_function,
+                    target_args)
+                
+                K = tmpd.calculate_functional_target(alpha_B_rem_g,
+                                                     target_function,
+                                                     target_args)
+                
+                results_str = "%.1f\t%.3f\t%.3f\t%.3f" %(
+                    phi_S,
+                    1e3*h_gap,
+                    B_max,
+                    K)
+                
+                
+                results_str = results_str + "\n"
+                
+                print(results_str)
+                with map_file_path.open(mode='a',buffering=1) as f:
+                    f.write(results_str)
+                    f.flush()
+                    os.fsync(f.fileno()),
+            except:
+                continue
 
