@@ -23,9 +23,9 @@ R_g 0.07100000000000001
 alpha_rem_II_1 0.0
 alpha_rem_II_2 0.0
 alpha_rem_II_3 0.0
-alpha_rem_IV_1 7.52652892856
-alpha_rem_IV_2 27.3534047721
-alpha_rem_IV_3 84.0312079492
+alpha_rem_IV_1 7.52661786247
+alpha_rem_IV_2 27.3535034681
+alpha_rem_IV_3 84.0312627248
 R_c 0.115
 delta_phi_S_II 10.0
 delta_phi_S_IV 15.0
