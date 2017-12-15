@@ -20,12 +20,12 @@ B_rem_IV_1 1.4
 B_rem_IV_2 1.4
 B_rem_IV_3 1.4
 R_g 0.07100000000000001
-alpha_rem_II_1 0.0
+alpha_rem_II_1 5.07368849191
 alpha_rem_II_2 0.0
 alpha_rem_II_3 0.0
-alpha_rem_IV_1 7.52661786247
-alpha_rem_IV_2 27.3535034681
-alpha_rem_IV_3 84.0312627248
+alpha_rem_IV_1 9.0300491316
+alpha_rem_IV_2 35.6957785854
+alpha_rem_IV_3 88.5388081432
 R_c 0.115
 delta_phi_S_II 10.0
 delta_phi_S_IV 15.0
