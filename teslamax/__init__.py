@@ -1025,11 +1025,13 @@ class TeslaMaxPreDesign():
         phi_vector, B_profile = calculate_magnetic_profile(B_III_data,
                                         self.geometry_material_parameters).T
 
-        B_inst_profile = target_profile_function(phi_vector,
+        B_target_profile = target_profile_function(phi_vector,
                                                  *target_profile_args)
 
+        phi_vector = np.deg2rad(phi_vector)
+
         # use a "least squares" approach
-        B_lsq = np.square((B_profile-B_inst_profile))
+        B_lsq = np.square((B_profile-B_target_profile))
         B_max = target_profile_args[0]
         B_min = target_profile_args[1]
         S = np.trapz(B_lsq,phi_vector) / (2*np.pi * (B_max - B_min)**2)
