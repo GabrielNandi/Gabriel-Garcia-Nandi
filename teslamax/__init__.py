@@ -1025,48 +1025,16 @@ class TeslaMaxPreDesign():
         phi_vector, B_profile = calculate_magnetic_profile(B_III_data,
                                         self.geometry_material_parameters).T
 
-        
-        B_max = target_profile_args[0]
-        B_min = target_profile_args[1]
 
         B_target_profile = target_profile_function(phi_vector,
                                                  *target_profile_args)
 
-        
-        
         phi_vector = np.deg2rad(phi_vector)
-        
-        if target_profile_function == calculate_ramp_profile:
-            
-            F_M = target_profile_args[2]
-            
-            phi_a = F_M * np.pi/2
-        
-            phi_vector_1q = phi_vector[np.where(phi_vector <= np.pi/2)]
-            
-            phi_vector_high = phi_vector_1q[np.where(phi_vector_1q <= phi_a)]
-            B_profile_high = B_profile[np.where(phi_vector_1q <= phi_a)]
-            B_target_high = B_target_profile[np.where(phi_vector_1q <= phi_a)]
-            
-            phi_vector_low = phi_vector_1q[np.where(
-                phi_vector_1q >= (np.pi/2-phi_a))]
-            B_profile_low = B_profile[np.where(
-                phi_vector_1q >= (np.pi/2-phi_a))]
-            B_target_low = B_target_profile[np.where(
-                phi_vector_1q >= (np.pi/2 - phi_a))]
-        
-            S = (np.trapz(
-                np.square((B_profile_high-B_target_high)),
-                phi_vector_high) +
-                 np.trapz(
-                np.square((B_profile_low-B_target_low)),
-                phi_vector_low)
-            ) / ((np.pi/2) * (B_max - B_min)**2)
-        
-            return S
 
         # use a "least squares" approach
         B_lsq = np.square((B_profile-B_target_profile))
+        B_max = target_profile_args[0]
+        B_min = target_profile_args[1]
 
         S = np.trapz(B_lsq,phi_vector) / (2*np.pi * (B_max - B_min)**2)
 
