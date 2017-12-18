@@ -1,14 +1,15 @@
-"""Usage: run_K_maps.py
+"""Usage: run_K_maps.py <R_s>
 
-Generates various TeslaMax models and optimizes them for a ramp profile.
+Generates various TeslaMax models, using common paramaters and
+the value of the external radius <R_s>, and optimizes them for several
+ramp profile.
 
-The results are saved in a file 'map_K.txt'. The
-first lines of this file are a string representation of the dictionary of
-common parameters for all simulations; the remainder rows form a table,
-with columns for the parameters; the last columns is the cost function K.
+The results are saved in a file 'map_K_Rs_<R_s>.txt', with the argument
+printed in mm. The first lines of this file are a string representation of the
+dictionary of common parameters for all simulations; the remainder rows form a
+table, with columns for the parameters;
+the last columns is the cost function K.
 """
-
-
 
 # coding: utf-8
 
@@ -30,15 +31,17 @@ OVERWRITE = True
 args = docopt(__doc__,help=True)
 print(args)
 
+R_s = float(args["<R_s>"])
+
 os.chdir(str(Path.home() / "code" / "TeslaMax"))
 
-params_optimization_ref = {"R_i": 0.015,
+params_optimization_ref = {"R_i": 0.010,
                            "h_fc": 0.005,
-                           "R_s": 110e-3,
-                           "R_o": 50e-3,
+                           "R_s": 1e-3*R_s,
+                           "R_o": 40e-3,
                            "R_e": 0.3,
                            "n_II": 2,
-                           "n_IV": 3,
+                           "n_IV": 4,
                            "phi_C_II": 15,
                            "mu_r_II": 1.05,
                            "mu_r_IV": 1.05,
@@ -48,17 +51,13 @@ params_optimization_ref = {"R_i": 0.015,
 
 B_rem = 1.4
 
-
-
-
 B_min = 0.0
 field_fraction = 0.35
 params_optimization_ref["F_M[%]"] = field_fraction*100
 
 target_function = teslamax.calculate_ramp_profile
 
-
-map_file_path = Path("map_K.txt")
+map_file_path = Path("map_K_Rs_%d.txt" %(R_s))
 
 # #### Generate the results file
 
@@ -77,7 +76,7 @@ if OVERWRITE:
 
 phi_S_values = np.array([35,45,55])
 
-B_max_values =  np.linspace(1.10,1.2,11)
+B_max_values =  np.linspace(1.00,1.2,21)
 
 h_gap_values = 1e-3*np.linspace(15,25,11)
 
@@ -128,7 +127,7 @@ for B_max in B_max_values:
                                                      target_function,
                                                      target_args)
                 
-                results_str = "%.1f\t%.3f\t%.3f\t%.3f" %(
+                results_str = "%.1f\t%.3f\t%.3f\t%.6f" %(
                     phi_S,
                     1e3*h_gap,
                     B_max,
