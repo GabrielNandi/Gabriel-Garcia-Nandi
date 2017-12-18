@@ -171,11 +171,13 @@ def calculate_magnetic_profile(B_data, params):
     """
     Return the magnetic profile array [phi, B] based on data for the
     magnetic flux density [x, y, B] and a dictionary of parameters.
+
+    The magnetic profile is defined as the magnetic flux density along the
+    circumference in the middle of the air gap.
     
-    The grid for 'B_data' is supposed to span the interval 0 <= phi <= pi/2
+    The grid for 'B_data' is supposed to span the interval 0 <= phi <= 90
     (the first quadrant); this function mirrors this interval and return phi
-    in the interval [0, 2 pi].
-    
+    in the interval [0, 360].
     """
 
     params = expand_parameter_dictionary(params)
@@ -183,37 +185,28 @@ def calculate_magnetic_profile(B_data, params):
     R_g = params['R_g']
     R_o = params['R_o']
 
-
     # create ranges for phi and r
     phi_min = 0.0
     phi_max = np.pi/2
 
     phi_vector_1q = np.linspace(phi_min,phi_max,N_PROFILE_POINTS)
 
-    # slightly offset the boundaries to avoid numerical problems at the interfaces
-    r_min = 1.001*R_o 
-    r_max = 0.999*R_g
+    r_min = R_o 
+    r_max = R_g
     
+    r_central = .5*(R_o + R_g)
 
-    r_vector = np.linspace(r_min,r_max,N_R_POINTS)
-
-    r_grid, phi_grid = np.meshgrid(r_vector,phi_vector_1q)
-
-    # calculate the points (x,y) distributed along
+    
+    # calcualte the points (x,y) distributed along
     # radial lines
-    x_grid = r_grid * np.cos(phi_grid)
-    y_grid = r_grid * np.sin(phi_grid)
-    
-    fB = NearestNDInterpolator(B_data[:,0:2],B_data[:,2])
-    
-    B_data_final = fB(x_grid,y_grid)
-    
-    
-    # because both x_grid and y_grid have shape (n_r_points, N_PROFILE_POINTS),
-    # when we apply the above created function we will get an array with the
-    # same shape. We then take the average value along each row,
-    # resuting in an array (N_PROFILE_POINTS)
-    B_profile_1q = np.mean(B_data_final,axis=1)
+    x_grid = r_central * np.cos(phi_vector_1q)
+    y_grid = r_central * np.sin(phi_vector_1q)
+
+    B_profile_1q = griddata(B_data[:,0:2],
+                            B_data[:,2],
+                            np.array([x_grid,y_grid]).T)
+
+
 
     # extrapolate data to the full circle
     phi_vector = np.concatenate((phi_vector_1q,
@@ -233,8 +226,7 @@ def calculate_magnetic_profile(B_data, params):
 def write_magnetic_profile_file():
     """Create a file "COMSOL Magnetic Profile.txt" in the current directory,
     assuming the teslamax command was already ran, and write the magnetic
-    profile data (average magnetic induction over radial chords).
-    
+    profile data (magentic flux density at the air gap central circumference).
     """
     
     p = Path('.') / MAGNETIC_PROFILE_FILENAME
