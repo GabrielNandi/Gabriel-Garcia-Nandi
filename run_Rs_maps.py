@@ -27,7 +27,7 @@ import teslamax
 from teslamax import TeslaMaxGeometry, TeslaMaxPreDesign, TeslaMaxModel
 
 K_CRITICAL = 0.002
-OVERWRITE = True
+OVERWRITE = False
 
 args = docopt(__doc__,help=True)
 print(args)
@@ -81,12 +81,12 @@ if OVERWRITE:
 phi_S_values = np.array([45,55])
 
 
-B_max_min = 1.00
+#B_max_min = 1.00
+B_max_min = 1.11
 B_max_max = 1.20
 B_max_step = 0.01
 
 B_max_values =  np.arange(B_max_min,B_max_max+B_max_step,B_max_step)
-
 
 h_gap_min = 15
 h_gap_max = 25
