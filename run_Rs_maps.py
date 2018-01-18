@@ -82,7 +82,7 @@ phi_S_values = np.array([45,55])
 
 
 #B_max_min = 1.00
-B_max_min = 1.11
+B_max_min = 1.12
 B_max_max = 1.20
 B_max_step = 0.01
 
