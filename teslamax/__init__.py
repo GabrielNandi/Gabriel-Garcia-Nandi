@@ -669,6 +669,30 @@ class TeslaMaxGeometry():
 
                 gp['R_o'] = gp['R_g'] - gp['h_gap']
 
+    def calculate_magnet_volume(self,L):
+        """
+        Return the volume (m3) of the permanent regions,
+        for a length of 'L' (m)
+        """
+
+        params = self.geometric_parameters
+
+        phi_S_II = np.deg2rad(params["phi_S_II"])
+        phi_S_IV = np.deg2rad(params["phi_S_IV"])
+        phi_C_II = np.deg2rad(params["phi_C_II"])
+
+        R_i = params["R_i"]
+        R_o = params["R_o"]
+        R_s = params["R_s"]
+        R_g = params["R_g"]
+
+        # the factor of 2 already accounts for 4 quadrants
+        A_II = 2 * (phi_S_II - phi_C_II) * (R_o**2 - R_i**2)
+        A_IV = 2 * phi_S_IV * (R_s**2 - R_g**2)
+        V = (A_II + A_IV)*L
+
+        return V
+
 
 def expand_parameters_from_remanence_array(magnet_parameters, params, prefix):
     """
@@ -1301,6 +1325,7 @@ class TeslaMaxModel():
         self.fB_profile = interp1d(self.profile_data[:,0],
                                    self.profile_data[:,1],
                                    kind='linear')
+
         
     def get_B_III_data(self):
         """
