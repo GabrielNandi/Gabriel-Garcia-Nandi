@@ -36,7 +36,7 @@ L_MAGNET = 1.1*L_AMR
 W = 30e-3
 H_GAP = 33e-3
 
-OVERWRITE = True
+OVERWRITE = False
 
 args = docopt(__doc__,help=True)
 print(args)
@@ -83,8 +83,8 @@ if OVERWRITE:
 ### Update the results file
 
 Q_c_reg_values = np.array([75,100,150,200,250])
-Q_c_values = np.array([2000,8000])
-
+#Q_c_values = np.array([2000,8000])
+Q_c_values = np.array([5000,])
 
 dRs = 10e-3
 
