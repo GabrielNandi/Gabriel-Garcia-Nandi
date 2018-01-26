@@ -4,6 +4,8 @@ teslamax-optimization/
 
 .cache
 
+.idea/
+
 *.pyc
 *.egg-info
 
