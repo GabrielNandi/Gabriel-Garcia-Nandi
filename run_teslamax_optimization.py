@@ -49,6 +49,8 @@ K = tmpd.calculate_functional_target(alpha_B_rem,
                                      target_function,
                                      target_args)
 
+print("*****")
 print("TeslaMax optimization results:")
-print("Optimal angles [°]: " + str(alpha_B_rem))
-print("Cost function value: %.3f" % (K,))
+print()
+print("Optimal angles [°]: %s" % (["%.1f" % (a,) for a in alpha_B_rem]))
+print("Cost function value: %.5f" % (K,))
