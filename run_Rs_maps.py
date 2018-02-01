@@ -80,9 +80,7 @@ if OVERWRITE:
 
 phi_S_values = np.array([45,55])
 
-
-#B_max_min = 1.00
-B_max_min = 1.13
+B_max_min = 1.00
 B_max_max = 1.20
 B_max_step = 0.01
 
@@ -95,6 +93,7 @@ h_gap_step = 1
 h_gap_values = 1e-3*np.arange(h_gap_min,h_gap_max + h_gap_step, h_gap_step)
 
 R_s_min = 90e-3
+R_s_min = 125e-3
 R_s_max = 150e-3
 dRs = 5e-3
 
