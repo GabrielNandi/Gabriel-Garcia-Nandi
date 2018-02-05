@@ -45,7 +45,8 @@ FIGSIZE_INCHES = FIGSIZE_CM / 2.54
 
 FONTSIZE = 20
 
-B_HIGH_LEVEL = 1.3
+B_HIGH_LEVEL = 1.0
+B_LOW_LEVEL = 0.0
 
 DEBUG = False
 
@@ -713,11 +714,11 @@ def expand_parameters_from_remanence_array(magnet_parameters, params, prefix):
     return params_expanded
 
 
-def calculate_instantaneous_profile(phi, B_high):
+def calculate_instantaneous_profile(phi, B_high, B_low, *args):
     """
     Calculate the value of the two-pole instantaneous magnetic profile at
     angular position 'phi' (in degrees), where the profile oscillates from
-    0 to 'B_high'
+    'B_low' to 'B_high'
     
     """
 
@@ -727,10 +728,10 @@ def calculate_instantaneous_profile(phi, B_high):
                                                (phi <= 225)))
     high_region = np.logical_or(high_region, (phi >= 315))
 
-    return np.where(high_region, B_high, 0.0)
+    return np.where(high_region, B_high, B_low)
 
 
-def calculate_ramp_profile(phi, B_high, B_low, high_field_fraction):
+def calculate_ramp_profile(phi, B_high, B_low, high_field_fraction, *args):
     """
     Calculate the value of the two-pole instantaneous magnetic profile at
     angular position 'phi' (in degrees), where the profile oscillates from
@@ -738,6 +739,11 @@ def calculate_ramp_profile(phi, B_high, B_low, high_field_fraction):
     'high_field_fraction' of the cycle.
     
     """
+
+    # for the edge case of a field fraction of 50%,
+    # the ramp profile is equivalent to the instantaneous profile
+    if np.isclose(high_field_fraction,0.5):
+        return calculate_instantaneous_profile(phi,B_high,B_low,args)
 
     # for two poles, we can replicate the results from 0 to 180
     phi = np.mod(phi, 180)
@@ -762,7 +768,7 @@ def calculate_ramp_profile(phi, B_high, B_low, high_field_fraction):
                     np.where(descent_region,
                              B_high + (B_low - B_high) * (
                                      phi - angle_change) / (
-                                     (1 - field_fraction) * 90),
+                                         (1 - field_fraction) * 90),
                              np.where(ascent_region,
                                       B_low + (B_high - B_low) * (
                                               phi - (90 + angle_change)) / (
@@ -1055,7 +1061,7 @@ class TeslaMaxPreDesign:
     def calculate_functional(self,
                              alpha_B_rem,
                              functional_args=(calculate_instantaneous_profile,
-                                              (B_HIGH_LEVEL,))):
+                                              (B_HIGH_LEVEL,B_LOW_LEVEL))):
         """
         Return the objective functional based on  a vector of remanence angles.
         The objective functional is defined as the difference between the

@@ -1,15 +1,11 @@
-# THIS TEST FILE IS UNFINISHED
-# FIXTURES HAVE TO BE DEFINED TO TEST VALUES FOR REMANENCE, TARGET FUNCTIONS AND
-# TARGET PARAMETERS (B_HIGH AND F_M)
+from collections import namedtuple
+
+import math
 
 import pytest
 import numpy as np
 
-import teslamax
-
-B_REM_VALES = [1.08,1.38]
-B_HIGH_VALUES = [1.0,1.4]
-F_M_VALUES = [0.35,0.50]
+from .context import teslamax
 
 SAMPLE_MAGNET_PARAMETERS = [
     {"R_i": 10e-3,
@@ -77,39 +73,107 @@ SAMPLE_MAGNET_PARAMETERS = [
      },
 ]
 
+B_REM_VALUES = [1.08, 1.38]
+B_MAX_VALUES = [1.0, 1.4]
+B_MIN_VALUES = [0, 0.05]
+F_M_VALUES = [0.35, 0.50]
+TARGET_FUNCTION_NAMES = [teslamax.calculate_instantaneous_profile,
+                         teslamax.calculate_ramp_profile]
+
+OptimizationCase = namedtuple("OptimizationCase",[
+    "TeslaMaxPreDesign",
+    "function",
+    "args"
+])
+
+
+def build_tmpd(params,B_rem):
+
+    n = params["n_II"] + params["n_IV"]
+
+    magnet_params = teslamax.expand_parameters_from_remanence_array(
+        B_rem * np.ones(n),
+        params,
+        "B_rem"
+    )
+
+    return teslamax.TeslaMaxPreDesign(magnet_params)
+
+optimization_cases = [OptimizationCase(
+    build_tmpd(params,B_rem),
+    function,
+    (B_max,B_min,F_M)) for params in SAMPLE_MAGNET_PARAMETERS
+                        for function in TARGET_FUNCTION_NAMES
+                      for B_rem in B_REM_VALUES
+                      for B_max in B_MAX_VALUES
+                      for B_min in B_MIN_VALUES
+                      for F_M in F_M_VALUES]
+
 class TestTeslaMaxPreDesign():
 
-    # create one instance of the TeslaMaxPreDesign class for each
-    # value in SAMPLE_MAGNET_PARAMETERS
+
     @pytest.fixture(scope='class',
-                    params=SAMPLE_MAGNET_PARAMETERS)
-    def tmpd(self,request):
-        magnet_parameters = request.param
+                    params=optimization_cases)
+    def optcase(self,request):
+
+        return request.param
+
+
+    def test_calculate_correct_number_angles(self,
+                                            optcase):
+
+
+        tmpd = optcase.TeslaMaxPreDesign
+        target_function = optcase.function
+        target_args = tuple(optcase.args)
+
+        angles = tmpd.get_optimal_remanence_angles(target_function,target_args)
+
+        magnet_parameters = tmpd.geometry_material_parameters
 
         n = magnet_parameters["n_II"] + magnet_parameters["n_IV"]
 
-        magnet_parameters = teslamax.expand_parameters_from_remanence_array(
-            B_REM * np.ones(n),
-            magnet_parameters,
-            "B_rem"
-        )
+        assert n == len(angles)
 
-        return teslamax.TeslaMaxPreDesign(magnet_parameters)
+    def test_calculate_angles_in_correct_range(self,
+                                               optcase):
 
-    def test_calculate_correct_number_angles(self,
-                                            tmpd,
-                                            function,):
+        tmpd = optcase.TeslaMaxPreDesign
+        target_function = optcase.function
+        target_args = optcase.args
 
-        tmpd.get_optimal_remanence_angles(
-                                     target_profile_function=calculate_instantaneous_profile,
-                                     target_profile_args=(B_HIGH_LEVEL,)
+        angles = tmpd.get_optimal_remanence_angles(target_function,target_args)
 
-    def test_calculate_angles_in_correct_range(self,tmpd):
+        for alpha in angles:
+            assert ((alpha >= 0) and (alpha <= 360))
 
-    def test_cost_function_is_real(self):
+    def test_cost_function_is_finite(self,
+                                   optcase,):
 
+        tmpd = optcase.TeslaMaxPreDesign
+        target_function = optcase.function
+        target_args = optcase.args
 
-    def test_cost_function_is_positive(self):
+        angles = tmpd.get_optimal_remanence_angles(target_function, target_args)
+
+        K = tmpd.calculate_functional_target(angles,target_function,target_args)
+
+        assert math.isfinite(K)
+
+    def test_cost_function_is_positive(self,
+                                       optcase):
+
+        tmpd = optcase.TeslaMaxPreDesign
+        target_function = optcase.function
+        target_args = optcase.args
+
+        angles = tmpd.get_optimal_remanence_angles(target_function, target_args)
+
+        K = tmpd.calculate_functional_target(angles, target_function,
+                                             target_args)
+
+        assert K >= 0
+
 
 
 
