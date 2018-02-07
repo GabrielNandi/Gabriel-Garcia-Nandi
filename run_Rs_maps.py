@@ -93,7 +93,6 @@ h_gap_step = 1
 h_gap_values = 1e-3*np.arange(h_gap_min,h_gap_max + h_gap_step, h_gap_step)
 
 R_s_min = 90e-3
-R_s_min = 125e-3
 R_s_max = 150e-3
 dRs = 5e-3
 
