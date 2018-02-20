@@ -6,8 +6,6 @@ The problem geometry is represented by the following figure:
 
 <img src="figures/teslamax.png" alt=""  width="500" style="margin-left:auto;margin-right:auto;display:block;">
 
-This figure shows the first quadrant for simplicity, but TeslaMax simulates the half-circle (first and second quadrants); a mirror symmetry is assumed at the horizontal line between the top and bottom half-circles. The geometry (shapes of the segments) is also symmetric between the first and second quadrants, but the properties of magnet blocks may vary.
-
 ## Installation
 
 Pre-requisites:
@@ -16,11 +14,11 @@ Pre-requisites:
 2. JDK > 8 (it should work with version 6 and up)
 3. COMSOL 5.2a (it doesn't seem to work with COMSOL 5.3!)
 
-Add the COMSOL executable directory to the PATH. This can be normally found at `C:\Program Files\COMSOL\COMSOL52a\Multiphysics\bin\win64` (notice the version number)
+Add the COMSOL executable directory to the PATH. This can be normally found at `C:\Program Files\COMSOL\COMSOL52a\Multiphysics\bin\win64` (notice the version number).
 
-Right now, this repository has to be cloned as `$HOME/code/teslamax`
+Then, clone this repository to a directory of choice.
 
-## Compiling and running via the Java program
+### Compiling and running via the Java program
 
 The main Java file `java/TeslaMax.java` contains a description of a COMSOL model, from building the geometry to running the results. This file must be compiled with tools available in the COMSOL installation, which must be found on your PATH (see **Installation notes** above).
 
@@ -36,7 +34,7 @@ This will run COMSOL in *batch* mode, without the graphical interface. If everyt
 
 Notice that you can run the above command from any working directory, as long as you specify the full path to the input Java file. The source file `TeslaMax.java` is configured to read and write files from/to the current working directory.
 
-## Input and output files
+### Input and output files
 
 This repository contains a `teslamax-play` repository, with examples of files that are read and written by COMSOL. You should be able to run the `comsolbatch` command described previously inside this directory.
 

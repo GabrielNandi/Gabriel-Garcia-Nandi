@@ -13,11 +13,13 @@ from scipy.integrate import trapz
 
 from scipy.optimize import minimize
 
-COMSOL_JAVA_DIR = Path.home() / 'code' / 'teslamax' / 'java'
+TESLAMAX_PACKAGE_DIR = Path(os.path.dirname(__file__))
 
-COMSOL_CLASS_FILE = COMSOL_JAVA_DIR / 'TeslaMax.class'
+TESLAMAX_JAVA_DIR = TESLAMAX_PACKAGE_DIR.parent / 'java'
 
-COMSOL_CMD = ['comsolbatch', '-inputfile', str(COMSOL_CLASS_FILE)]
+TESLAMAX_CLASS_FILE = TESLAMAX_JAVA_DIR / 'TeslaMax.class'
+
+TESLAMAX_CMD = ['comsolbatch', '-inputfile', str(TESLAMAX_CLASS_FILE)]
 
 B_HIGH_FILENAME = "B_high.txt"
 B_LOW_FILENAME = "B_low.txt"
@@ -30,10 +32,7 @@ MAIN_RESULTS_FILENAME = "COMSOL Main Results.txt"
 
 MAGNETIC_PROFILE_FILENAME = "COMSOL Magnetic Profile.txt"
 
-COMSOL_PARAMETER_FILENAME = "params.txt"
-
-TESLAMAX_RESULTS_FILENAME = "TeslaMax Main Results.txt"
-TESLAMAX_RESULTS_RANDOM_FILENAME = "TeslaMax Main Results (Random).txt"
+PARAMETER_FILENAME = "params.txt"
 
 N_PROFILE_POINTS = 181  # keep at this level to have in increments of 1 degree
 N_R_POINTS = 20
@@ -51,12 +50,12 @@ B_LOW_LEVEL = 0.0
 DEBUG = False
 
 
-def get_comsol_parameters_series():
-    """Parse the COMSOL parameters file in the current directory and
+def get_comsol_parameters_series(filename=PARAMETER_FILENAME):
+    """Parse a COMSOL parameters file 'filename' and
     return a pandas Series from it.
     
     """
-    param_comsol_file = Path('.') / COMSOL_PARAMETER_FILENAME
+    param_comsol_file = Path(filename)
 
     param_comsol_series = pd.read_table(str(param_comsol_file),
                                         squeeze=True,
@@ -353,7 +352,7 @@ def run_teslamax(verbose=False):
     and create a magnetic profile file.
     
     Assumes the parameters file is present in the current directory."""
-    comsol_process = subprocess.run(COMSOL_CMD,
+    comsol_process = subprocess.run(TESLAMAX_CMD,
                                     shell=True,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT,
@@ -420,7 +419,7 @@ def write_parameter_file_from_dict(param_dict):
     param_dict = expand_parameter_dictionary(param_dict)
 
     # write the dictionary file in the appropriate format that COMSOL can parse
-    parameters_file_path = Path(".") / COMSOL_PARAMETER_FILENAME
+    parameters_file_path = Path(".") / PARAMETER_FILENAME
 
     param_text = ""
 
