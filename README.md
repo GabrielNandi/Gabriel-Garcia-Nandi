@@ -6,7 +6,11 @@ The problem geometry is represented by the following figure:
 
 <img src="figures/teslamax.png" alt=""  width="500" style="margin-left:auto;margin-right:auto;display:block;">
 
-## Installation
+Only the first quadrant is shown due to symmetry. Light gray represents permanent magnet, dark gray represents iron, and white represents air. The geometry is axissymetric, but the remanence directions in the permanent magnet regions are mirrored in special ways: a complete mirror symmetry is applied in the x-axis, and only the y-component of the remanence vector field is reversed across the y-axis (in other words, the x-axis is magnetically insulated, and the y-axis has zero magnetic scalar potential). 
+
+This repository includes tools for simulating the geometry in the COMSOL Multiphysics software and a python package for processing the results. From the remanence information, the COMSOL model calculates the magnetic fields in the domain grid. An air shell is included outside the magnetic circuit to simulate the environment.
+
+## Installation and basic usage
 
 Pre-requisites:
 
@@ -20,13 +24,13 @@ Then, clone this repository to a directory of choice.
 
 ### Compiling and running via the Java program
 
-The main Java file `java/TeslaMax.java` contains a description of a COMSOL model, from building the geometry to running the results. This file must be compiled with tools available in the COMSOL installation, which must be found on your PATH (see **Installation notes** above).
+The main Java file `java/TeslaMax.java` contains a description of a COMSOL model, from building the geometry to running the results. This file must be compiled with tools available in the COMSOL installation, which must be found on your PATH (see  above).
 
 To compile the Java source file:
 
 	comsolcompile java/TeslaMax.java
 
-This will result into a Java `.class` file, which you can open normally with COMSOL (as if you are opening a `.mph` file). Alternatively, you can run:
+This will result into a Java `.class` file, which you can open normally with COMSOL (as if you were opening a `.mph` file). Alternatively, you can run:
 
 	comsolbatch -inputfile java/TeslaMax.class -outputfile <basename>
 
