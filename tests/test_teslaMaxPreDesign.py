@@ -5,7 +5,7 @@ import math
 import pytest
 import numpy as np
 
-from .context import teslamax
+import teslamax
 
 SAMPLE_MAGNET_PARAMETERS = [
     {"R_i": 10e-3,
