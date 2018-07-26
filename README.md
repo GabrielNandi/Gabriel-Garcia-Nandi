@@ -16,9 +16,9 @@ Pre-requisites:
 
 1. Anaconda Python 3.6
 2. JDK > 8 (it should work with version 6 and up)
-3. COMSOL 5.2a (it doesn't seem to work with COMSOL 5.3!)
+3. COMSOL 5.3a
 
-Add the COMSOL executable directory to the PATH. This can be normally found at `C:\Program Files\COMSOL\COMSOL52a\Multiphysics\bin\win64` (notice the version number).
+Add the COMSOL executable directory to the PATH. This can be normally found at `C:\Program Files\COMSOL\COMSOL53a\Multiphysics\bin\win64` (notice the version number).
 
 Then, clone this repository to a directory of choice.
 
