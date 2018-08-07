@@ -47,7 +47,7 @@ FONTSIZE = 20
 B_HIGH_LEVEL = 1.0
 B_LOW_LEVEL = 0.0
 
-DEBUG = True
+DEBUG = False
 
 
 def get_comsol_parameters_series(filename=PARAMETER_FILENAME):
