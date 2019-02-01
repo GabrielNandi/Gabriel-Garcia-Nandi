@@ -3,7 +3,7 @@ R_o 0.07
 h_gap 0.02
 R_s 0.14
 h_fc 0.02
-R_e 2
+R_e 0.3
 n_IV 3
 phi_S_IV 45
 n_II 0
@@ -17,7 +17,8 @@ B_rem_IV_1 1.4
 B_rem_IV_2 1.4
 B_rem_IV_3 1.4
 mu_r_IV 1.05
-linear_iron 0
+linear_iron 1
+mu_r_iron 500
 R_g 0.09000000000000001
 alpha_rem_IV_1 15
 alpha_rem_IV_2 45
