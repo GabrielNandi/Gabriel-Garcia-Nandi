@@ -164,8 +164,7 @@ def calculate_magnitude(components_grid):
     x, y, Vx, Vy = components_grid.T
 
     V = np.sqrt(Vx * Vx + Vy * Vy)
-
-    return np.array((x, y, V)).T
+    return np.array((x, y, V)).T #sem erro aqui mas sai um zero
 
 
 def calculate_magnetic_profile(B_data, params):
@@ -192,19 +191,22 @@ def calculate_magnetic_profile(B_data, params):
 
     phi_vector_1q = np.linspace(phi_min, phi_max, N_PROFILE_POINTS)
 
-    r_min = R_o
-    r_max = R_g
-
-    r_central = .5 * (R_o + R_g)
+    r_central = (R_o + R_g) / 2
 
     # calcualte the points (x,y) distributed along
     # radial lines
     x_grid = r_central * np.cos(phi_vector_1q)
     y_grid = r_central * np.sin(phi_vector_1q)
-
+    
     B_profile_1q = griddata(B_data[:, 0:2],
                             B_data[:, 2],
                             np.array([x_grid, y_grid]).T)
+    #ERRO AQUI. PRIMEIRO DIGITO DO B_profile_1q A PARTIR DE CERTO MOMENTO VEM NAN
+    b=np.isnan(B_profile_1q)
+    for i in range(0,len(b)):
+        if b[i]==True:
+            B_profile_1q[i]=B_profile_1q[i+1]
+        else: continue
 
     # extrapolate data to the full circle
     phi_vector = np.concatenate((phi_vector_1q,
@@ -237,6 +239,7 @@ def write_magnetic_profile_file():
     B_1q = calculate_magnitude(B_III_data[:, :4])
 
     case_series = get_comsol_parameters_series()
+    
 
     profile_data = calculate_magnetic_profile(B_1q, case_series)
 
@@ -277,7 +280,6 @@ def calculate_average_high_field(profile_data):
     theta_range = theta_max - theta_min
 
     B_high_avg = B_integrated / theta_range
-
     return B_high_avg
 
 
@@ -315,7 +317,7 @@ def write_magnetic_profile_central_file():
     r_min = R_o
     r_max = R_g
 
-    r_central = .5 * (R_o + R_g)
+    r_central = (R_o + R_g)/2
 
     # calcualte the points (x,y) distributed along
     # radial lines
@@ -474,13 +476,13 @@ def create_quater_circle_figure_template(r_lim, params):
     R_s = params['R_s']
     R_g = params.get('R_g', params['R_o'] + params['h_gap'])
 
-    magnet_II_outer = plt.Circle((0, 0), 1e3 * R_o, color='k', fill=False)
+    magnet_II_outer = plt.Circle((0, 0), 1000 * R_o, color='k', fill=False)
     magnet_II_inner = plt.Circle((0, 0), 1e3 * R_i, color='k', fill=False)
     axes.add_artist(magnet_II_outer)
     axes.add_artist(magnet_II_inner)
 
     magnet_IV_outer = plt.Circle((0, 0), 1e3 * R_s, color='k', fill=False)
-    magnet_IV_inner = plt.Circle((0, 0), 1e3 * R_g, color='k', fill=False)
+    magnet_IV_inner = plt.Circle((0, 0), 1000 * R_g, color='k', fill=False)
     axes.add_artist(magnet_IV_outer)
     axes.add_artist(magnet_IV_inner)
 
@@ -503,11 +505,11 @@ def generate_sector_mesh_points(R1, R2, phi1, phi2):
     r_vector = np.linspace(R1, R2, N_POINTS_PER_AXIS)
 
     phi_grid, r_grid = np.meshgrid(phi_vector, r_vector)
-
+  
     X_vector = (r_grid * np.cos(phi_grid)).flatten()
     Y_vector = (r_grid * np.sin(phi_grid)).flatten()
-
     return np.array([X_vector, Y_vector]).T
+
 
 
 def create_magnet_IV_figure_template(params):
@@ -682,7 +684,7 @@ class TeslaMaxGeometry:
         A_II = 2 * (phi_S_II - phi_C_II) * (R_o ** 2 - R_i ** 2)
         A_IV = 2 * phi_S_IV * (R_s ** 2 - R_g ** 2)
         V = (A_II + A_IV) * L
-
+        
         return V
 
 
@@ -726,7 +728,6 @@ def calculate_instantaneous_profile(phi, B_high, B_low, *args):
                                 np.logical_and((phi >= 135),
                                                (phi <= 225)))
     high_region = np.logical_or(high_region, (phi >= 315))
-
     return np.where(high_region, B_high, B_low)
 
 
@@ -745,8 +746,8 @@ def calculate_ramp_profile(phi, B_high, B_low, high_field_fraction, *args):
         return calculate_instantaneous_profile(phi,B_high,B_low,args)
 
     # for two poles, we can replicate the results from 0 to 180
-    phi = np.mod(phi, 180)
-
+    phi = np.mod(phi,180)
+    
     # the fraction of the cycle where the field is constant is the fraction
     # where the field is at the high level, plus the fration where the field is
     # at the low level, hence the factor of 2
@@ -878,7 +879,6 @@ class TeslaMaxPreDesign:
         tmm = TeslaMaxModel(tmpd, alpha_B_rem_vector, str(auxdir))
         tmm.run(verbose=DEBUG)
         result = tmm.calculate_B_III_from_position(point)
-
         return result
 
     def calculate_F_operators(self):
@@ -936,18 +936,15 @@ class TeslaMaxPreDesign:
                                                                  angle=90.0))
 
         self.F_operators = (F_II_x, F_II_y, F_IV_x, F_IV_y)
-
     def get_points_F_operators(self):
         if self.points_F_operators is None:
             self.calculate_F_operators()
-
         return self.points_F_operators
 
     def get_F_operators(self):
 
         if self.F_operators is None:
             self.calculate_F_operators()
-
         return self.F_operators
 
     def superposition_B_III(self, alpha_B_rem):
@@ -960,10 +957,10 @@ class TeslaMaxPreDesign:
 
         """
 
-        B_III = 0
+        B_III = 0.0
 
         points = self.get_points_F_operators()
-        F_II_x, F_II_y, F_IV_x, F_IV_y = self.get_F_operators()
+        F_II_x, F_II_y, F_IV_x, F_IV_y = self.get_F_operators() #nao eh aqui
 
         params = self.geometry_material_parameters
 
@@ -971,20 +968,15 @@ class TeslaMaxPreDesign:
         for k in range(0, n_II):
             B_rem = params["B_rem_II_%d" % (k + 1)]
             alpha = np.deg2rad(alpha_B_rem[k])
-
             B = B_rem * (np.cos(alpha) * F_II_x[k] + np.sin(alpha) * F_II_y[k])
-
             B_III = B_III + B
-
         n_IV = params["n_IV"]
         for j in range(0, n_IV):
             B_rem = params["B_rem_IV_%d" % (j + 1)]
             alpha = np.deg2rad(alpha_B_rem[n_II + j])
-
             B = B_rem * (np.cos(alpha) * F_IV_x[j] + np.sin(alpha) * F_IV_y[j])
 
             B_III = B_III + B
-
         B_III_grid = np.concatenate((points, B_III), axis=1)
 
         return B_III_grid
@@ -1008,7 +1000,7 @@ class TeslaMaxPreDesign:
 
         B_profile_data = calculate_magnetic_profile(B_III_data,
                                                     self.geometry_material_parameters).T
-
+        
         S = -calculate_average_high_field(B_profile_data)
         return S
 
@@ -1035,11 +1027,11 @@ class TeslaMaxPreDesign:
         """
 
         B_III_data = self.superposition_B_III(alpha_B_rem)
-
+     
         # the above statement will return [x,y,B_x,B_y]. We have to calculate
         # the magnitude to pass it to the magnetic profile data
         B_III_data = calculate_magnitude(B_III_data)
-
+    
         phi_vector, B_profile = calculate_magnetic_profile(B_III_data,
                                                            self.geometry_material_parameters).T
 
@@ -1054,7 +1046,7 @@ class TeslaMaxPreDesign:
         B_min = target_profile_args[1]
 
         S = np.trapz(B_lsq, phi_vector) / (2 * np.pi * (B_max - B_min) ** 2)
-
+       
         return S
 
     def calculate_functional(self,
@@ -1112,7 +1104,6 @@ class TeslaMaxPreDesign:
                                            functional_args)
 
         dS = (S_plus - S) / delta
-
         return dS
 
     def calculate_funcional_derivative_second_order(self,
@@ -1138,7 +1129,6 @@ class TeslaMaxPreDesign:
                                                          functional_args)
 
         ddS = (dS_j_plus - dS_j) / delta
-
         return ddS
 
     def calculate_functional_gradient(self,
@@ -1162,7 +1152,6 @@ class TeslaMaxPreDesign:
                                                               i,
                                                               functional_args)
                          for i in range(0, n)])
-
         return grad
 
     def calculate_functional_hessian(self,
@@ -1190,7 +1179,6 @@ class TeslaMaxPreDesign:
                                                               functional_args)
              for j in range(0, n)]
             for i in range(0, n)])
-
         return hess
 
     def _calculate_optimal_remanence_angles(self,
@@ -1237,6 +1225,7 @@ class TeslaMaxPreDesign:
 
         # the subscript _g in the following variable names stands for
         # 'gradient-based' optimization methods
+        
         optres_g = minimize(objective_function,
                             alpha_B_rem_0,
                             args=(functional_args,),
