@@ -1,6 +1,6 @@
 % Model:              
 % Version:            COMSOL 5.4.0.295
-% Date:               Feb 1 2019, 09:40
+% Date:               Feb 1 2019, 13:32
 % Table:              Table - 
 % mfnc.normB (T), Maximum Field                   mfnc.normB (T), Minimum Field                     4 (m^2), Air Gap Area                             4 (m^2), Magnets Area                             -( (mfnc.Hx * mfnc.Brx) + (mfnc.Hy * mfnc.Bry) )/mfnc.normBr, Magnet II H . B_rem Max-( (mfnc.Hx * mfnc.Brx) + (mfnc.Hy * mfnc.Bry) )/mfnc.normBr, Magnet IV H . B_rem Max
-1.0774753934238812                                0.04608719171456101                               0.010053097006547869                              0.018064157831208863                              -Inf                                              1278328.8997203116
+1.0383287546268847                                0.045543947411124545                              0.010053097005868202                              0.01806415783117691                               -Inf                                              1253643.819484894
