@@ -30,3 +30,6 @@ alpha_rem_IV_3 87.03318185
 R_c 0.15000000000000002
 delta_phi_S_II 10.0
 delta_phi_S_IV 15.0
+n_narrow 2
+l_element_max 0.02
+l_element_min 1e-3

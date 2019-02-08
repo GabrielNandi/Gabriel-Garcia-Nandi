@@ -5,13 +5,13 @@
 import com.comsol.model.*;
 import com.comsol.model.util.*;
 
-/** Model exported on Feb 5 2019, 10:35 by COMSOL 5.4.0.295. */
+/** Model exported on Feb 8 2019, 14:06 by COMSOL 5.4.0.295. */
 public class TeslaMax_Model {
 
   public static Model run() {
     Model model = ModelUtil.create("Model");
 
-    model.modelPath("C:\\Users\\fabiofortkamp\\Desktop");
+    model.modelPath("C:\\Users\\fabiofortkamp\\code\\TeslaMax\\java");
 
     model.label("TeslaMax_Model.mph");
 
@@ -19,13 +19,13 @@ public class TeslaMax_Model {
     model.param().set("R_o", "0.07");
     model.param().set("h_gap", "0.02");
     model.param().set("R_s", "0.14");
-    model.param().set("h_fc", "0.02");
+    model.param().set("h_fc", "0.01");
     model.param().set("R_e", "0.3");
     model.param().set("n_IV", "3");
     model.param().set("phi_S_IV", "45");
-    model.param().set("n_II", "0");
-    model.param().set("phi_C_II", "0");
-    model.param().set("phi_S_II", "0");
+    model.param().set("n_II", "3");
+    model.param().set("phi_C_II", "15");
+    model.param().set("phi_S_II", "45");
     model.param().set("B_rem_II_1", "1.4");
     model.param().set("B_rem_II_2", "1.4");
     model.param().set("B_rem_II_3", "1.4");
@@ -35,21 +35,26 @@ public class TeslaMax_Model {
     model.param().set("B_rem_IV_3", "1.4");
     model.param().set("mu_r_IV", "1.05");
     model.param().set("linear_iron", "1");
-    model.param().set("mu_r_iron", "500");
+    model.param().set("mu_r_iron", "5000.0");
+    model.param().set("Hc_j", "900000.0");
     model.param().set("R_g", "0.09000000000000001");
-    model.param().set("alpha_rem_IV_1", "15");
-    model.param().set("alpha_rem_IV_2", "45");
-    model.param().set("alpha_rem_IV_3", "75");
-    model.param().set("R_c", "0.16");
+    model.param().set("alpha_rem_II_1", "-3.67109344");
+    model.param().set("alpha_rem_II_2", "4.98966041");
+    model.param().set("alpha_rem_II_3", "-15.7967738");
+    model.param().set("alpha_rem_IV_1", "8.2380897");
+    model.param().set("alpha_rem_IV_2", "30.8698398");
+    model.param().set("alpha_rem_IV_3", "87.03318185");
+    model.param().set("R_c", "0.15000000000000002");
+    model.param().set("delta_phi_S_II", "10.0");
     model.param().set("delta_phi_S_IV", "15.0");
-    model.param().set("Hc_j", "900 [kA/m]");
+    model.param().set("l_element_max", "0.0111 [m]");
+    model.param().set("n_narrow", "5");
 
     model.component().create("nhalbach_system", false);
 
     model.component("nhalbach_system").geom().create("nhalbach_geometry", 2);
 
     model.result().table().create("results_table", "Table");
-    model.result().table().create("tbl1", "Table");
 
     model.component("nhalbach_system").mesh().create("mesh1");
 
@@ -92,18 +97,77 @@ public class TeslaMax_Model {
     model.geom("cylinder_shell").run();
     model.component("nhalbach_system").geom("nhalbach_geometry").create("iron_ii1", "PartInstance");
     model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii1")
-         .label("Cylinder Block - Iron II");
+         .label("Cylinder Block - Iron II Wedge 1Q");
     model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii1")
          .setEntry("inputexpr", "r1", "R_i");
     model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii1")
          .setEntry("inputexpr", "r2", "R_o");
     model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii1")
-         .setEntry("inputexpr", "phi1", "phi_S_II");
+         .setEntry("inputexpr", "phi1", "0.0[deg]");
     model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii1")
-         .setEntry("inputexpr", "phi2", "90[deg]");
+         .setEntry("inputexpr", "phi2", "phi_C_II");
     model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii1").set("selkeepnoncontr", false);
     model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii1")
          .setEntry("selkeepdom", "iron_ii1_dom", "on");
+    model.component("nhalbach_system").geom("nhalbach_geometry").create("magnet_ii_1q1", "PartInstance");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q1")
+         .label("Cylinder Block 1 - Magnet II - 1Q");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q1")
+         .setEntry("inputexpr", "r1", "R_i");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q1")
+         .setEntry("inputexpr", "r2", "R_o");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q1")
+         .setEntry("inputexpr", "phi1", "phi_C_II + 0 * delta_phi_S_II");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q1")
+         .setEntry("inputexpr", "phi2", "phi_C_II + 1 * delta_phi_S_II");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q1")
+         .set("selkeepnoncontr", false);
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q1")
+         .setEntry("selkeepdom", "magnet_ii_1q1_dom", "on");
+    model.component("nhalbach_system").geom("nhalbach_geometry").create("magnet_ii_1q2", "PartInstance");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q2")
+         .label("Cylinder Block 2 - Magnet II - 1Q");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q2")
+         .setEntry("inputexpr", "r1", "R_i");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q2")
+         .setEntry("inputexpr", "r2", "R_o");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q2")
+         .setEntry("inputexpr", "phi1", "phi_C_II + 1 * delta_phi_S_II");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q2")
+         .setEntry("inputexpr", "phi2", "phi_C_II + 2 * delta_phi_S_II");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q2")
+         .set("selkeepnoncontr", false);
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q2")
+         .setEntry("selkeepdom", "magnet_ii_1q2_dom", "on");
+    model.component("nhalbach_system").geom("nhalbach_geometry").create("magnet_ii_1q3", "PartInstance");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q3")
+         .label("Cylinder Block 3 - Magnet II - 1Q");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q3")
+         .setEntry("inputexpr", "r1", "R_i");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q3")
+         .setEntry("inputexpr", "r2", "R_o");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q3")
+         .setEntry("inputexpr", "phi1", "phi_C_II + 2 * delta_phi_S_II");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q3")
+         .setEntry("inputexpr", "phi2", "phi_C_II + 3 * delta_phi_S_II");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q3")
+         .set("selkeepnoncontr", false);
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_ii_1q3")
+         .setEntry("selkeepdom", "magnet_ii_1q3_dom", "on");
+    model.component("nhalbach_system").geom("nhalbach_geometry").create("iron_ii2", "PartInstance");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii2")
+         .label("Cylinder Block - Iron II");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii2")
+         .setEntry("inputexpr", "r1", "R_i");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii2")
+         .setEntry("inputexpr", "r2", "R_o");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii2")
+         .setEntry("inputexpr", "phi1", "phi_S_II");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii2")
+         .setEntry("inputexpr", "phi2", "90[deg]");
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii2").set("selkeepnoncontr", false);
+    model.component("nhalbach_system").geom("nhalbach_geometry").feature("iron_ii2")
+         .setEntry("selkeepdom", "iron_ii2_dom", "on");
     model.component("nhalbach_system").geom("nhalbach_geometry").create("magnet_iv_1q1", "PartInstance");
     model.component("nhalbach_system").geom("nhalbach_geometry").feature("magnet_iv_1q1")
          .label("Cylinder Block 1 - Magnet IV - 1Q");
@@ -232,11 +296,11 @@ public class TeslaMax_Model {
     model.component("nhalbach_system").selection().create("shaft_selection", "Explicit");
     model.component("nhalbach_system").selection("shaft_selection").set(1);
     model.component("nhalbach_system").selection().create("air_gap_high_selection", "Explicit");
-    model.component("nhalbach_system").selection("air_gap_high_selection").set(7);
+    model.component("nhalbach_system").selection("air_gap_high_selection").set(11);
     model.component("nhalbach_system").selection().create("air_gap_low_selection", "Explicit");
     model.component("nhalbach_system").selection("air_gap_low_selection").set(3);
     model.component("nhalbach_system").selection().create("air_gap_selection", "Explicit");
-    model.component("nhalbach_system").selection("air_gap_selection").set(3, 7);
+    model.component("nhalbach_system").selection("air_gap_selection").set(3, 11);
     model.component("nhalbach_system").selection().create("environment_selection", "Explicit");
     model.component("nhalbach_system").selection("environment_selection").set(6);
     model.component("nhalbach_system").selection().create("environment_horization_boundary_selection", "Union");
@@ -246,17 +310,18 @@ public class TeslaMax_Model {
     model.component("nhalbach_system").selection().create("environment_sel_left", "Ball");
     model.component("nhalbach_system").selection("environment_sel_left").set("entitydim", 1);
     model.component("nhalbach_system").selection().create("magnets_selection", "Explicit");
-    model.component("nhalbach_system").selection("magnets_selection").set(8, 9, 10);
+    model.component("nhalbach_system").selection("magnets_selection").set(7, 8, 9, 12, 13, 14);
     model.component("nhalbach_system").selection().create("magnets_ii_1q_selection", "Explicit");
+    model.component("nhalbach_system").selection("magnets_ii_1q_selection").set(7, 8, 9);
     model.component("nhalbach_system").selection().create("magnets_iv_1q_selection", "Explicit");
-    model.component("nhalbach_system").selection("magnets_iv_1q_selection").set(8, 9, 10);
+    model.component("nhalbach_system").selection("magnets_iv_1q_selection").set(12, 13, 14);
     model.component("nhalbach_system").selection().create("iron_selection", "Explicit");
-    model.component("nhalbach_system").selection("iron_selection").set(2, 4, 5);
+    model.component("nhalbach_system").selection("iron_selection").set(2, 4, 5, 10);
     model.component("nhalbach_system").selection().create("air_regions_selection", "Explicit");
-    model.component("nhalbach_system").selection("air_regions_selection").set(1, 3, 6, 7);
+    model.component("nhalbach_system").selection("air_regions_selection").set(1, 3, 6, 11);
     model.component("nhalbach_system").selection().create("magnetic_circuit_regions_seletion", "Explicit");
     model.component("nhalbach_system").selection("magnetic_circuit_regions_seletion")
-         .set(1, 2, 3, 4, 5, 7, 8, 9, 10);
+         .set(1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14);
     model.component("nhalbach_system").selection().create("zero_scalar_potential_selection", "Box");
     model.component("nhalbach_system").selection("zero_scalar_potential_selection").set("entitydim", 1);
     model.component("nhalbach_system").selection("shaft_selection").label("Shaft");
@@ -270,11 +335,11 @@ public class TeslaMax_Model {
          .set("input", new String[]{"environment_sel_right", "environment_sel_left"});
     model.component("nhalbach_system").selection("environment_sel_right")
          .label("Environment Horizontal Right Boundary");
-    model.component("nhalbach_system").selection("environment_sel_right").set("posx", 0.22999999999999998);
+    model.component("nhalbach_system").selection("environment_sel_right").set("posx", 0.225);
     model.component("nhalbach_system").selection("environment_sel_right").set("r", 0.001);
     model.component("nhalbach_system").selection("environment_sel_left")
          .label("Environment Horizontal Left Boundary");
-    model.component("nhalbach_system").selection("environment_sel_left").set("posx", -0.22999999999999998);
+    model.component("nhalbach_system").selection("environment_sel_left").set("posx", -0.225);
     model.component("nhalbach_system").selection("environment_sel_left").set("r", 0.001);
     model.component("nhalbach_system").selection("magnets_selection").label("Magnets region");
     model.component("nhalbach_system").selection("magnets_ii_1q_selection").label("Magnet II 1Q region");
@@ -314,11 +379,17 @@ public class TeslaMax_Model {
     model.component("nhalbach_system").physics("mfnc").create("mfc2", "MagneticFluxConservation", 2);
     model.component("nhalbach_system").physics("mfnc").feature("mfc2").selection().named("iron_selection");
     model.component("nhalbach_system").physics("mfnc").create("mfc3", "MagneticFluxConservation", 2);
-    model.component("nhalbach_system").physics("mfnc").feature("mfc3").selection().set(10);
+    model.component("nhalbach_system").physics("mfnc").feature("mfc3").selection().set(9);
     model.component("nhalbach_system").physics("mfnc").create("mfc4", "MagneticFluxConservation", 2);
-    model.component("nhalbach_system").physics("mfnc").feature("mfc4").selection().set(9);
+    model.component("nhalbach_system").physics("mfnc").feature("mfc4").selection().set(8);
     model.component("nhalbach_system").physics("mfnc").create("mfc5", "MagneticFluxConservation", 2);
-    model.component("nhalbach_system").physics("mfnc").feature("mfc5").selection().set(8);
+    model.component("nhalbach_system").physics("mfnc").feature("mfc5").selection().set(7);
+    model.component("nhalbach_system").physics("mfnc").create("mfc6", "MagneticFluxConservation", 2);
+    model.component("nhalbach_system").physics("mfnc").feature("mfc6").selection().set(14);
+    model.component("nhalbach_system").physics("mfnc").create("mfc7", "MagneticFluxConservation", 2);
+    model.component("nhalbach_system").physics("mfnc").feature("mfc7").selection().set(13);
+    model.component("nhalbach_system").physics("mfnc").create("mfc8", "MagneticFluxConservation", 2);
+    model.component("nhalbach_system").physics("mfnc").feature("mfc8").selection().set(12);
 
     model.component("nhalbach_system").mesh("mesh1").create("dis1", "Distribution");
     model.component("nhalbach_system").mesh("mesh1").create("ftri1", "FreeTri");
@@ -335,20 +406,19 @@ public class TeslaMax_Model {
     model.component("nhalbach_system").probe().create("prb4", "Domain");
     model.component("nhalbach_system").probe().create("prb5", "Domain");
     model.component("nhalbach_system").probe().create("prb6", "Domain");
+    model.component("nhalbach_system").probe().create("prb7", "Domain");
     model.component("nhalbach_system").probe("prb1").selection().named("air_gap_high_selection");
     model.component("nhalbach_system").probe("prb2").selection().named("air_gap_low_selection");
     model.component("nhalbach_system").probe("prb3").selection().named("air_gap_selection");
     model.component("nhalbach_system").probe("prb4").selection().named("magnets_selection");
     model.component("nhalbach_system").probe("prb5").selection().named("magnets_ii_1q_selection");
     model.component("nhalbach_system").probe("prb6").selection().named("magnets_iv_1q_selection");
+    model.component("nhalbach_system").probe("prb7").selection().named("magnets_selection");
 
-    model.result().table("tbl1")
-         .comments("Point Evaluation 7 (if((-(mfnc.Hx * mfnc.Brx + mfnc.Hy * mfnc.Bry) / mfnc.normBr - Hc_j)>0, 4, 0))");
-
-    model.component("nhalbach_system").view("view1").axis().set("xmin", -0.08362503349781036);
-    model.component("nhalbach_system").view("view1").axis().set("xmax", 0.3836250305175781);
-    model.component("nhalbach_system").view("view1").axis().set("ymin", -0.007500011473894119);
-    model.component("nhalbach_system").view("view1").axis().set("ymax", 0.30750003457069397);
+    model.component("nhalbach_system").view("view1").axis().set("xmin", -0.18435564637184143);
+    model.component("nhalbach_system").view("view1").axis().set("xmax", 0.2743556499481201);
+    model.component("nhalbach_system").view("view1").axis().set("ymin", -0.11716492474079132);
+    model.component("nhalbach_system").view("view1").axis().set("ymax", 0.20716492831707);
 
     model.component("nhalbach_system").material("mat1").label("Air");
     model.component("nhalbach_system").material("mat1").set("family", "air");
@@ -383,6 +453,11 @@ public class TeslaMax_Model {
          .set("relpermeability", new String[]{"1", "0", "0", "0", "1", "0", "0", "0", "1"});
     model.component("nhalbach_system").material("mat1").propertyGroup("def")
          .set("relpermittivity", new String[]{"1", "0", "0", "0", "1", "0", "0", "0", "1"});
+
+    return model;
+  }
+
+  public static Model run2(Model model) {
     model.component("nhalbach_system").material("mat1").propertyGroup("def")
          .set("dynamicviscosity", "eta(T[1/K])[Pa*s]");
     model.component("nhalbach_system").material("mat1").propertyGroup("def").set("ratioofspecificheat", "1.4");
@@ -420,40 +495,63 @@ public class TeslaMax_Model {
     model.component("nhalbach_system").physics("mfnc").feature("mfc3")
          .set("ConstitutiveRelationBH", "RemanentFluxDensity");
     model.component("nhalbach_system").physics("mfnc").feature("mfc3")
-         .set("Br", new String[][]{{"1.400000*cos(15.000000[deg])"}, {"1.400000*sin(15.000000[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"1.400000*cos(-3.671093[deg])"}, {"1.400000*sin(-3.671093[deg])"}, {"0"}});
     model.component("nhalbach_system").physics("mfnc").feature("mfc3")
-         .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
+         .set("mur", new String[][]{{"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}});
     model.component("nhalbach_system").physics("mfnc").feature("mfc3").set("materialType", "from_mat");
     model.component("nhalbach_system").physics("mfnc").feature("mfc3")
-         .label("Magnetic Flux Conservation - Magnet IV 1 - 1Q");
+         .label("Magnetic Flux Conservation - Magnet II 1 - 1Q");
     model.component("nhalbach_system").physics("mfnc").feature("mfc4")
          .set("ConstitutiveRelationBH", "RemanentFluxDensity");
     model.component("nhalbach_system").physics("mfnc").feature("mfc4")
-         .set("Br", new String[][]{{"1.400000*cos(45.000000[deg])"}, {"1.400000*sin(45.000000[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"1.400000*cos(4.989660[deg])"}, {"1.400000*sin(4.989660[deg])"}, {"0"}});
     model.component("nhalbach_system").physics("mfnc").feature("mfc4")
-         .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
+         .set("mur", new String[][]{{"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}});
     model.component("nhalbach_system").physics("mfnc").feature("mfc4").set("materialType", "from_mat");
     model.component("nhalbach_system").physics("mfnc").feature("mfc4")
-         .label("Magnetic Flux Conservation - Magnet IV 2 - 1Q");
+         .label("Magnetic Flux Conservation - Magnet II 2 - 1Q");
     model.component("nhalbach_system").physics("mfnc").feature("mfc5")
          .set("ConstitutiveRelationBH", "RemanentFluxDensity");
     model.component("nhalbach_system").physics("mfnc").feature("mfc5")
-         .set("Br", new String[][]{{"1.400000*cos(75.000000[deg])"}, {"1.400000*sin(75.000000[deg])"}, {"0"}});
+         .set("Br", new String[][]{{"1.400000*cos(-15.796774[deg])"}, {"1.400000*sin(-15.796774[deg])"}, {"0"}});
     model.component("nhalbach_system").physics("mfnc").feature("mfc5")
-         .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
+         .set("mur", new String[][]{{"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}, {"0"}, {"0"}, {"0"}, {"mu_r_II"}});
     model.component("nhalbach_system").physics("mfnc").feature("mfc5").set("materialType", "from_mat");
     model.component("nhalbach_system").physics("mfnc").feature("mfc5")
+         .label("Magnetic Flux Conservation - Magnet II 3 - 1Q");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc6")
+         .set("ConstitutiveRelationBH", "RemanentFluxDensity");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc6")
+         .set("Br", new String[][]{{"1.400000*cos(8.238090[deg])"}, {"1.400000*sin(8.238090[deg])"}, {"0"}});
+    model.component("nhalbach_system").physics("mfnc").feature("mfc6")
+         .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
+    model.component("nhalbach_system").physics("mfnc").feature("mfc6").set("materialType", "from_mat");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc6")
+         .label("Magnetic Flux Conservation - Magnet IV 1 - 1Q");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc7")
+         .set("ConstitutiveRelationBH", "RemanentFluxDensity");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc7")
+         .set("Br", new String[][]{{"1.400000*cos(30.869840[deg])"}, {"1.400000*sin(30.869840[deg])"}, {"0"}});
+    model.component("nhalbach_system").physics("mfnc").feature("mfc7")
+         .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
+    model.component("nhalbach_system").physics("mfnc").feature("mfc7").set("materialType", "from_mat");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc7")
+         .label("Magnetic Flux Conservation - Magnet IV 2 - 1Q");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc8")
+         .set("ConstitutiveRelationBH", "RemanentFluxDensity");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc8")
+         .set("Br", new String[][]{{"1.400000*cos(87.033182[deg])"}, {"1.400000*sin(87.033182[deg])"}, {"0"}});
+    model.component("nhalbach_system").physics("mfnc").feature("mfc8")
+         .set("mur", new String[][]{{"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}, {"0"}, {"0"}, {"0"}, {"mu_r_IV"}});
+    model.component("nhalbach_system").physics("mfnc").feature("mfc8").set("materialType", "from_mat");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc8")
          .label("Magnetic Flux Conservation - Magnet IV 3 - 1Q");
 
     model.component("nhalbach_system").mesh("mesh1").feature("size").set("hauto", 3);
     model.component("nhalbach_system").mesh("mesh1").feature("size").set("custom", "on");
-    model.component("nhalbach_system").mesh("mesh1").feature("size").set("hnarrow", 5);
+    model.component("nhalbach_system").mesh("mesh1").feature("size").set("hmax", "l_element_max");
+    model.component("nhalbach_system").mesh("mesh1").feature("size").set("hnarrow", "n_narrow");
     model.component("nhalbach_system").mesh("mesh1").feature("dis1").set("type", "predefined");
-
-    return model;
-  }
-
-  public static Model run2(Model model) {
     model.component("nhalbach_system").mesh("mesh1").feature("map1").set("adjustedgdistr", true);
     model.component("nhalbach_system").mesh("mesh1").run();
 
@@ -501,10 +599,22 @@ public class TeslaMax_Model {
          .set("descr", "-( (mfnc.Hx * mfnc.Brx) + (mfnc.Hy * mfnc.Bry) )/mfnc.normBr");
     model.component("nhalbach_system").probe("prb6").set("table", "results_table");
     model.component("nhalbach_system").probe("prb6").set("window", "window1");
+    model.component("nhalbach_system").probe("prb7").label("Demagnetized Area");
+    model.component("nhalbach_system").probe("prb7").set("type", "integral");
+    model.component("nhalbach_system").probe("prb7")
+         .set("expr", "if((-(mfnc.Hx * mfnc.Brx + mfnc.Hy * mfnc.Bry) / mfnc.normBr - Hc_j)>0, 4, 0)");
+    model.component("nhalbach_system").probe("prb7").set("unit", "");
+    model.component("nhalbach_system").probe("prb7")
+         .set("descr", "if((-(mfnc.Hx * mfnc.Brx + mfnc.Hy * mfnc.Bry) / mfnc.normBr - Hc_j)>0, 4, 0)");
+    model.component("nhalbach_system").probe("prb7").set("table", "results_table");
+    model.component("nhalbach_system").probe("prb7").set("window", "window1");
 
     model.component("nhalbach_system").physics("mfnc").feature("mfc3").set("mur_mat", "userdef");
     model.component("nhalbach_system").physics("mfnc").feature("mfc4").set("mur_mat", "userdef");
     model.component("nhalbach_system").physics("mfnc").feature("mfc5").set("mur_mat", "userdef");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc6").set("mur_mat", "userdef");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc7").set("mur_mat", "userdef");
+    model.component("nhalbach_system").physics("mfnc").feature("mfc8").set("mur_mat", "userdef");
 
     model.study().create("std1");
     model.study("std1").create("stat", "Stationary");
@@ -524,6 +634,7 @@ public class TeslaMax_Model {
     model.result().dataset().create("int2", "Integral");
     model.result().dataset().create("max1", "Maximum");
     model.result().dataset().create("max2", "Maximum");
+    model.result().dataset().create("int3", "Integral");
     model.result().dataset().create("dset2", "Solution");
     model.result().dataset().create("dset3", "Solution");
     model.result().dataset().create("dset4", "Solution");
@@ -532,40 +643,40 @@ public class TeslaMax_Model {
     model.result().dataset().create("dset7", "Solution");
     model.result().dataset().create("dset8", "Solution");
     model.result().dataset().create("pc1", "ParCurve2D");
-    model.result().dataset().create("dset9", "Solution");
-    model.result().dataset().create("int3", "Integral");
-    model.result().dataset("dset1").set("probetag", "prb6");
+    model.result().dataset("dset1").set("probetag", "prb7");
     model.result().dataset("avh1").set("probetag", "prb1");
     model.result().dataset("avh1").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("avh1").selection().set(7);
+    model.result().dataset("avh1").selection().set(11);
     model.result().dataset("avh2").set("probetag", "prb2");
     model.result().dataset("avh2").selection().geom("nhalbach_geometry", 2);
     model.result().dataset("avh2").selection().set(3);
     model.result().dataset("int1").set("probetag", "prb3");
     model.result().dataset("int1").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("int1").selection().set(3, 7);
+    model.result().dataset("int1").selection().set(3, 11);
     model.result().dataset("int2").set("probetag", "prb4");
     model.result().dataset("int2").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("int2").selection().set(8, 9, 10);
+    model.result().dataset("int2").selection().set(7, 8, 9, 12, 13, 14);
     model.result().dataset("max1").set("probetag", "prb5");
     model.result().dataset("max1").selection().geom("nhalbach_geometry", 2);
+    model.result().dataset("max1").selection().set(7, 8, 9);
     model.result().dataset("max2").set("probetag", "prb6");
     model.result().dataset("max2").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("max2").selection().set(8, 9, 10);
+    model.result().dataset("max2").selection().set(12, 13, 14);
+    model.result().dataset("int3").set("probetag", "prb7");
+    model.result().dataset("int3").selection().geom("nhalbach_geometry", 2);
+    model.result().dataset("int3").selection().set(7, 8, 9, 12, 13, 14);
     model.result().dataset("dset3").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset3").selection().set(3, 7);
+    model.result().dataset("dset3").selection().set(3, 11);
     model.result().dataset("dset4").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset4").selection().set(8, 9, 10);
+    model.result().dataset("dset4").selection().set(7, 8, 9, 12, 13, 14);
     model.result().dataset("dset5").selection().geom("nhalbach_geometry", 2);
+    model.result().dataset("dset5").selection().set(7, 8, 9);
     model.result().dataset("dset6").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset6").selection().set(8, 9, 10);
+    model.result().dataset("dset6").selection().set(12, 13, 14);
     model.result().dataset("dset7").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset7").selection().set(7);
+    model.result().dataset("dset7").selection().set(11);
     model.result().dataset("dset8").selection().geom("nhalbach_geometry", 2);
     model.result().dataset("dset8").selection().set(3);
-    model.result().dataset("dset9").selection().geom("nhalbach_geometry", 2);
-    model.result().dataset("dset9").selection().set(10);
-    model.result().dataset("int3").selection().named("magnets_selection");
     model.result().numerical().create("pev1", "EvalPoint");
     model.result().numerical().create("pev2", "EvalPoint");
     model.result().numerical().create("pev3", "EvalPoint");
@@ -579,15 +690,14 @@ public class TeslaMax_Model {
     model.result().numerical("pev4").set("probetag", "prb4");
     model.result().numerical("pev5").set("probetag", "prb5");
     model.result().numerical("pev6").set("probetag", "prb6");
-    model.result().numerical("pev7").set("probetag", "none");
+    model.result().numerical("pev7").set("probetag", "prb7");
     model.result().create("pg1", "PlotGroup1D");
     model.result().create("pg2", "PlotGroup2D");
     model.result().create("pg3", "PlotGroup2D");
     model.result().create("pg4", "PlotGroup1D");
-    model.result().create("pg5", "PlotGroup2D");
     model.result("pg1").set("probetag", "window1_default");
     model.result("pg1").create("tblp1", "Table");
-    model.result("pg1").feature("tblp1").set("probetag", "prb1,prb2,prb3,prb4,prb5,prb6");
+    model.result("pg1").feature("tblp1").set("probetag", "prb1,prb2,prb3,prb4,prb5,prb6,prb7");
     model.result("pg2").set("data", "dset3");
     model.result("pg2").create("surf1", "Surface");
     model.result("pg3").set("data", "dset4");
@@ -595,8 +705,6 @@ public class TeslaMax_Model {
     model.result("pg3").create("surf1", "Surface");
     model.result("pg3").create("arws2", "ArrowSurface");
     model.result("pg4").create("lngr1", "LineGraph");
-    model.result("pg5").set("data", "dset4");
-    model.result("pg5").create("surf1", "Surface");
     model.result().export().create("export1", "Data");
     model.result().export().create("export2", "Data");
     model.result().export().create("export4", "Data");
@@ -610,6 +718,7 @@ public class TeslaMax_Model {
     model.component("nhalbach_system").probe("prb4").genResult(null);
     model.component("nhalbach_system").probe("prb5").genResult(null);
     model.component("nhalbach_system").probe("prb6").genResult(null);
+    model.component("nhalbach_system").probe("prb7").genResult(null);
 
     model.sol("sol1").attach("std1");
     model.sol("sol1").runAll();
@@ -625,19 +734,9 @@ public class TeslaMax_Model {
     model.result().dataset("pc1").set("parmax1", "pi");
     model.result().dataset("pc1").set("exprx", "(R_o+h_gap/2)*cos(s)");
     model.result().dataset("pc1").set("expry", "(R_o+h_gap/2)*sin(s)");
-    model.result().dataset("dset9").label("Magnet_IV_1");
-    model.result().dataset("int3").label("Demagnetization area");
     model.result().numerical("pev1").set("descr", new String[]{""});
     model.result().numerical("pev2").set("descr", new String[]{""});
-    model.result().numerical("pev6").set("unit", new String[]{"A/m"});
-    model.result().numerical("pev7").label("Demagnetization area");
-    model.result().numerical("pev7").set("data", "int3");
-    model.result().numerical("pev7").set("table", "tbl1");
-    model.result().numerical("pev7")
-         .set("expr", new String[]{"if((-(mfnc.Hx * mfnc.Brx + mfnc.Hy * mfnc.Bry) / mfnc.normBr - Hc_j)>0, 4, 0)"});
     model.result().numerical("pev7").set("unit", new String[]{"m^2"});
-    model.result().numerical("pev7").set("descr", new String[]{""});
-    model.result().numerical("pev7").setResult();
     model.result("pg1").label("Probe Plot Group 1");
     model.result("pg1").set("solrepresentation", "solnum");
     model.result("pg1").set("xlabel", "mfnc.normB (T), Maximum Field");
@@ -656,7 +755,7 @@ public class TeslaMax_Model {
     model.result("pg3").feature("arws1").set("expr", new String[]{"mfnc.Brx", "mfnc.Bry"});
     model.result("pg3").feature("arws1").set("descr", "Remanent flux density");
     model.result("pg3").feature("arws1").set("arrowbase", "center");
-    model.result("pg3").feature("arws1").set("scale", 0.0038547603819143947);
+    model.result("pg3").feature("arws1").set("scale", 0.0077221241233942925);
     model.result("pg3").feature("arws1").set("scaleactive", false);
     model.result("pg3").feature("surf1").label("Psi");
     model.result("pg3").feature("surf1")
@@ -674,7 +773,7 @@ public class TeslaMax_Model {
     model.result("pg3").feature("arws2").set("descractive", true);
     model.result("pg3").feature("arws2").set("descr", "mu0*H");
     model.result("pg3").feature("arws2").set("arrowbase", "center");
-    model.result("pg3").feature("arws2").set("scale", 0.00368953210016311);
+    model.result("pg3").feature("arws2").set("scale", 0.010592406010573617);
     model.result("pg3").feature("arws2").set("color", "black");
     model.result("pg3").feature("arws2").set("scaleactive", false);
     model.result("pg4").label("Air gap central line");
@@ -689,20 +788,6 @@ public class TeslaMax_Model {
     model.result("pg4").feature("lngr1").set("descr", "Magnetic flux density norm");
     model.result("pg4").feature("lngr1").set("smooth", "internal");
     model.result("pg4").feature("lngr1").set("resolution", "normal");
-    model.result("pg5").label("Demagnetization");
-    model.result("pg5").feature("surf1").label("-H_demag");
-    model.result("pg5").feature("surf1")
-         .set("expr", "if((-(mfnc.Hx * mfnc.Brx + mfnc.Hy * mfnc.Bry) / mfnc.normBr - Hc_j)>0, 1, 0)");
-    model.result("pg5").feature("surf1").set("unit", "");
-    model.result("pg5").feature("surf1")
-         .set("descr", "if((-(mfnc.Hx * mfnc.Brx + mfnc.Hy * mfnc.Bry) / mfnc.normBr - Hc_j)>0, 1, 0)");
-    model.result("pg5").feature("surf1").set("rangecoloractive", true);
-    model.result("pg5").feature("surf1").set("rangecolormin", 0.5);
-    model.result("pg5").feature("surf1").set("rangecolormax", 1);
-    model.result("pg5").feature("surf1").set("rangedataactive", true);
-    model.result("pg5").feature("surf1").set("rangedatamin", 0.3);
-    model.result("pg5").feature("surf1").set("rangedatamax", 1);
-    model.result("pg5").feature("surf1").set("resolution", "normal");
     model.result().export("export1").set("data", "dset7");
     model.result().export("export1").set("expr", new String[]{"mfnc.normB"});
     model.result().export("export1").set("unit", new String[]{"T"});
