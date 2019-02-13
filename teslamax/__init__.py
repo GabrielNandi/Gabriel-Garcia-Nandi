@@ -1,16 +1,16 @@
 # coding: utf-8
 
-from pathlib import Path
 import os
-import subprocess
 import shutil
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.patches import Wedge
-from scipy.interpolate import (NearestNDInterpolator, griddata, interp1d)
-from scipy.integrate import trapz
+import subprocess
+from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.patches import Wedge
+from scipy.integrate import trapz
+from scipy.interpolate import NearestNDInterpolator, griddata, interp1d
 from scipy.optimize import minimize
 
 TESLAMAX_PACKAGE_DIR = Path(os.path.dirname(__file__))
@@ -116,8 +116,6 @@ def process_main_results_file():
     """
 
     p = Path('.') / MAIN_RESULTS_FILENAME
-
-    param_comsol_series = get_comsol_parameters_series()
 
     results = pd.read_table(MAIN_RESULTS_FILENAME,
                             sep="\s+",
@@ -1223,10 +1221,7 @@ class TeslaMaxPreDesign:
         functional_args = (target_profile_function, target_profile_args)
 
         bounds = [(0.0, 360.0) for i in range(0, n)]
-
-        # the subscript _g in the following variable names stands for
-        # 'gradient-based' optimization methods
-
+        
         optres_g = minimize(objective_function,
                             alpha_B_rem_0,
                             args=(functional_args,),
@@ -1301,6 +1296,7 @@ class TeslaMaxModel:
         self.calculate_B_profile = None
         self.B_III_data = None
         self.calculate_B_III_from_position = None
+        self.demagnetized_volume_fraction = None
 
     def run(self, verbose=False):
         """
@@ -1324,6 +1320,8 @@ class TeslaMaxModel:
         self.calculate_B_III_from_position = NearestNDInterpolator(
             self.B_III_data[:, :2],
             self.B_III_data[:, 2:4])
+
+        self.demagnetized_volume_fraction = self.get_results_series()["Demagnetized fraction[%]"]
 
     def get_B_III_data(self):
         """
@@ -1366,4 +1364,3 @@ class TeslaMaxModel:
         # add demagnetization fraction
         results_series["Demagnetized fraction[%]"] = results_series["A_demag[m2]"] / results_series["A_gap[m2]"] * 100
         return results_series
-        
