@@ -205,6 +205,11 @@ def calculate_magnetic_profile(B_data, params):
     B_profile_1q = griddata(B_data[:, 0:2],
                             B_data[:, 2],
                             np.array([x_grid, y_grid]).T)
+    b=np.isnan(B_profile_1q)
+    for i in range(0,len(b)):
+        if b[i]==True:
+            B_profile_1q[i]=B_profile_1q[i+1]
+        else: continue
 
     # extrapolate data to the full circle
     phi_vector = np.concatenate((phi_vector_1q,

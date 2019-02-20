@@ -1,17 +1,3 @@
-"""Usage: run_Rs_maps.py <R_o>
-
-Generates various TeslaMax models, from common parameters and <R_o> (in mm),
-and calculates the minimum R_s that can be used to optimize the model for a
-ramp profile of high field 'B_h' (in T) and field fration 'F_M' (0  < F_M < 1).
-
-The results are saved in a file 'map_Rs_Ro_<R_o>.txt', with the argument
-printed in units of mm.  The first lines of this file are a string
-representation of the dictionary of common  parameters for all simulations;
-the remainder rows form a table, with columns for the parameters;
-the last column is the cost function K.
-"""
-
-# coding: utf-8
 
 from pathlib import Path
 import os
@@ -27,21 +13,18 @@ import teslamax
 from teslamax import TeslaMaxGeometry, TeslaMaxPreDesign, TeslaMaxModel
 
 K_CRITICAL = 0.002
-OVERWRITE = False
+OVERWRITE = True
 
-args = docopt(__doc__,help=True)
-print(args)
-
-R_o = float(args["<R_o>"])
+R_o = 153
 
 os.chdir(str(Path.home() / "code" / "TeslaMax"))
 
-params_optimization_ref = {"R_i": 0.015,
-                "h_fc": 0.005,
+params_optimization_ref = {"R_i": 0.030,
+                "h_fc": 0.025,
                 "R_o": 1e-3*R_o,
-                "R_e": 0.3,
-                "n_II": 2,
-                "n_IV": 4,
+                "R_e": 0.7,
+                "n_II": 0,
+                "n_IV": 5,
                 "phi_C_II": 15,
                 "mu_r_II": 1.05,
                 "mu_r_IV": 1.05,
@@ -49,7 +32,7 @@ params_optimization_ref = {"R_i": 0.015,
               "mu_r_iron": 5e3,
              }
 
-B_rem = 1.4
+B_rem = 1.26
 
 
 n = params_optimization_ref["n_II"] + params_optimization_ref["n_IV"]
@@ -60,12 +43,12 @@ params_optimization_ref = teslamax.expand_parameters_from_remanence_array(
     "B_rem")
 
 B_min = 0.0
-field_fraction = 0.35
+field_fraction = 0.3
 params_optimization_ref["F_M[%]"] = field_fraction*100
 
 target_function = teslamax.calculate_ramp_profile
 
-map_file_path = Path("map_Rs_Ro_%d.txt" %(R_o))
+map_file_path = Path("map_Rs.txt")
 
 ### Generate the results file
 
@@ -76,21 +59,8 @@ if OVERWRITE:
     map_file_path.write_text(params_header_str)
 
 
-### Update the results file
 
-phi_S_values = np.array([45,55])
-
-B_max_min = 1.00
-B_max_max = 1.20
-B_max_step = 0.01
-
-B_max_values =  np.arange(B_max_min,B_max_max+B_max_step,B_max_step)
-
-h_gap_min = 15
-h_gap_max = 25
-h_gap_step = 1
-
-h_gap_values = 1e-3*np.arange(h_gap_min,h_gap_max + h_gap_step, h_gap_step)
+B_max_values =  np.array([1.2, 1.4, 1.6, 1.8, 1.15, 1.35, 1.55, 1.75, 1.1, 1.3, 1.5, 1.7])
 
 R_s_min = 90e-3
 R_s_max = 150e-3
@@ -98,10 +68,11 @@ dRs = 5e-3
 
 params = params_optimization_ref.copy()
 
-COLUMNS_NAMES_STR = '\t'.join(['phi_S[deg]',
-                               'h_gap[mm]',
+COLUMNS_NAMES_STR = '\t'.join([ 'R1[mm]',
+                               'R2[mm]',
+                               'R3[mm]',
+                               'R4[mm]',
                                'B_max[T]',
-                               'R_s[mm]',
                                'K[]\n'])
 
 
@@ -150,12 +121,13 @@ for B_max in B_max_values:
                                                          target_function,
                                                          target_args)
 
-                    results_str = "%.1f\t%.3f\t%.3f\t%.3f\t%.6f" %(
-                        phi_S,
-                        1e3*h_gap,
-                        B_max,
+                    results_str = "%.1f\t%.1f\t%.2f\t%.5f\t%.3f\t%.7f" %(
+                        1e3*R_i,
+                        1e3*R_o,
+                        1e3*R_g,
                         1e3*R_s,
-                        K)
+                        B_max,
+                        K1)
 
                     results_str = results_str + "\n"
 
