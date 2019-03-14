@@ -6,6 +6,7 @@ import com.comsol.model.*;
 import com.comsol.model.util.*;
 import com.comsol.model.physics.*;
 import java.io.*;
+import java.util.concurrent.TimeUnit;
 
 /** Model exported on Aug 8 2016, 09:24 by COMSOL 5.2.1.152. */
 public class TeslaMax {
@@ -43,7 +44,9 @@ public class TeslaMax {
     private static final String CIRCUIT_REGIONS_SELECTION_TAG = "magnetic_circuit_regions_seletion";
     private static final String ZERO_POTENTIAL_SELECTION_TAG = "zero_scalar_potential_selection";
 
-    private static final String PARAMETER_FILE_NAME = "params.txt";
+	private static final String PARAMETER_FILE_NAME = "params.txt";
+	private static final String NUMBER_ELEMENTS_FILE_NAME = "noe.txt";
+	private static final String WALL_TIME_FILE_NAME = "wall.txt";
 
     private static final String RESULTS_TABLE_TAG = "results_table";
 
@@ -983,6 +986,22 @@ public class TeslaMax {
 	meshMapConfiguration.set("adjustedgdistr", true);
 
 	modelMesh.run();
+
+	int numberOfElements = modelMesh.getNumElem();
+
+	// algorithm to simply write a string to a file:
+	// https://stackoverflow.com/questions/2885173/how-do-i-create-a-file-and-write-to-it-in-java
+	try {
+		FileWriter fileWriter = new FileWriter(NUMBER_ELEMENTS_FILE_NAME);
+		PrintWriter printWriter = new PrintWriter(fileWriter);
+		printWriter.printf("%d",numberOfElements);
+		printWriter.close();
+	} catch (IOException e) {
+		System.out.println("Could not write to file: " + NUMBER_ELEMENTS_FILE_NAME);
+		System.out.print(e.getMessage());
+	}
+
+	 
     }
 
     private static void configureStudy(){
@@ -1003,7 +1022,27 @@ public class TeslaMax {
 
 	model.sol("sol1").attach("std1");
 
+	// measure time
+	// stolen from https://www.techiedelight.com/measure-elapsed-time-execution-time-java/
+	
+	long starTime = System.currentTimeMillis();
+
 	model.sol("sol1").runAll();
+
+	long endTime = System.currentTimeMillis();
+
+	double timeElapsedInSeconds =  (endTime - starTime)/1000;
+
+	try {
+		FileWriter fileWriter = new FileWriter(WALL_TIME_FILE_NAME);
+		PrintWriter printWriter = new PrintWriter(fileWriter);
+		printWriter.printf("%.3f", timeElapsedInSeconds);
+		printWriter.close();
+		
+	} catch (IOException e) {
+		System.out.println("Could not write to file: " + WALL_TIME_FILE_NAME);
+		System.out.print(e.getMessage());
+	}
 
 	}
 
