@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
-rma.py - Run Mesh Analysis
+rida.py - Run Infinite Domain Analysis
 
-This script runs the TeslaMax model with various mesh configurations
-and plot the results for high field and computing time.
+This script runs the TeslaMax model with various "Infinite Domain" 
+sizes and compares results
 
 """
 
@@ -22,13 +22,13 @@ WALL_TIME_FILE_NAME = "wall.txt"
 MESH_ANALYSIS_FIGURE_NAME = "rma"
 
 NOE_LABEL = "Number of mesh elements"
-B_HIGH_LABEL = "Magnetic field at pole center [T]"
+B_HIGH_LABEL = "Maximum Magnetic Field [T]"
 TIME_LABEL = "Computation time [s]"
 
 # Default mesh parameters
-l_element_max_default = 0.0111
-l_element_min_default = 3.75e-5
-n_narrow_default = 5
+l_element_min_default = 0.001
+l_element_max_default = 0.03
+n_narrow_default = 2
 
 # Define constant parameters for the TeslaMax model
 teslamax_params = {
@@ -62,12 +62,13 @@ teslamax_params = {
 
 # Define a range of mesh parameters around default values
 
-l_element_min_values = l_element_min_default * np.array([1, 100])
-n_narrow_values = np.array([n_narrow_default // 2, n_narrow_default])
+n_multiplier = 3
+exponent = 1/2 * (n_multiplier - 1)
+multiplier_vector = np.logspace(-exponent,exponent,num=n_multiplier)
 
-# this variable seems to have a low impact
-# l_element_max_values = l_element_max_default * multiplier_vector
-l_element_max_values = [l_element_max_default, ]
+l_element_min_values = l_element_min_default * multiplier_vector
+l_element_max_values = l_element_max_default * multiplier_vector
+n_narrow_values = n_narrow_default * multiplier_vector
 
 # Define where to save the simulation files
 run_path = Path("teslamax-play")
@@ -87,9 +88,7 @@ tmm = tm.TeslaMaxModel(tmpd,
                        alpha_optimal,
                        run_path)
 
-n_simulations = (len(l_element_max_values) *
-                 len(l_element_min_values) *
-                 len(n_narrow_values))
+n_simulations = n_multiplier**3  # 3 because three variable parameters
 
 noe_vector = np.empty(n_simulations)
 wall_time_vector = np.empty(n_simulations)
@@ -128,7 +127,7 @@ for n_narrow in n_narrow_values:
             i = i+1
 
 
-""" # Create plots of B and t as function of number of elements,
+# Create plots of B and t as function of number of elements,
 # with curves for each geometry
 fig, B_ax, t_ax = nemplot.create_two_axes_plot(NOE_LABEL,
                                                B_HIGH_LABEL,
@@ -154,4 +153,3 @@ t_ax.set_yticklabels(t_ticklabels,
                      })
 
 nemplot.save_figure(fig, MESH_ANALYSIS_FIGURE_NAME)
-"""
