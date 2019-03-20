@@ -1148,7 +1148,7 @@ public class TeslaMax {
 
 		long endTime = System.currentTimeMillis();
 
-		double timeElapsedInSeconds = (endTime - startTime) / 1000;
+		double timeElapsedInSeconds = (endTime - startTime) / 1000.0;
 
 		try {
 			FileWriter fileWriter = new FileWriter(WALL_TIME_FILE_NAME);

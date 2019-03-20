@@ -21,17 +21,23 @@ NUMBER_ELEMENTS_FILE_NAME = "noe.txt"
 WALL_TIME_FILE_NAME = "wall.txt"
 MESH_ANALYSIS_FIGURE_NAME = "rma"
 
-NOE_LABEL = "Number of mesh elements"
-B_HIGH_LABEL = "Magnetic field at pole center [T]"
-TIME_LABEL = "Computation time [s]"
+NOE_LABEL = r"Number of mesh elements [\si{\percent}]"
+B_HIGH_LABEL = r"Magnetic field at pole center [\si{\percent}]"
+TIME_LABEL = r"Computation time [\si{\percent}]"
 
 # Default mesh parameters
-l_element_max_default = 0.0111
-l_element_min_default = 3.75e-5
-n_narrow_default = 5
+L_ELEMENT_MAX_DEFAULT = 0.0111  # [m]
+L_ELEMENT_MIN_DEFAULT = 3.75e-5  # [m]
+N_NARROW_DEFAULT = 5
+
+RUN_PATH = Path("teslamax-play")
+FIG_DIR = Path('.')
+
+CALCULATEQ = True
+PLOTQ = False
 
 # Define constant parameters for the TeslaMax model
-teslamax_params = {
+TESLAMAX_PARAMETERS_REF = {
     "R_i": 15e-3,
     "R_o": 40e-3,
     "R_g": 73e-3,
@@ -53,40 +59,68 @@ teslamax_params = {
     "B_rem_IV_2": 1.4,
     "B_rem_IV_3": 1.4,
     "Hc_j": 1000e3,
-    "l_element_min": l_element_min_default,
-    "l_element_max": l_element_max_default,
-    "n_narrow": n_narrow_default
+    "l_element_min": L_ELEMENT_MIN_DEFAULT,
+    "l_element_max": L_ELEMENT_MAX_DEFAULT,
+    "n_narrow": N_NARROW_DEFAULT
 }
+
+alpha_optimal = None
+
+
+def compute_output_values(params, optimizeq=False):
+
+    tmpd = tm.TeslaMaxPreDesign(params)
+
+    global alpha_optimal
+    if optimizeq:
+        alpha_optimal = tmpd.get_optimal_remanence_angles(
+            target_profile_function=tm.calculate_ramp_profile,
+            target_profile_args=(1.0, 0, 0.35)
+        )
+
+    tmm = tm.TeslaMaxModel(
+        tmpd,
+        alpha_optimal,
+        RUN_PATH
+    )
+
+    tmm.run()
+
+    noe = int(
+                (RUN_PATH / NUMBER_ELEMENTS_FILE_NAME).read_text()
+            )
+
+    wall_time = float(
+                (RUN_PATH / WALL_TIME_FILE_NAME).read_text()
+            )
+
+    B = tmm.get_profile_data()[1, 0]
+
+    return (noe, wall_time, B)
 
 # Define variable parameters for the TeslaMax model (R_o, h_gap, R_s)
 
+# with this magnetic circuit and the range of parameters used in my thesis,
+# the biggest impact seem to be with the narrow region parameters
+
 # Define a range of mesh parameters around default values
-
-l_element_min_values = l_element_min_default * np.array([1, 100])
-n_narrow_values = np.array([n_narrow_default // 2, n_narrow_default])
-
-# this variable seems to have a low impact
-# l_element_max_values = l_element_max_default * multiplier_vector
-l_element_max_values = [l_element_max_default, ]
+l_element_max_values = [L_ELEMENT_MAX_DEFAULT, ]
+l_element_min_values = [L_ELEMENT_MIN_DEFAULT, ]
+n_narrow_values = np.array([1, 2, 5, 10])
 
 # Define where to save the simulation files
-run_path = Path("teslamax-play")
-fig_dir = Path('.')
+nemplot.set_figures_dir(FIG_DIR)
+nemplot.set_latex_font("Palatino")
+nemplot.set_dpi(800)
+nemplot.set_figsize_cm(12)
+nemplot.set_fontsize(12)
 
-nemplot.set_figures_dir(fig_dir)
-
-# For each mesh configuration, and for each geometry:
-tmpd = tm.TeslaMaxPreDesign(params=teslamax_params)
-
-alpha_optimal = tmpd.get_optimal_remanence_angles(
-    target_profile_function=tm.calculate_ramp_profile,
-    target_profile_args=(1.0, 0, 0.35)
+(noe_ref, time_ref, B_ref, ) = compute_output_values(
+    TESLAMAX_PARAMETERS_REF,
+    optimizeq=True,
 )
 
-tmm = tm.TeslaMaxModel(tmpd,
-                       alpha_optimal,
-                       run_path)
-
+# For each mesh configuration, and for each geometry:
 n_simulations = (len(l_element_max_values) *
                  len(l_element_min_values) *
                  len(n_narrow_values))
@@ -96,62 +130,101 @@ wall_time_vector = np.empty(n_simulations)
 B_vector = np.empty(n_simulations)
 
 i = 0
-params = teslamax_params.copy()
-for n_narrow in n_narrow_values:
+params = TESLAMAX_PARAMETERS_REF.copy()
 
-    params["n_narrow"] = n_narrow
+if CALCULATEQ:
+    
+    for n_narrow in n_narrow_values:
 
-    for l_element_min in l_element_min_values:
+        params["n_narrow"] = n_narrow
 
-        params["l_element_min"] = l_element_min
+        for l_element_min in l_element_min_values:
 
-        for l_element_max in l_element_max_values:
+            params["l_element_min"] = l_element_min
 
-            params["l_element_max"] = l_element_max
+            for l_element_max in l_element_max_values:
 
-            tmpd = tm.TeslaMaxPreDesign(params=params)
-            tmm = tm.TeslaMaxModel(tmpd,
-                                   alpha_optimal,
-                                   run_path)
+                params["l_element_max"] = l_element_max
 
-            tmm.run()
+                output_values = compute_output_values(
+                    params,
+                    optimizeq=False,
+                )
 
-            noe_vector[i] = int(
-                (run_path / NUMBER_ELEMENTS_FILE_NAME).read_text()
-            )
-
-            wall_time_vector[i] = float(
-                (run_path / WALL_TIME_FILE_NAME).read_text()
-            )
-
-            B_vector[i] = tmm.get_profile_data()[1, 0]
-            i = i+1
+                noe_vector[i], wall_time_vector[i], B_vector[i] = output_values
+                i = i+1
 
 
-""" # Create plots of B and t as function of number of elements,
-# with curves for each geometry
-fig, B_ax, t_ax = nemplot.create_two_axes_plot(NOE_LABEL,
-                                               B_HIGH_LABEL,
-                                               TIME_LABEL)
+    # normalize
 
-B_ax.plot(noe_vector, B_vector, "kx-")
-t_ax.plot(noe_vector, wall_time_vector, "ko--")
+    noe_normalized_vector = noe_vector / noe_ref * 100
+    wall_time_normalized_vector = wall_time_vector / time_ref * 100
+    B_normalized_vector = B_vector / B_ref * 100
 
-B_ax.grid(True)
+    # save results
+    np.savetxt(
+        "rma.txt",
+        np.array(
+            [
+                noe_normalized_vector,
+                B_normalized_vector,
+                wall_time_normalized_vector,
+            ]
+        ),
+        )
 
-B_ax.set_xticks(noe_vector)
-nemplot.refine_yticks(B_ax, 4)
+if PLOTQ:
 
-B_ticks = B_ax.get_yticks()
+    # load results
+    results = np.loadtxt(
+        "rma.txt",
+        ).T
 
-t_ax.set_yticks(B_ticks)
-t_ax.set_ylim(B_ax.get_ylim())
+    noe_normalized_vector = results[0]
+    B_normalized_vector = results[1]
+    wall_time_normalized_vector = results[2]
 
-t_ticklabels = ["%.2f" % (t,) for t in wall_time_vector]
-t_ax.set_yticklabels(t_ticklabels,
-                     fontdict={
-                         "fontsize": nemplot.nemplot_parameters["FONTSIZE"]
-                     })
+    # Create plots of B and t as function of number of elements,
+    # with curves for each geometry
+    fig, B_ax, t_ax = nemplot.create_two_axes_plot(xlabel=NOE_LABEL,
+                                                ylabel_left=B_HIGH_LABEL,
+                                                ylabel_right=TIME_LABEL)
 
-nemplot.save_figure(fig, MESH_ANALYSIS_FIGURE_NAME)
-"""
+    B_ax.plot(noe_normalized_vector, B_normalized_vector, "kx-")
+    """ t_ax.plot(
+        noe_normalized_vector,
+        wall_time_normalized_vector,
+        "o--",
+        color='gray'
+        ) """
+
+    B_ax.grid(True)
+
+    B_ax.set_xticks(noe_normalized_vector)
+    nemplot.refine_yticks(B_ax, 4)
+
+    B_ticks = B_ax.get_yticks()
+
+    # add vertical lines representing the limits for the AMR and the magnet
+    B_ax.axvline(
+        100,
+        color='k',
+        linestyle='-'
+        )
+
+    B_ax.axhline(
+        100,
+        color='k',
+        linestyle='-'
+        )
+
+    """ t_ax.set_yticks(B_ticks)
+    t_ax.set_ylim(B_ax.get_ylim())
+
+    t_ticklabels = ["%.3f" % (t,) for t in wall_time_vector]
+    t_ax.set_yticklabels(t_ticklabels,
+                        fontdict={
+                            "fontsize": nemplot.nemplot_parameters["FONTSIZE"]
+                        }) """
+
+    nemplot.save_figure(fig, MESH_ANALYSIS_FIGURE_NAME)
