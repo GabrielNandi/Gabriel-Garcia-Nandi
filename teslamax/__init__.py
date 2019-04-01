@@ -57,7 +57,7 @@ def get_comsol_parameters_series(filename=PARAMETER_FILENAME):
     """
     param_comsol_file = Path(filename)
 
-    param_comsol_series = pd.read_table(str(param_comsol_file),
+    param_comsol_series = pd.read_csv(str(param_comsol_file),
                                         squeeze=True,
                                         sep=" ",
                                         index_col=0,
@@ -117,7 +117,7 @@ def process_main_results_file():
 
     p = Path('.') / MAIN_RESULTS_FILENAME
 
-    results = pd.read_table(MAIN_RESULTS_FILENAME,
+    results = pd.read_csv(MAIN_RESULTS_FILENAME,
                             sep="\s+",
                             skiprows=5,
                             index_col=None,
@@ -135,6 +135,7 @@ def process_main_results_file():
     results_series.to_csv(str(p),
                           float_format="%.6f",
                           sep=" ",
+                          header=False,
                           index=True)
 
 
@@ -1353,7 +1354,7 @@ class TeslaMaxModel:
         
         results_filepath = self.path / MAIN_RESULTS_FILENAME
 
-        results_series = pd.read_table(results_filepath,
+        results_series = pd.read_csv(results_filepath,
                                        sep=" ",
                                        squeeze=True,
                                        index_col=0,
@@ -1362,5 +1363,5 @@ class TeslaMaxModel:
         results_series.name = "COMSOL Main Results"
         
         # add demagnetization fraction
-        results_series["Demagnetized fraction[%]"] = results_series["A_demag[m2]"] / results_series["A_gap[m2]"] * 100
+        results_series["Demagnetized fraction[%]"] = results_series["A_demag[m2]"] / results_series["A_magnet[m2]"] * 100
         return results_series
