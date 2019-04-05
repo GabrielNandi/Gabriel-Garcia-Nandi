@@ -227,10 +227,13 @@ public class TeslaMax {
 				label = "Cylinder Block " + (index + 1) + " - Magnet II - 1Q";
 				magnetII1QBlockTags[index] = tag;
 
-				// the cylinder block is builting sweeping phi from innerAngleExpr to
-				// outerAngleExpr
-				innerAngleExpr = String.format("phi_C_II + %d * delta_phi_S_II", index);
-				outerAngleExpr = String.format("phi_C_II + %d * delta_phi_S_II", index + 1);
+				innerAngleExpr  = "phi_C_II";
+				for (int j = 0; j < index; j++) {
+					innerAngleExpr = innerAngleExpr + 
+					String.format(" + delta_phi_S_II_%d", j+1);
+				}
+
+				outerAngleExpr = innerAngleExpr + String.format(" + delta_phi_S_II_%d", index+1);
 				expression = new String[] { "R_i", "R_o", innerAngleExpr, outerAngleExpr };
 
 			}
@@ -243,10 +246,13 @@ public class TeslaMax {
 				label = "Cylinder Block " + (index + 1) + " - Magnet IV - 1Q";
 				magnetIV1QBlockTags[index] = tag;
 
-				// the cylinder block is builting sweeping phi from innerAngleExpr to
-				// outerAngleExpr
-				innerAngleExpr = String.format("%d * delta_phi_S_IV", index);
-				outerAngleExpr = String.format("%d * delta_phi_S_IV", index + 1);
+				innerAngleExpr  = "0";
+				for (int j = 0; j < index; j++) {
+					innerAngleExpr = innerAngleExpr + 
+					String.format(" + delta_phi_S_IV_%d", j+1);
+				}
+
+				outerAngleExpr = innerAngleExpr + String.format(" + delta_phi_S_IV_%d", index+1);
 				expression = new String[] { "R_g", "R_s", innerAngleExpr, outerAngleExpr };
 
 			}
