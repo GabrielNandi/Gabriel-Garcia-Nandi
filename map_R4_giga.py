@@ -14,7 +14,7 @@ from scipy.integrate import trapz
 from pandas import Series, DataFrame
 
 K_CRITICAL = 0.00075
-B_rem = 1.26
+B_rem = 1.35
 B_min = 0.0
 field_fraction = 0.3
 TESLAMAX_PATH = Path.home() / "code" / "TeslaMax"
@@ -48,7 +48,7 @@ params = params_optimization_ref.copy()
 
 
 
-for i in range(70,99):
+for i in [77,17,91,66,67]:
     wb = ex.load_workbook("Planejamento das simulações - Modelo Analítico - NOVO.xlsx")
     ws = wb['Simulações_Modelo']
     R_i = ws.cell(row=i, column=2).value*0.001
@@ -65,14 +65,14 @@ for i in range(70,99):
     print ("SIMULACAO COM R3 IGUAL A %.2f" %(R_g*1000))
     #Varia o K crítico dependendo de B_max. Quando o B_max é alto, um K crítico menor é necessário. Porém, quanto menor o B_max, Às vezes ele não converge para um K_critico tão pequeno
     if B_max <= 1.3:
-        if B_max <= 1.2:
-            K_CRITICAL = 0.0009
+        if B_max < 1.2:
+            K_CRITICAL = 0.00085
         else:    
-            K_CRITICAL = 0.0007
+            K_CRITICAL = 0.0006
     else: 
         if B_max >= 1.5:
-            K_CRITICAL = 0.0005
-        else: K_CRITICAL = 0.0006
+            K_CRITICAL = 0.0004
+        else: K_CRITICAL = 0.0005
     K=1e3
     K1=1e4
     R_s = R_g
@@ -85,31 +85,31 @@ for i in range(70,99):
             dRs = 5e-3
         else:
             if K >= 0.2:
-                dRs = 0.025
+                dRs = 0.0255
             else:
                 if K>= 0.1:
-                    dRs = 0.02
+                    dRs = 0.025
                 else:
                     if K >= 0.05:
-                        dRs = 0.015
+                        dRs = 0.0155
                     else:
                         if K>= 0.02:
-                            dRs= 0.011
+                            dRs= 0.0115
                         else: 
                             if K>= 0.01:
-                                dRs = 0.008
+                                dRs = 0.0085
                             else:
                                 if K> 0.005:
-                                    dRs = 0.006
+                                    dRs = 0.0065
                                 else: 
                                     if K>0.002:
-                                        dRs = 0.003
+                                        dRs = 0.0035
                                     else:
                                         if K > 0.0015:
-                                            dRs = 0.002
+                                            dRs = 0.0025
                                         else: 
                                             if K > 0.0009:
-                                                dRs = 0.001
+                                                dRs = 0.0015
                                             else: dRs = 0.0005
         #para caso haja descontinuidade OU que K comece a crescer (não achou K crítico), interrompe a simulação e aceita o menor K obtido
         if len(K2) > 4:
@@ -160,14 +160,14 @@ for i in range(70,99):
     phi_vector_g, B_vector_g = teslamax.read_comsol_profile_data(str(profile_file))
     phi_vector_g = np.deg2rad(phi_vector_g)
     #Pegar B e phi apenas até a metade do primeiro quadrante (área de campo alto)
-    B_vector_g_2 = B_vector_g[0:90]
-    phi_vector_g_2 = phi_vector_g[0:90]
+    B_vector_g_2 = B_vector_g[0:91]
+    phi_vector_g_2 = phi_vector_g[0:91]
     #calcula a energia total nesta área
     W = ((R_g*1000)**2 - (R_o*1000)**2)*0.5*trapz(B_vector_g_2**2,phi_vector_g_2)
     print ('W')
     print(W)
     #bota na planilha do excel e salva
-    ws.cell(row=i, column=18).value = "%.4f" %W
-    ws.cell(row=i, column=12).value = "%.2f" %RS2
-    ws.cell(row=i, column=13).value = "%.7f" %K1
+    ws.cell(row=i, column=24).value = "%.4f" %W
+    ws.cell(row=i, column=23).value = "%.2f" %RS2
+    ws.cell(row=i, column=25).value = "%.7f" %K1
     wb.save("Planejamento das simulações - Modelo Analítico - NOVO.xlsx")
