@@ -1,16 +1,16 @@
 # coding: utf-8
 
-from pathlib import Path
 import os
-import subprocess
 import shutil
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.patches import Wedge
-from scipy.interpolate import (NearestNDInterpolator, griddata, interp1d)
-from scipy.integrate import trapz
+import subprocess
+from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.patches import Wedge
+from scipy.integrate import trapz
+from scipy.interpolate import NearestNDInterpolator, griddata, interp1d
 from scipy.optimize import minimize
 
 TESLAMAX_PACKAGE_DIR = Path(os.path.dirname(__file__))
@@ -53,11 +53,11 @@ DEBUG = False
 def get_comsol_parameters_series(filename=PARAMETER_FILENAME):
     """Parse a COMSOL parameters file 'filename' and
     return a pandas Series from it.
-    
+
     """
     param_comsol_file = Path(filename)
 
-    param_comsol_series = pd.read_table(str(param_comsol_file),
+    param_comsol_series = pd.read_csv(str(param_comsol_file),
                                         squeeze=True,
                                         sep=" ",
                                         index_col=0,
@@ -87,7 +87,7 @@ def read_comsol_data_file(filename):
     """Read and parse 'filename' as exported by COMSOL.
     Export the numerical data as a numpy array containing only the numerical
     data; the first two columns are x and y values. All values are in SI.
-    
+
     Keyword Arguments:
     filename -- str
     """
@@ -112,14 +112,12 @@ def read_comsol_profile_data(filename):
 def process_main_results_file():
     """Take the file "COMSOL Main Results.txt" as exported by COMSOL and
     clean the header data.
-    
+
     """
 
     p = Path('.') / MAIN_RESULTS_FILENAME
 
-    param_comsol_series = get_comsol_parameters_series()
-
-    results = pd.read_table(MAIN_RESULTS_FILENAME,
+    results = pd.read_csv(MAIN_RESULTS_FILENAME,
                             sep="\s+",
                             skiprows=5,
                             index_col=None,
@@ -129,13 +127,15 @@ def process_main_results_file():
                                    "A_gap[m2]",
                                    "A_magnet[m2]",
                                    "-H_Brem_II_max[A/m]",
-                                   "-H_Brem_IV_max[A/m]"])
+                                   "-H_Brem_IV_max[A/m]",
+                                   "A_demag[m2]"])
 
     results_series = results.ix[0]
 
     results_series.to_csv(str(p),
                           float_format="%.6f",
                           sep=" ",
+                          header=False,
                           index=True)
 
 
@@ -164,8 +164,7 @@ def calculate_magnitude(components_grid):
     x, y, Vx, Vy = components_grid.T
 
     V = np.sqrt(Vx * Vx + Vy * Vy)
-
-    return np.array((x, y, V)).T
+    return np.array((x, y, V)).T #sem erro aqui mas sai um zero
 
 
 def calculate_magnetic_profile(B_data, params):
@@ -175,7 +174,7 @@ def calculate_magnetic_profile(B_data, params):
 
     The magnetic profile is defined as the magnetic flux density along the
     circumference in the middle of the air gap.
-    
+
     The grid for 'B_data' is supposed to span the interval 0 <= phi <= 90
     (the first quadrant); this function mirrors this interval and return phi
     in the interval [0, 360].
@@ -192,10 +191,7 @@ def calculate_magnetic_profile(B_data, params):
 
     phi_vector_1q = np.linspace(phi_min, phi_max, N_PROFILE_POINTS)
 
-    r_min = R_o
-    r_max = R_g
-
-    r_central = .5 * (R_o + R_g)
+    r_central = (R_o + R_g) / 2
 
     # calcualte the points (x,y) distributed along
     # radial lines
@@ -205,6 +201,7 @@ def calculate_magnetic_profile(B_data, params):
     B_profile_1q = griddata(B_data[:, 0:2],
                             B_data[:, 2],
                             np.array([x_grid, y_grid]).T)
+    #ERRO AQUI. PRIMEIRO DIGITO DO B_profile_1q A PARTIR DE CERTO MOMENTO VEM NAN
     b=np.isnan(B_profile_1q)
     for i in range(0,len(b)):
         if b[i]==True:
@@ -242,6 +239,7 @@ def write_magnetic_profile_file():
     B_1q = calculate_magnitude(B_III_data[:, :4])
 
     case_series = get_comsol_parameters_series()
+
 
     profile_data = calculate_magnetic_profile(B_1q, case_series)
 
@@ -282,7 +280,6 @@ def calculate_average_high_field(profile_data):
     theta_range = theta_max - theta_min
 
     B_high_avg = B_integrated / theta_range
-
     return B_high_avg
 
 
@@ -290,7 +287,7 @@ def write_magnetic_profile_central_file():
     """Create a file "COMSOL Magnetic Profile.txt" in the current directory,
     assuming the teslamax command was already ran, and write the magnetic
     profile data (magnetic induction at central radial position).
-    
+
     """
 
     p = Path('.') / MAGNETIC_PROFILE_FILENAME
@@ -320,7 +317,7 @@ def write_magnetic_profile_central_file():
     r_min = R_o
     r_max = R_g
 
-    r_central = .5 * (R_o + R_g)
+    r_central = (R_o + R_g)/2
 
     # calcualte the points (x,y) distributed along
     # radial lines
@@ -353,9 +350,9 @@ def write_magnetic_profile_central_file():
 
 def run_teslamax(verbose=False):
     """
-    Run the teslamax process in the current directory, clean the results file 
+    Run the teslamax process in the current directory, clean the results file
     and create a magnetic profile file.
-    
+
     Assumes the parameters file is present in the current directory."""
     comsol_process = subprocess.run(TESLAMAX_CMD,
                                     shell=True,
@@ -414,10 +411,10 @@ def expand_parameter_dictionary(param_simple):
 
 
 def write_parameter_file_from_dict(param_dict):
-    """From a basic 'param_dict', calculate the necessary other parameters 
+    """From a basic 'param_dict', calculate the necessary other parameters
     (e.g. magnet segment size from total size and number of segments) and write
     the correct parameters file.
-    
+
     If 'param_dict' contains units in the names, they are removed.
     """
 
@@ -460,9 +457,9 @@ def normalize_vector(v):
 def create_quater_circle_figure_template(r_lim, params):
     """
     Return (fig,axes) correspondent to a figure of the first quadrant,
-    limited by r_lim. 
+    limited by r_lim.
     Both magnets are also drawn.
-    
+
     The size of the figure is controlled by FIGSIZE_INCHES"""
 
     fig = plt.figure(figsize=(FIGSIZE_INCHES, FIGSIZE_INCHES))
@@ -479,13 +476,13 @@ def create_quater_circle_figure_template(r_lim, params):
     R_s = params['R_s']
     R_g = params.get('R_g', params['R_o'] + params['h_gap'])
 
-    magnet_II_outer = plt.Circle((0, 0), 1e3 * R_o, color='k', fill=False)
+    magnet_II_outer = plt.Circle((0, 0), 1000 * R_o, color='k', fill=False)
     magnet_II_inner = plt.Circle((0, 0), 1e3 * R_i, color='k', fill=False)
     axes.add_artist(magnet_II_outer)
     axes.add_artist(magnet_II_inner)
 
     magnet_IV_outer = plt.Circle((0, 0), 1e3 * R_s, color='k', fill=False)
-    magnet_IV_inner = plt.Circle((0, 0), 1e3 * R_g, color='k', fill=False)
+    magnet_IV_inner = plt.Circle((0, 0), 1000 * R_g, color='k', fill=False)
     axes.add_artist(magnet_IV_outer)
     axes.add_artist(magnet_IV_inner)
 
@@ -496,7 +493,7 @@ def generate_sector_mesh_points(R1, R2, phi1, phi2):
     """
     Return a list of points [X,Y] uniformily distributed in a circle between
     radii R1 and R2 and angular positions phi1 and phi2
-    
+
     The number of points is controlled by N_POINTS_PER_AXIS.
     """
 
@@ -511,15 +508,15 @@ def generate_sector_mesh_points(R1, R2, phi1, phi2):
 
     X_vector = (r_grid * np.cos(phi_grid)).flatten()
     Y_vector = (r_grid * np.sin(phi_grid)).flatten()
-
     return np.array([X_vector, Y_vector]).T
+
 
 
 def create_magnet_IV_figure_template(params):
     """
     Return (fig,axes) correspondent to a figure of the
-    first quadrant of magnet IV. 
-        
+    first quadrant of magnet IV.
+
     The size of the figure is controlled by FIGSIZE_INCHES"""
 
     fig = plt.figure(figsize=(FIGSIZE_INCHES, FIGSIZE_INCHES))
@@ -559,8 +556,8 @@ def create_magnet_IV_figure_template(params):
 def create_magnets_figure_template(params):
     """
     Return (fig,axes) correspondent to a figure of the
-    first quadrant of both magnets. 
-        
+    first quadrant of both magnets.
+
     The size of the figure is controlled by FIGSIZE_INCHES"""
 
     fig = plt.figure(figsize=(FIGSIZE_INCHES, FIGSIZE_INCHES))
@@ -628,7 +625,7 @@ class TeslaMaxGeometry:
     The parameters 'R_o', 'h_gap' and 'R_g' are not independent. If two are
     provided, the class automatically calculates the other one. If you provide
     all three, it's your responsibility to provide three consistent values.
-    
+
     Currently, the only possible calculations are volume-related.
     """
 
@@ -696,10 +693,10 @@ def expand_parameters_from_remanence_array(magnet_parameters, params, prefix):
     Return a new parameters dict with the magnet parameters in the form
     '<prefix>_<magnet>_<segment>', with the values from 'magnet_parameters'
     and other parameters from 'params'.
-    
+
     The length of the array 'magnet_parameters' must be equal to the sum of
     the number of segments in both cylinders.
-    
+
     The first n_II elements refer to the inner magnet,
     and the remaining elements to the outer magnet.
     """
@@ -723,7 +720,7 @@ def calculate_instantaneous_profile(phi, B_high, B_low, *args):
     Calculate the value of the two-pole instantaneous magnetic profile at
     angular position 'phi' (in degrees), where the profile oscillates from
     'B_low' to 'B_high'
-    
+
     """
 
     high_region = (phi <= 45)
@@ -731,7 +728,6 @@ def calculate_instantaneous_profile(phi, B_high, B_low, *args):
                                 np.logical_and((phi >= 135),
                                                (phi <= 225)))
     high_region = np.logical_or(high_region, (phi >= 315))
-
     return np.where(high_region, B_high, B_low)
 
 
@@ -741,7 +737,7 @@ def calculate_ramp_profile(phi, B_high, B_low, high_field_fraction, *args):
     angular position 'phi' (in degrees), where the profile oscillates from
     'B_low' to 'B_high' in a trapezoidal wave, with each plateau occupying
     'high_field_fraction' of the cycle.
-    
+
     """
 
     # for the edge case of a field fraction of 50%,
@@ -750,7 +746,7 @@ def calculate_ramp_profile(phi, B_high, B_low, high_field_fraction, *args):
         return calculate_instantaneous_profile(phi,B_high,B_low,args)
 
     # for two poles, we can replicate the results from 0 to 180
-    phi = np.mod(phi, 180)
+    phi = np.mod(phi,180)
 
     # the fraction of the cycle where the field is constant is the fraction
     # where the field is at the high level, plus the fration where the field is
@@ -794,7 +790,7 @@ class TeslaMaxPreDesign:
     properties can be added  directly in the constructor;
     the remanences magnitudes for each segment in this case are specified
     as a vector:
-    
+
     >>> geom_params = {'R_i': 0.015, 'n_II': 2, ...}
     >>> tmpd = TeslaMaxPreDesign(geom_params,
                                  mu_r_II=1.05,
@@ -854,8 +850,8 @@ class TeslaMaxPreDesign:
         """
         Return B_III(point) when 'segment' (1, 2, 3, ...)  of 'magnet'
         (either 'II' or 'IV') has a remanence of 'magnitude' and 'angle',
-        and all other segments have null remanence. 
-        
+        and all other segments have null remanence.
+
         """
 
         n_II = self.geometry_material_parameters["n_II"]
@@ -883,7 +879,6 @@ class TeslaMaxPreDesign:
         tmm = TeslaMaxModel(tmpd, alpha_B_rem_vector, str(auxdir))
         tmm.run(verbose=DEBUG)
         result = tmm.calculate_B_III_from_position(point)
-
         return result
 
     def calculate_F_operators(self):
@@ -941,18 +936,15 @@ class TeslaMaxPreDesign:
                                                                  angle=90.0))
 
         self.F_operators = (F_II_x, F_II_y, F_IV_x, F_IV_y)
-
     def get_points_F_operators(self):
         if self.points_F_operators is None:
             self.calculate_F_operators()
-
         return self.points_F_operators
 
     def get_F_operators(self):
 
         if self.F_operators is None:
             self.calculate_F_operators()
-
         return self.F_operators
 
     def superposition_B_III(self, alpha_B_rem):
@@ -965,10 +957,10 @@ class TeslaMaxPreDesign:
 
         """
 
-        B_III = 0
+        B_III = 0.0
 
         points = self.get_points_F_operators()
-        F_II_x, F_II_y, F_IV_x, F_IV_y = self.get_F_operators()
+        F_II_x, F_II_y, F_IV_x, F_IV_y = self.get_F_operators() #nao eh aqui
 
         params = self.geometry_material_parameters
 
@@ -976,20 +968,15 @@ class TeslaMaxPreDesign:
         for k in range(0, n_II):
             B_rem = params["B_rem_II_%d" % (k + 1)]
             alpha = np.deg2rad(alpha_B_rem[k])
-
             B = B_rem * (np.cos(alpha) * F_II_x[k] + np.sin(alpha) * F_II_y[k])
-
             B_III = B_III + B
-
         n_IV = params["n_IV"]
         for j in range(0, n_IV):
             B_rem = params["B_rem_IV_%d" % (j + 1)]
             alpha = np.deg2rad(alpha_B_rem[n_II + j])
-
             B = B_rem * (np.cos(alpha) * F_IV_x[j] + np.sin(alpha) * F_IV_y[j])
 
             B_III = B_III + B
-
         B_III_grid = np.concatenate((points, B_III), axis=1)
 
         return B_III_grid
@@ -999,7 +986,7 @@ class TeslaMaxPreDesign:
         Return the objective functional based on  a vector of remanence angles.
         The objective functional is defined as the reciprocal of the
         average high field, to be minimized.
-    
+
         - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
         first n_II elements represent magnet II and the remaining elements
         represent magnet IV
@@ -1026,7 +1013,7 @@ class TeslaMaxPreDesign:
         The objective functional is defined as the difference between the
         resulting profile and a target profile function,
         and is to be minimized.
-        
+
         - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
         first n_II elements represent magnet II and the remaining elements
         represent magnet IV
@@ -1071,7 +1058,7 @@ class TeslaMaxPreDesign:
         The objective functional is defined as the difference between the
         resulting profile and a target profile function,
         and is to be minimized.
-        
+
         - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
         first n_II elements represent magnet II and the remaining elements
         represent magnet IV
@@ -1096,7 +1083,7 @@ class TeslaMaxPreDesign:
         """
         Return the derivative of the functional in respect to the i-th element
         of the remanence angles vector.
-        
+
         - 'alpha_B_rem' is a vector of (n_II + n_IV) remanences, where the
         first n_II elements represent magnet II and the remaining elements
         represent magnet IV
@@ -1117,7 +1104,6 @@ class TeslaMaxPreDesign:
                                            functional_args)
 
         dS = (S_plus - S) / delta
-
         return dS
 
     def calculate_funcional_derivative_second_order(self,
@@ -1143,7 +1129,6 @@ class TeslaMaxPreDesign:
                                                          functional_args)
 
         ddS = (dS_j_plus - dS_j) / delta
-
         return ddS
 
     def calculate_functional_gradient(self,
@@ -1153,7 +1138,7 @@ class TeslaMaxPreDesign:
                                               (B_HIGH_LEVEL,))):
         """
         Return the gradient of the functional evaluated at point 'alpha_B_rem'.
-        
+
         Arguments:
         - alpha_B_rem is a vector of (n_II + n_IV) remanences, where the
         gradient is to be evaluated
@@ -1167,7 +1152,6 @@ class TeslaMaxPreDesign:
                                                               i,
                                                               functional_args)
                          for i in range(0, n)])
-
         return grad
 
     def calculate_functional_hessian(self,
@@ -1195,7 +1179,6 @@ class TeslaMaxPreDesign:
                                                               functional_args)
              for j in range(0, n)]
             for i in range(0, n)])
-
         return hess
 
     def _calculate_optimal_remanence_angles(self,
@@ -1206,10 +1189,10 @@ class TeslaMaxPreDesign:
         """
         Calculate the optimal remanence angles that minimize the deviation
         between the resulting profile and 'target_profile_function'.
-        
+
         Arguments:
         ----------
-        
+
         - 'target_profile_function' is a function with signature
         'f(phi_vector, *args)' (the first argument is the vector of angular
         positions where the profile is to be calculated, followed by
@@ -1217,8 +1200,8 @@ class TeslaMaxPreDesign:
         - 'target_profile_args' is a tuple with other arguments to pass to
         'target_profile_function' (see above)
 
-        
-        -- 
+
+        --
         """
 
         n_II = self.geometry_material_parameters["n_II"]
@@ -1239,9 +1222,7 @@ class TeslaMaxPreDesign:
         functional_args = (target_profile_function, target_profile_args)
 
         bounds = [(0.0, 360.0) for i in range(0, n)]
-
-        # the subscript _g in the following variable names stands for
-        # 'gradient-based' optimization methods
+        
         optres_g = minimize(objective_function,
                             alpha_B_rem_0,
                             args=(functional_args,),
@@ -1258,10 +1239,10 @@ class TeslaMaxPreDesign:
         """
         Return the optimal remanence angles that minimize the deviation
         between the resulting profile and 'target_profile_function'.
-        
+
         Arguments:
         ----------
-        
+
         - 'target_profile_function' is a function with signature
         'f(phi_vector, *args)' (the first argument is the vector of angular
         positions where the profile is to be calculated, followed by
@@ -1281,22 +1262,22 @@ class TeslaMaxPreDesign:
 class TeslaMaxModel:
     """
     Class representing the full TeslaMax model.
-    
+
     To create an instance of the class, first you have to create a
     TeslaMaxPreDesign object and an array of remanence angles,
     and then pass these parameters along with  a path where to store the
     generated text files:
-    
+
     >>> tmpd = TeslaMaxPreDesign({...})
     >>> alpha_B_rem = [...]
     >>> tmm = TeslaMaxModel(tmpd, alpha_B_rem, "teslamax-results")
-    
+
     If the path already exists, it will be cleaned up to avoid confusion
     between different simulations.
 
     If you want to preserve the data in 'path', set the argument 'clean'
     to False in the constructor
-    
+
     """
 
     def __init__(self, teslamax_predesign, alpha_vector, path, clean=True):
@@ -1316,12 +1297,13 @@ class TeslaMaxModel:
         self.calculate_B_profile = None
         self.B_III_data = None
         self.calculate_B_III_from_position = None
+        self.demagnetized_volume_fraction = None
 
     def run(self, verbose=False):
         """
         Change the current directory temporarily to the object's path
         and run the TeslaMax program in it.
-        
+
         Also populates the appropriate fields with results from TeslaMax
         """
 
@@ -1339,6 +1321,8 @@ class TeslaMaxModel:
         self.calculate_B_III_from_position = NearestNDInterpolator(
             self.B_III_data[:, :2],
             self.B_III_data[:, 2:4])
+
+        self.demagnetized_volume_fraction = self.get_results_series()["Demagnetized fraction[%]"]
 
     def get_B_III_data(self):
         """
@@ -1362,3 +1346,22 @@ class TeslaMaxModel:
         profile_data = read_comsol_profile_data(str(profile_file_path))
 
         return profile_data
+    
+    def get_results_series(self):
+        """
+        Return a Series with the main simulation results
+        """
+        
+        results_filepath = self.path / MAIN_RESULTS_FILENAME
+
+        results_series = pd.read_csv(results_filepath,
+                                       sep=" ",
+                                       squeeze=True,
+                                       index_col=0,
+                                       header=None)
+        results_series.index.name = None
+        results_series.name = "COMSOL Main Results"
+        
+        # add demagnetization fraction
+        results_series["Demagnetized fraction[%]"] = results_series["A_demag[m2]"] / results_series["A_magnet[m2]"] * 100
+        return results_series
