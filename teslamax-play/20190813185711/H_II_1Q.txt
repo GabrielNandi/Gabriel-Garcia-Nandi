@@ -1,0 +1,8 @@
+% Model:              
+% Version:            COMSOL 5.4.0.295
+% Date:               Aug 13 2019, 19:14
+% Dimension:          2
+% Nodes:              0
+% Expressions:        6
+% Description:        Magnetic flux density, x component, Magnetic flux density, y component, Magnetic field, x component, Magnetic field, y component, Remanent flux density, x component, Remanent flux density, y component
+% Length unit:        m

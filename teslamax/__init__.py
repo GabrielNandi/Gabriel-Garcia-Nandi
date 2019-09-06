@@ -355,12 +355,13 @@ def run_teslamax(verbose=False):
 
     Assumes the parameters file is present in the current directory."""
     comsol_process = subprocess.run(TESLAMAX_CMD,
-                                    shell=True,
-                                    stdout=subprocess.PIPE,
+                                  shell=True,
+                                 stdout=subprocess.PIPE,
                                     stderr=subprocess.STDOUT,
                                     universal_newlines=True)
     if verbose:
-        print(comsol_process.stdout)
+        print('running teslamax')
+        #print(comsol_process.stdout)
     process_main_results_file()
     write_magnetic_profile_file()
 
@@ -1024,7 +1025,15 @@ class TeslaMaxPreDesign:
         - 'target_profile_args' is a tuple with other arguments to pass to
         'target_profile_function' (see above). The first two elements
         are some measure of the maximum and minimum field
+        - The last element of 'target_profile_args' is a string with 
+        the type of K (S) to be used. If it starts with 'S_maxmin', S
+        is measured just in the  B_max and B_min points of the target_profile_function
+        (the ramp is ignored). If it looks like 'S_peso_[number]', the S is weighted,
+        if the weights 1 to the ramp parts and [number] to the max and min parts.
+        Any other thing (or even if there is no fourth element in 'target_profile_args') 
+        defines S as the default S (weight 1/1).
         """
+        
 
         B_III_data = self.superposition_B_III(alpha_B_rem)
 
@@ -1037,16 +1046,40 @@ class TeslaMaxPreDesign:
 
         B_target_profile = target_profile_function(phi_vector,
                                                    *target_profile_args)
-
+        phi_deg = phi_vector
         phi_vector = np.deg2rad(phi_vector)
 
         # use a "least squares" approach
         B_lsq = np.square((B_profile - B_target_profile))
         B_max = target_profile_args[0]
         B_min = target_profile_args[1]
-
-        S = np.trapz(B_lsq, phi_vector) / (2 * np.pi * (B_max - B_min) ** 2)
-
+    
+        FM = target_profile_args[2]*90
+        high_region = (phi_deg <=FM)
+        high_region = np.logical_or(high_region,
+                                np.logical_and((phi_deg >= 180-FM),
+                                               (phi_deg <= 180+FM)))
+        high_region = np.logical_or(high_region, (phi_deg >= 360-FM))
+        
+        low_region = np.logical_and((phi_deg >= 90-FM),
+                                               (phi_deg <= 90+FM))
+        low_region = np.logical_or(low_region,
+                                np.logical_and((phi_deg >= 270-FM),
+                                               (phi_deg <= 270+FM)))
+        
+        rampa = np.logical_not(np.logical_or(low_region,high_region))
+        
+        if len(target_profile_args) == 4:
+            if target_profile_args[3].startswith('S_maxmin'):
+                S = (np.trapz(B_lsq[high_region], phi_vector[high_region]) / ((np.pi/2) * (B_max - B_min) ** 2)) + (np.trapz(B_lsq[low_region], phi_vector[low_region]) / ((np.pi/2) * (B_max - B_min) ** 2))
+            elif target_profile_args[3].startswith('S_peso'):
+                peso = float(target_profile_args[3][7:])
+                S = (peso*np.trapz(B_lsq[high_region], phi_vector[high_region]) / ((np.pi/2) * (B_max - B_min) ** 2)) + (np.trapz(B_lsq[rampa], phi_vector[rampa]) / ((np.pi) * (B_max - B_min) ** 2)) + (peso*np.trapz(B_lsq[low_region], phi_vector[low_region]) / ((np.pi/2) * (B_max - B_min) ** 2))
+            else:
+                S = np.trapz(B_lsq, phi_vector) / (2 * np.pi * (B_max - B_min) ** 2)
+        else: S = np.trapz(B_lsq, phi_vector) / (2 * np.pi * (B_max - B_min) ** 2)
+        #S = ((np.trapz(B_lsq[high_region], phi_vector[high_region]))**10 / ((np.pi/2) * (B_max - B_min) ** 2)) + (np.trapz(B_lsq[rampa], phi_vector[rampa]) / ((np.pi) * (B_max - B_min) ** 2)) + ((np.trapz(B_lsq[low_region], phi_vector[low_region]))**10 / ((np.pi/2) * (B_max - B_min) ** 2))
+        
         return S
 
     def calculate_functional(self,

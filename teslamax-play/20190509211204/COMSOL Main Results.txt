@@ -1,0 +1,7 @@
+B_high[T] 1.450271
+B_low[T] 0.223118
+A_gap[m2] 0.041233
+A_magnet[m2] 0.171487
+-H_Brem_II_max[A/m] -inf
+-H_Brem_IV_max[A/m] 1233784.610091
+A_demag[m2] 0.000049
